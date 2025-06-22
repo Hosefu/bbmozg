@@ -11,11 +11,6 @@ public static class Roles
     public const string Admin = "Admin";
     
     /// <summary>
-    /// HR-специалист - управление потоками и назначениями
-    /// </summary>
-    public const string HRSpecialist = "HRSpecialist";
-    
-    /// <summary>
     /// Buddy (наставник) - курирование процесса прохождения
     /// </summary>
     public const string Buddy = "Buddy";
@@ -31,7 +26,6 @@ public static class Roles
     public static readonly string[] AllRoles = 
     {
         Admin,
-        HRSpecialist,
         Buddy,
         Employee
     };
@@ -41,8 +35,7 @@ public static class Roles
     /// </summary>
     public static readonly string[] AdminRoles = 
     {
-        Admin,
-        HRSpecialist
+        Admin
     };
     
     /// <summary>
@@ -51,7 +44,6 @@ public static class Roles
     public static readonly string[] MentorRoles = 
     {
         Admin,
-        HRSpecialist,
         Buddy
     };
 }
