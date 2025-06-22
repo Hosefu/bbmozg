@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BuddyBot.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5b85dcded1470a224cad811a7a50843aeae2589d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aa221d5c05b84372c8cab0a48b7bcb02dc9772f7")]
 [assembly: System.Reflection.AssemblyProductAttribute("BuddyBot.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BuddyBot.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

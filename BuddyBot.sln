@@ -1,29 +1,23 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F6A2B08C-1E8A-4C8A-9B3C-4D5E6F7A8B9C}"
 EndProject
-
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuddyBot.Api", "src\BuddyBot.Api\BuddyBot.Api.csproj", "{1A2B3C4D-E5F6-7890-ABCD-EF1234567891}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuddyBot.Domain", "src\BuddyBot.Domain\BuddyBot.Domain.csproj", "{1A2B3C4D-E5F6-7890-ABCD-EF1234567892}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuddyBot.Application", "src\BuddyBot.Application\BuddyBot.Application.csproj", "{1A2B3C4D-E5F6-7890-ABCD-EF1234567893}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuddyBot.Infrastructure", "src\BuddyBot.Infrastructure\BuddyBot.Infrastructure.csproj", "{1A2B3C4D-E5F6-7890-ABCD-EF1234567894}"
 EndProject
-
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuddyBot.Shared", "src\BuddyBot.Shared\BuddyBot.Shared.csproj", "{1A2B3C4D-E5F6-7890-ABCD-EF1234567895}"
 EndProject
-
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuddyBot.Shared.Tests", "tests\BuddyBot.Shared.Tests\BuddyBot.Shared.Tests.csproj", "{2214D932-2502-46D8-9173-FD2C5892EBB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +44,10 @@ Global
 		{1A2B3C4D-E5F6-7890-ABCD-EF1234567895}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A2B3C4D-E5F6-7890-ABCD-EF1234567895}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A2B3C4D-E5F6-7890-ABCD-EF1234567895}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2214D932-2502-46D8-9173-FD2C5892EBB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2214D932-2502-46D8-9173-FD2C5892EBB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2214D932-2502-46D8-9173-FD2C5892EBB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2214D932-2502-46D8-9173-FD2C5892EBB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +58,7 @@ Global
 		{1A2B3C4D-E5F6-7890-ABCD-EF1234567893} = {F6A2B08C-1E8A-4C8A-9B3C-4D5E6F7A8B9C}
 		{1A2B3C4D-E5F6-7890-ABCD-EF1234567894} = {F6A2B08C-1E8A-4C8A-9B3C-4D5E6F7A8B9C}
 		{1A2B3C4D-E5F6-7890-ABCD-EF1234567895} = {F6A2B08C-1E8A-4C8A-9B3C-4D5E6F7A8B9C}
+		{2214D932-2502-46D8-9173-FD2C5892EBB8} = {A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {12345678-9ABC-DEF0-1234-56789ABCDEF0}
