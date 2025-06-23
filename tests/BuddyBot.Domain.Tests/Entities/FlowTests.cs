@@ -10,7 +10,7 @@ public class FlowTests
     public void Flow_DefaultValues_ShouldBeSetCorrectly()
     {
         // Act
-        var flow = new Flow();
+        var flow = new Flow("Test Flow", "Test Description");
 
         // Assert
         flow.Status.Should().Be(FlowStatus.Draft);
@@ -27,9 +27,9 @@ public class FlowTests
     public void TotalSteps_ShouldReturnCorrectCount()
     {
         // Arrange
-        var flow = new Flow();
-        flow.Steps.Add(new FlowStep { Title = "Step 1" });
-        flow.Steps.Add(new FlowStep { Title = "Step 2" });
+        var flow = new Flow("Test Flow", "Test Description");
+        flow.Steps.Add(new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1));
+        flow.Steps.Add(new FlowStep(flow.Id, "Step 2", "Step 2 Description", 2));
 
         // Act
         var totalSteps = flow.TotalSteps;
@@ -42,9 +42,9 @@ public class FlowTests
     public void EstimatedDurationMinutes_ShouldReturnSumOfStepDurations()
     {
         // Arrange
-        var flow = new Flow();
-        flow.Steps.Add(new FlowStep { EstimatedDurationMinutes = 30 });
-        flow.Steps.Add(new FlowStep { EstimatedDurationMinutes = 45 });
+        var flow = new Flow("Test Flow", "Test Description");
+        flow.Steps.Add(new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1, true, 30));
+        flow.Steps.Add(new FlowStep(flow.Id, "Step 2", "Step 2 Description", 2, true, 45));
 
         // Act
         var totalDuration = flow.EstimatedDurationMinutes;
@@ -57,14 +57,12 @@ public class FlowTests
     public void CanBePublished_WithValidFlow_ShouldReturnTrue()
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow("Test Flow", "Test Description")
         {
-            Title = "Test Flow",
-            Description = "Test Description",
             Status = FlowStatus.Draft,
             Settings = new FlowSettings()
         };
-        flow.Steps.Add(new FlowStep { Title = "Step 1" });
+        flow.Steps.Add(new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1));
 
         // Act
         var canBePublished = flow.CanBePublished();
@@ -80,17 +78,15 @@ public class FlowTests
     public void CanBePublished_WithInvalidFlow_ShouldReturnFalse(string title, string description, bool addStep)
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow(title, description)
         {
-            Title = title,
-            Description = description,
             Status = FlowStatus.Draft,
             Settings = new FlowSettings()
         };
 
         if (addStep)
         {
-            flow.Steps.Add(new FlowStep { Title = "Step 1" });
+            flow.Steps.Add(new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1));
         }
 
         // Act
@@ -104,14 +100,12 @@ public class FlowTests
     public void CanBePublished_WithPublishedStatus_ShouldReturnFalse()
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow("Test Flow", "Test Description")
         {
-            Title = "Test Flow",
-            Description = "Test Description",
             Status = FlowStatus.Published,
             Settings = new FlowSettings()
         };
-        flow.Steps.Add(new FlowStep { Title = "Step 1" });
+        flow.Steps.Add(new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1));
 
         // Act
         var canBePublished = flow.CanBePublished();
@@ -124,14 +118,12 @@ public class FlowTests
     public void Publish_WithValidFlow_ShouldUpdateStatusAndDates()
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow("Test Flow", "Test Description")
         {
-            Title = "Test Flow",
-            Description = "Test Description",
             Status = FlowStatus.Draft,
             Settings = new FlowSettings()
         };
-        flow.Steps.Add(new FlowStep { Title = "Step 1" });
+        flow.Steps.Add(new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1));
 
         // Act
         flow.Publish();
@@ -146,10 +138,8 @@ public class FlowTests
     public void Publish_WithInvalidFlow_ShouldThrowException()
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow("", "Test Description") // Invalid title
         {
-            Title = "", // Invalid
-            Description = "Test Description",
             Status = FlowStatus.Draft
         };
 
@@ -163,7 +153,7 @@ public class FlowTests
     public void Archive_ShouldUpdateStatusAndDate()
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow("Test Flow", "Test Description")
         {
             Status = FlowStatus.Published
         };
@@ -180,7 +170,7 @@ public class FlowTests
     public void ReturnToDraft_ShouldUpdateStatusAndClearPublishedDate()
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow("Test Flow", "Test Description")
         {
             Status = FlowStatus.Published,
             PublishedAt = DateTime.UtcNow.AddDays(-1)
@@ -199,7 +189,7 @@ public class FlowTests
     public void IncrementVersion_ShouldIncreaseVersionAndUpdateDate()
     {
         // Arrange
-        var flow = new Flow
+        var flow = new Flow("Test Flow", "Test Description")
         {
             Version = 1
         };
@@ -216,8 +206,8 @@ public class FlowTests
     public void AddStep_ShouldAddStepWithCorrectOrder()
     {
         // Arrange
-        var flow = new Flow { Id = Guid.NewGuid() };
-        var step = new FlowStep { Title = "New Step" };
+        var flow = new Flow("Test Flow", "Test Description") { Id = Guid.NewGuid() };
+        var step = new FlowStep(flow.Id, "New Step", "New Step Description", 1);
 
         // Act
         flow.AddStep(step);
@@ -234,9 +224,9 @@ public class FlowTests
     public void AddStep_MultipleSteps_ShouldMaintainCorrectOrder()
     {
         // Arrange
-        var flow = new Flow { Id = Guid.NewGuid() };
-        var step1 = new FlowStep { Title = "Step 1" };
-        var step2 = new FlowStep { Title = "Step 2" };
+        var flow = new Flow("Test Flow", "Test Description") { Id = Guid.NewGuid() };
+        var step1 = new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1);
+        var step2 = new FlowStep(flow.Id, "Step 2", "Step 2 Description", 2);
 
         // Act
         flow.AddStep(step1);
@@ -252,10 +242,10 @@ public class FlowTests
     public void RemoveStep_ShouldRemoveStepAndReorderRemaining()
     {
         // Arrange
-        var flow = new Flow { Id = Guid.NewGuid() };
-        var step1 = new FlowStep { Id = Guid.NewGuid(), Title = "Step 1" };
-        var step2 = new FlowStep { Id = Guid.NewGuid(), Title = "Step 2" };
-        var step3 = new FlowStep { Id = Guid.NewGuid(), Title = "Step 3" };
+        var flow = new Flow("Test Flow", "Test Description") { Id = Guid.NewGuid() };
+        var step1 = new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1) { Id = Guid.NewGuid() };
+        var step2 = new FlowStep(flow.Id, "Step 2", "Step 2 Description", 2) { Id = Guid.NewGuid() };
+        var step3 = new FlowStep(flow.Id, "Step 3", "Step 3 Description", 3) { Id = Guid.NewGuid() };
 
         flow.AddStep(step1);
         flow.AddStep(step2);
@@ -275,8 +265,8 @@ public class FlowTests
     public void RemoveStep_WithNonExistentId_ShouldNotThrow()
     {
         // Arrange
-        var flow = new Flow { Id = Guid.NewGuid() };
-        var step = new FlowStep { Id = Guid.NewGuid(), Title = "Step 1" };
+        var flow = new Flow("Test Flow", "Test Description") { Id = Guid.NewGuid() };
+        var step = new FlowStep(flow.Id, "Step 1", "Step 1 Description", 1) { Id = Guid.NewGuid() };
         flow.AddStep(step);
 
         // Act

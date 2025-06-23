@@ -155,6 +155,38 @@ public class FlowAssignment
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
+    /// Конструктор для создания нового назначения потока
+    /// </summary>
+    /// <param name="userId">Идентификатор пользователя</param>
+    /// <param name="flowId">Идентификатор потока</param>
+    /// <param name="snapshotId">Идентификатор снапшота</param>
+    /// <param name="dueDate">Дедлайн</param>
+    /// <param name="buddyId">Идентификатор buddy</param>
+    /// <param name="assignedById">Идентификатор назначившего</param>
+    /// <param name="notes">Заметки</param>
+    /// <param name="priority">Приоритет</param>
+    public FlowAssignment(Guid userId, Guid flowId, Guid snapshotId, DateTime? dueDate, Guid? buddyId, Guid assignedById, string? notes, int priority)
+    {
+        Id = Guid.NewGuid();
+        UserId = userId;
+        FlowId = flowId;
+        FlowSnapshotId = snapshotId;
+        BuddyId = buddyId;
+        DueDate = dueDate;
+        AssignedById = assignedById;
+        AdminNotes = notes ?? string.Empty;
+        Priority = priority;
+        Status = AssignmentStatus.Assigned;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Конструктор для EF Core
+    /// </summary>
+    protected FlowAssignment() { }
+
+    /// <summary>
     /// Проверяет, может ли пользователь начать прохождение
     /// </summary>
     /// <returns>true, если может начать</returns>

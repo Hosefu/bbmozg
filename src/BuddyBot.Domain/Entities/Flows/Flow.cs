@@ -88,6 +88,27 @@ public class Flow
     public DateTime? PublishedAt { get; set; }
 
     /// <summary>
+    /// Конструктор для создания нового потока
+    /// </summary>
+    /// <param name="title">Название потока</param>
+    /// <param name="description">Описание потока</param>
+    public Flow(string title, string description)
+    {
+        Id = Guid.NewGuid();
+        Title = title ?? throw new ArgumentNullException(nameof(title));
+        Description = description ?? throw new ArgumentNullException(nameof(description));
+        Status = FlowStatus.Draft;
+        Version = 1;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Конструктор для EF Core
+    /// </summary>
+    protected Flow() { }
+
+    /// <summary>
     /// Получает общее количество шагов в потоке
     /// </summary>
     public int TotalSteps => Steps.Count;

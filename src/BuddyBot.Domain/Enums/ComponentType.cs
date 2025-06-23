@@ -24,10 +24,4 @@ public enum ComponentType
     /// </summary>
     [Description("Задание")]
     Task = 2,
-
-    /// <summary>
-    /// Видео контент
-    /// </summary>
-    [Description("Видео")]
-    Video = 3,
 }

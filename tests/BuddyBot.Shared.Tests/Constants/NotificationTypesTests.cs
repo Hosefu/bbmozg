@@ -22,7 +22,6 @@ public class NotificationTypesTests
         NotificationTypes.FlowCompleted.Should().Be("FlowCompleted");
         NotificationTypes.StepUnlocked.Should().Be("StepUnlocked");
         NotificationTypes.AchievementEarned.Should().Be("AchievementEarned");
-        NotificationTypes.BuddyMessage.Should().Be("BuddyMessage");
         NotificationTypes.System.Should().Be("System");
     }
 
@@ -35,12 +34,12 @@ public class NotificationTypesTests
             "Info", "Warning", "Error", "Success", "Reminder",
             "NewAssignment", "DeadlineApproaching", "DeadlineOverdue",
             "ComponentCompleted", "StepCompleted", "FlowCompleted",
-            "StepUnlocked", "AchievementEarned", "BuddyMessage", "System"
+            "StepUnlocked", "AchievementEarned", "System"
         };
 
         // Act & Assert
         NotificationTypes.AllTypes.Should().BeEquivalentTo(expectedTypes);
-        NotificationTypes.AllTypes.Should().HaveCount(15);
+        NotificationTypes.AllTypes.Should().HaveCount(14);
     }
 
     [Fact]

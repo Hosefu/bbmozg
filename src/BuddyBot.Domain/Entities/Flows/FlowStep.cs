@@ -78,6 +78,34 @@ public class FlowStep
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
+    /// Конструктор для создания нового шага потока
+    /// </summary>
+    /// <param name="flowId">Идентификатор потока</param>
+    /// <param name="title">Название шага</param>
+    /// <param name="description">Описание шага</param>
+    /// <param name="order">Порядковый номер</param>
+    /// <param name="isRequired">Обязательный ли шаг</param>
+    /// <param name="estimatedDurationMinutes">Приблизительное время выполнения в минутах</param>
+    public FlowStep(Guid flowId, string title, string description, int order, bool isRequired = true, int estimatedDurationMinutes = 30)
+    {
+        Id = Guid.NewGuid();
+        FlowId = flowId;
+        Title = title ?? throw new ArgumentNullException(nameof(title));
+        Description = description ?? throw new ArgumentNullException(nameof(description));
+        Order = order;
+        IsRequired = isRequired;
+        EstimatedDurationMinutes = estimatedDurationMinutes;
+        Status = StepStatus.Draft;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Конструктор для EF Core
+    /// </summary>
+    protected FlowStep() { }
+
+    /// <summary>
     /// Получает общее количество компонентов в шаге
     /// </summary>
     public int TotalComponents => Components.Count;

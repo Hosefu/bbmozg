@@ -10,7 +10,6 @@ public class RolesTests
     {
         // Arrange & Act & Assert
         Roles.Admin.Should().Be("Admin");
-        Roles.HRSpecialist.Should().Be("HRSpecialist");
         Roles.Buddy.Should().Be("Buddy");
         Roles.Employee.Should().Be("Employee");
     }
@@ -19,33 +18,33 @@ public class RolesTests
     public void AllRoles_ShouldContainAllDefinedRoles()
     {
         // Arrange
-        var expectedRoles = new[] { "Admin", "HRSpecialist", "Buddy", "Employee" };
+        var expectedRoles = new[] { "Admin", "Buddy", "Employee" };
 
         // Act & Assert
         Roles.AllRoles.Should().BeEquivalentTo(expectedRoles);
-        Roles.AllRoles.Should().HaveCount(4);
+        Roles.AllRoles.Should().HaveCount(3);
     }
 
     [Fact]
     public void AdminRoles_ShouldContainOnlyAdministrativeRoles()
     {
         // Arrange
-        var expectedAdminRoles = new[] { "Admin", "HRSpecialist" };
+        var expectedAdminRoles = new[] { "Admin" };
 
         // Act & Assert
         Roles.AdminRoles.Should().BeEquivalentTo(expectedAdminRoles);
-        Roles.AdminRoles.Should().HaveCount(2);
+        Roles.AdminRoles.Should().HaveCount(1);
     }
 
     [Fact]
     public void MentorRoles_ShouldContainRolesWithMentorshipRights()
     {
         // Arrange
-        var expectedMentorRoles = new[] { "Admin", "HRSpecialist", "Buddy" };
+        var expectedMentorRoles = new[] { "Admin", "Buddy" };
 
         // Act & Assert
         Roles.MentorRoles.Should().BeEquivalentTo(expectedMentorRoles);
-        Roles.MentorRoles.Should().HaveCount(3);
+        Roles.MentorRoles.Should().HaveCount(2);
     }
 
     [Fact]
@@ -66,7 +65,6 @@ public class RolesTests
 
     [Theory]
     [InlineData("Admin")]
-    [InlineData("HRSpecialist")]
     [InlineData("Buddy")]
     [InlineData("Employee")]
     public void DefinedRole_ShouldBeInAllRoles(string role)

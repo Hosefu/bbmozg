@@ -93,6 +93,37 @@ public class FlowStepComponent
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
+    /// Конструктор для создания нового компонента шага
+    /// </summary>
+    /// <param name="flowStepId">Идентификатор шага</param>
+    /// <param name="componentType">Тип компонента</param>
+    /// <param name="title">Название компонента</param>
+    /// <param name="description">Описание компонента</param>
+    /// <param name="order">Порядковый номер</param>
+    /// <param name="isRequired">Обязательный ли компонент</param>
+    /// <param name="estimatedDurationMinutes">Приблизительное время выполнения в минутах</param>
+    public FlowStepComponent(Guid flowStepId, ComponentType componentType, string title, string description, int order, bool isRequired = true, int estimatedDurationMinutes = 15)
+    {
+        Id = Guid.NewGuid();
+        FlowStepId = flowStepId;
+        ComponentId = Guid.NewGuid(); // For now, generate a new ID
+        ComponentType = componentType;
+        Title = title ?? throw new ArgumentNullException(nameof(title));
+        Description = description ?? throw new ArgumentNullException(nameof(description));
+        Order = order;
+        IsRequired = isRequired;
+        EstimatedDurationMinutes = estimatedDurationMinutes;
+        Status = ComponentStatus.Draft;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Конструктор для EF Core
+    /// </summary>
+    protected FlowStepComponent() { }
+
+    /// <summary>
     /// Проверяет, может ли компонент быть активирован
     /// </summary>
     /// <returns>true, если компонент может быть активирован</returns>
@@ -148,7 +179,7 @@ public class FlowStepComponent
     /// <returns>true, если поддерживает отслеживание прогресса</returns>
     public bool SupportsProgress()
     {
-        return ComponentType is ComponentType.Video or ComponentType.Article or ComponentType.Task;
+        return ComponentType is ComponentType.Article or ComponentType.Task;
     }
 
     /// <summary>
