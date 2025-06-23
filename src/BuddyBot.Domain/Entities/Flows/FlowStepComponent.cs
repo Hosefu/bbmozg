@@ -139,7 +139,7 @@ public class FlowStepComponent
     /// <returns>true, если компонент интерактивный</returns>
     public bool IsInteractive()
     {
-        return ComponentType is ComponentType.Quiz or ComponentType.Task or ComponentType.Survey;
+        return ComponentType is ComponentType.Quiz or ComponentType.Task;
     }
 
     /// <summary>
