@@ -4,12 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**ФЛОФ (FLOF)** — корпоративная система онбординга сотрудников через Telegram-бота и веб-приложение.
+**Лауф (Lauf)** — корпоративная система онбординга сотрудников через Telegram-бота и веб-приложение.
 
 **Ключевые архитектурные концепции:**
 - **Потоки (Flows)**: Шаблоны обучающих программ
 - **Назначения (Assignments)**: Привязка пользователя к потоку с дедлайнами
-- **Бадди (Buddy)**: Наставник, курирующий прохождение
+- **Наставники (Mentors)**: Кураторы, курирующие прохождение
 - **Снапшоты (Snapshots)**: Неизменяемые копии потоков на момент назначения (ключевая особенность архитектуры)
 - **Компоненты (Components)**: Атомарные единицы контента (статьи, тесты, задания)
 
@@ -24,7 +24,7 @@ dotnet restore
 dotnet build
 
 # Run API server
-cd src/BuddyBot.Api
+cd src/Lauf.Api
 dotnet run --urls="http://localhost:5000"
 
 # Clean build artifacts
@@ -37,7 +37,7 @@ dotnet clean
 dotnet test
 
 # Run specific test project
-dotnet test tests/BuddyBot.Domain.Tests/
+dotnet test tests/Lauf.Domain.Tests/
 
 # Run with coverage
 dotnet test --collect:"XPlat Code Coverage"
@@ -46,14 +46,14 @@ dotnet test --collect:"XPlat Code Coverage"
 ### Database Operations
 ```bash
 # Add migration
-cd src/BuddyBot.Infrastructure
-dotnet ef migrations add <MigrationName> --startup-project ../BuddyBot.Api
+cd src/Lauf.Infrastructure
+dotnet ef migrations add <MigrationName> --startup-project ../Lauf.Api
 
 # Update database
-dotnet ef database update --startup-project ../BuddyBot.Api
+dotnet ef database update --startup-project ../Lauf.Api
 
 # Generate SQL script
-dotnet ef migrations script --startup-project ../BuddyBot.Api
+dotnet ef migrations script --startup-project ../Lauf.Api
 ```
 
 ## Architecture
@@ -71,11 +71,11 @@ dotnet ef migrations script --startup-project ../BuddyBot.Api
 ### Clean Architecture Structure
 ```
 src/
-├── BuddyBot.Api/          # API слой (GraphQL, SignalR, Controllers)
-├── BuddyBot.Application/  # Логика приложения (CQRS, MediatR, DTOs)
-├── BuddyBot.Infrastructure/ # Внешние зависимости (БД, Telegram, файлы)
-├── BuddyBot.Domain/       # Доменная логика и сущности
-└── BuddyBot.Shared/       # Общие утилиты и константы
+├── Lauf.Api/          # API слой (GraphQL, SignalR, Controllers)
+├── Lauf.Application/  # Логика приложения (CQRS, MediatR, DTOs)
+├── Lauf.Infrastructure/ # Внешние зависимости (БД, Telegram, файлы)
+├── Lauf.Domain/       # Доменная логика и сущности
+└── Lauf.Shared/       # Общие утилиты и константы
 ```
 
 **Направление зависимостей:** API → Application → Domain ← Infrastructure
@@ -139,7 +139,7 @@ src/
 ### Real-time Features
 SignalR используется для:
 - Уведомления о прогрессе
-- Buddy-dashboard updates  
+- Dashboard обновления для наставников  
 - Системные уведомления
 - Взаимодействие с наставниками
 
