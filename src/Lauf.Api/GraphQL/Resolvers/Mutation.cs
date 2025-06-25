@@ -1,10 +1,12 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Lauf.Application.DTOs.Users;
 using Lauf.Application.DTOs.Flows;
 using Lauf.Application.Commands.Users;
 using Lauf.Application.Commands.Flows;
 using Lauf.Application.Commands.FlowManagement;
 using Lauf.Application.Commands.FlowAssignment;
+using Lauf.Application.Services.Interfaces;
 using Lauf.Api.GraphQL.Types;
 
 namespace Lauf.Api.GraphQL.Resolvers;
@@ -60,15 +62,20 @@ public class Mutation
     /// <summary>
     /// Создать поток обучения
     /// </summary>
+    [Authorize]
     public async Task<FlowDto> CreateFlow(
         [Service] IMediator mediator,
+        [Service] ICurrentUserService currentUserService,
         CreateFlowInput input,
         CancellationToken cancellationToken = default)
     {
+        var userId = currentUserService.GetCurrentUserId() ?? throw new UnauthorizedAccessException("User not authenticated");
+        
         var command = new CreateFlowCommand
         {
             Title = input.Title,
             Description = input.Description,
+            CreatedById = userId,
             Settings = new CreateFlowSettingsCommand
             {
                 RequireSequentialCompletion = input.IsSequential,
@@ -80,12 +87,17 @@ public class Mutation
 
         var result = await mediator.Send(command, cancellationToken);
         
+        if (!result.IsSuccess)
+        {
+            throw new InvalidOperationException(result.Message);
+        }
+
         // Конвертируем результат в FlowDto
         return new FlowDto
         {
             Id = result.FlowId,
             Title = result.Title,
-            Status = Lauf.Domain.Enums.FlowStatus.Draft // По умолчанию
+            Status = Lauf.Domain.Enums.FlowStatus.Draft
         };
     }
 
@@ -112,17 +124,21 @@ public class Mutation
     /// <summary>
     /// Назначить поток пользователю
     /// </summary>
+    [Authorize]
     public async Task<AssignFlowCommandResult> AssignFlow(
         [Service] IMediator mediator,
+        [Service] ICurrentUserService currentUserService,
         AssignFlowInput input,
         CancellationToken cancellationToken = default)
     {
+        var userId = currentUserService.GetCurrentUserId() ?? throw new UnauthorizedAccessException("User not authenticated");
+        
         var command = new AssignFlowCommand
         {
             UserId = input.UserId,
             FlowId = input.FlowId,
             Deadline = input.DueDate,
-            CreatedById = input.AssignedBy ?? Guid.Empty
+            CreatedById = input.AssignedBy ?? userId
         };
 
         var result = await mediator.Send(command, cancellationToken);

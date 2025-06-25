@@ -164,4 +164,12 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
                           x.Status == AssignmentStatus.Assigned, 
                      cancellationToken);
     }
+
+    public async Task<IEnumerable<FlowAssignment>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.FlowAssignments
+            .Include(a => a.User)
+            .Include(a => a.Flow)
+            .ToListAsync(cancellationToken);
+    }
 }

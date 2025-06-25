@@ -34,6 +34,11 @@ public class FlowAssignmentDto
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
+    /// Дата последнего обновления
+    /// </summary>
+    public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
     /// Дата начала прохождения
     /// </summary>
     public DateTime? StartedAt { get; set; }

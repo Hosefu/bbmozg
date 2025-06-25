@@ -93,4 +93,11 @@ public class SimpleUserRepository : IUserRepository
         _context.Users.Remove(user);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .Include(u => u.Roles)
+            .ToListAsync(cancellationToken);
+    }
 }

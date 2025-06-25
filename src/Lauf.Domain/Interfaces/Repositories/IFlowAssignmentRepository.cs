@@ -142,4 +142,11 @@ public interface IFlowAssignmentRepository
     /// <param name="assignment">Назначение</param>
     /// <param name="cancellationToken">Токен отмены</param>
     Task DeleteAsync(FlowAssignment assignment, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает все назначения
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список всех назначений</returns>
+    Task<IEnumerable<FlowAssignment>> GetAllAsync(CancellationToken cancellationToken = default);
 }

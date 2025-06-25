@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Lauf.Shared.Extensions;
 using Lauf.Application.Commands.FlowAssignment;
 using Lauf.Application.Services.Interfaces;
@@ -63,6 +66,30 @@ public class Startup
         // Health checks для мониторинга состояния приложения
         services.AddHealthChecks();
 
+        // JWT Authentication для мини-апп
+        var jwtSettings = _configuration.GetSection("JWT");
+        var key = Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? "default-secret-key-for-development-only-32chars");
+        
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
+        services.AddAuthorization();
+
         // Настройка Entity Framework
         services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -73,13 +100,22 @@ public class Startup
         services.AddScoped<AuditInterceptor>();
         services.AddScoped<DomainEventInterceptor>();
 
-        // Регистрация MediatR
+        // Регистрация MediatR - только основные обработчики команд
         services.AddMediatR(typeof(AssignFlowCommand).Assembly);
+        
+        // Регистрация AutoMapper
+        services.AddAutoMapper(typeof(AssignFlowCommand).Assembly);
 
         // Регистрация репозиториев (этап 8)
         services.AddScoped<IUserRepository, SimpleUserRepository>();
         services.AddScoped<IFlowRepository, FlowRepository>();
         services.AddScoped<IFlowAssignmentRepository, FlowAssignmentRepository>();
+        
+        // Полноценные репозитории
+        services.AddScoped<Domain.Interfaces.Repositories.IAchievementRepository, Infrastructure.Persistence.Repositories.AchievementRepository>();
+        services.AddScoped<Domain.Interfaces.Repositories.IUserAchievementRepository, Infrastructure.Persistence.Repositories.UserAchievementRepository>();
+        services.AddScoped<Domain.Interfaces.Repositories.IUserProgressRepository, Infrastructure.Persistence.Repositories.UserProgressRepository>();
+        services.AddScoped<Domain.Services.FlowSnapshotService>();
 
         // Регистрация Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -119,6 +155,13 @@ public class Startup
         // SignalR настройка (этап 9)
         services.AddSignalR();
         services.AddScoped<Lauf.Api.Services.SignalRNotificationService>();
+        
+        // Telegram авторизация
+        services.AddScoped<Lauf.Api.Services.TelegramAuthValidator>(provider =>
+        {
+            var botToken = _configuration.GetSection("TelegramBot")["Token"] ?? "default-token";
+            return new Lauf.Api.Services.TelegramAuthValidator(botToken);
+        });
     }
 
     /// <summary>

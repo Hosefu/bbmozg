@@ -143,4 +143,11 @@ public class FlowRepository : IFlowRepository
 
         return await query.AnyAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Flow>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Flows
+            .Include(f => f.Steps)
+            .ToListAsync(cancellationToken);
+    }
 }

@@ -125,4 +125,11 @@ public interface IFlowRepository
     /// <param name="flow">Поток</param>
     /// <param name="cancellationToken">Токен отмены</param>
     Task DeleteAsync(Flow flow, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает все потоки
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список всех потоков</returns>
+    Task<IReadOnlyList<Flow>> GetAllAsync(CancellationToken cancellationToken = default);
 }

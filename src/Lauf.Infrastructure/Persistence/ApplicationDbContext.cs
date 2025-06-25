@@ -27,9 +27,20 @@ public class ApplicationDbContext : DbContext
         _domainEventInterceptor = domainEventInterceptor;
     }
 
+    /// <summary>
+    /// Конструктор для миграций без перехватчиков
+    /// </summary>
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+        _auditInterceptor = null!;
+        _domainEventInterceptor = null!;
+    }
+
     // Users
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
+    public DbSet<Achievement> Achievements { get; set; } = null!;
+    public DbSet<UserAchievement> UserAchievements { get; set; } = null!;
 
     // Flows
     public DbSet<Flow> Flows { get; set; } = null!;

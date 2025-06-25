@@ -94,4 +94,11 @@ public interface IUserRepository
     /// <param name="user">Пользователь</param>
     /// <param name="cancellationToken">Токен отмены</param>
     Task DeleteAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает всех пользователей
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список всех пользователей</returns>
+    Task<IReadOnlyList<User>> GetAllAsync(CancellationToken cancellationToken = default);
 }

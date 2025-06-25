@@ -125,7 +125,7 @@ public class E2ETestWithReporting : IClassFixture<WebApplicationFactory<Program>
             {
                 query = @"
                     query GetUsers($skip: Int, $take: Int) {
-                        users: getUsers(skip: $skip, take: $take) {
+                        users(skip: $skip, take: $take) {
                             id
                             email
                             fullName

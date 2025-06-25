@@ -36,11 +36,14 @@ public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, Creat
 
         try
         {
-            // Проверяем существование создателя
-            var creator = await _userRepository.GetByIdAsync(request.CreatedById, cancellationToken);
-            if (creator == null)
+            // Проверяем существование создателя только если ID не пустой
+            if (request.CreatedById != Guid.Empty)
             {
-                throw new UserNotFoundException(request.CreatedById);
+                var creator = await _userRepository.GetByIdAsync(request.CreatedById, cancellationToken);
+                if (creator == null)
+                {
+                    throw new UserNotFoundException(request.CreatedById);
+                }
             }
 
             // Создаем поток

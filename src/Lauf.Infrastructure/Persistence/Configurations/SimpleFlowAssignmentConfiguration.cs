@@ -52,6 +52,25 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
             .HasForeignKey(x => x.FlowId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Связь с назначившим пользователем
+        builder.HasOne(x => x.AssignedBy)
+            .WithMany() // Не добавляем обратную навигацию, чтобы избежать циклических ссылок
+            .HasForeignKey(x => x.AssignedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Связь с куратором (бадди)
+        builder.HasOne(x => x.Buddy)
+            .WithMany() // Не добавляем обратную навигацию
+            .HasForeignKey(x => x.BuddyId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Дополнительные свойства
+        builder.Property(x => x.AssignedById)
+            .IsRequired();
+
+        builder.Property(x => x.BuddyId)
+            .IsRequired(false);
+
         // Индексы
         builder.HasIndex(x => new { x.UserId, x.FlowId });
         builder.HasIndex(x => x.Status);
