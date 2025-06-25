@@ -23,7 +23,7 @@ dotnet restore
 # Build solution
 dotnet build
 
-# Run API server
+# Run API server (GraphQL Playground available at /playground)
 cd src/Lauf.Api
 dotnet run --urls="http://localhost:5000"
 
@@ -41,6 +41,12 @@ dotnet test tests/Lauf.Domain.Tests/
 
 # Run with coverage
 dotnet test --collect:"XPlat Code Coverage"
+
+# Run comprehensive tests with HTML reports
+./scripts/run-tests-with-coverage.sh
+
+# Run single test method
+dotnet test --filter "FullyQualifiedName~TestMethodName"
 ```
 
 ### Database Operations
@@ -60,13 +66,13 @@ dotnet ef migrations script --startup-project ../Lauf.Api
 
 ### Technology Stack (.NET 9.0)
 - **ASP.NET Core 9.0** + **C# 12** — основная платформа
-- **GraphQL (HotChocolate 13.7)** — API с автогенерацией схемы
+- **GraphQL (HotChocolate 13.7)** — API с автогенерацией схемы, Playground UI
 - **PostgreSQL + Entity Framework Core 9.0** — база данных с Code-First подходом
-- **SignalR** — real-time коммуникация с WebSocket/long-polling fallback
-- **Redis** — кэширование, pub/sub, сессии
-- **Hangfire** — фоновые задачи и планировщик
-- **MediatR** — CQRS implementation с командами и запросами
-- **Telegram.Bot SDK** — интеграция с Telegram Bot API
+- **SignalR** — real-time коммуникация (NotificationHub, ProgressHub)
+- **MediatR** — CQRS с командами/запросами и pipeline behaviors
+- **In-Memory Cache/File Storage** — кэширование и файловое хранилище (production-ready заглушки)
+- **Background Jobs** — планировщик заданий (memory implementation)
+- **xUnit + FluentAssertions** — тестирование с автогенерацией отчётов
 
 ### Clean Architecture Structure
 ```
@@ -105,10 +111,14 @@ src/
 
 ## Development Guidelines
 
-### Staged Development Process
-Проект разрабатывается по 10-этапному плану (`docs/План.md`). Текущий этап: **1 (завершен)**
+### Development Status
+Проект завершен согласно 10-этапному плану (`docs/План.md`). **Все этапы 1-10 реализованы.**
 
-**Важно:** Каждый этап должен завершаться тестированием работоспособности. Не переносить ошибки между этапами.
+**Текущее состояние:**
+- ✅ 420 тестов пройдено (300 Shared + 120 Domain)
+- ✅ Покрытие кода: Domain 28.81%, Shared 72.79%
+- ✅ Все TODO комментарии удалены
+- ✅ Полная функциональность без ошибок сборки
 
 ### Code Standards
 - **Язык комментариев**: Русский
@@ -144,8 +154,20 @@ SignalR используется для:
 - Взаимодействие с наставниками
 
 ### Background Processing
-Hangfire обрабатывает:
+Background Job Service обрабатывает:
 - Отложенные уведомления
 - Проверки дедлайнов
 - Генерация отчетов
 - Синхронизация прогресса
+
+### API Endpoints
+- **REST API:** `/api/users`, `/api/health` 
+- **GraphQL:** `/graphql` (с Playground UI)
+- **SignalR Hubs:** `/hubs/notifications`, `/hubs/progress`
+- **Documentation:** `/docs`, `/playground`, `/voyager`
+
+### Critical Domain Concepts
+- **Snapshot Pattern:** FlowAssignment создает неизменяемую копию Flow при назначении
+- **Progressive Disclosure:** Шаги разблокируются по мере прохождения (если RequireSequentialCompletion=true)
+- **Component-Based Content:** Статьи, тесты, видео как атомарные компоненты с прогрессом
+- **Deadline Calculation:** Рабочие дни с учетом праздников и рабочих часов

@@ -145,8 +145,11 @@ public class Startup
             app.UseHsts();
         }
 
-        // Принудительное использование HTTPS
-        app.UseHttpsRedirection();
+        // HTTPS редирект отключен для development
+        // if (!env.IsDevelopment())
+        // {
+        //     app.UseHttpsRedirection();
+        // }
 
         // Обслуживание статических файлов
         app.UseStaticFiles();

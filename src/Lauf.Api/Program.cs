@@ -3,6 +3,8 @@ using Lauf.Application;
 using Lauf.Infrastructure;
 using Lauf.Shared.Extensions;
 using Serilog;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Lauf.Api;
 
@@ -48,6 +50,16 @@ public class Program
             startup.Configure(app, app.Environment);
 
             Log.Information("Lauf API приложение готово к запуску");
+            
+            // Регистрируем слушателя для получения информации о запущенных адресах
+            app.Lifetime.ApplicationStarted.Register(() =>
+            {
+                var addresses = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
+                Log.Information("Сервер запущен на адресах: {Addresses}", string.Join(", ", addresses?.Addresses ?? new[] { "не определены" }));
+                Log.Information("GraphQL Playground доступен по адресу: {PlaygroundUrl}", $"{addresses?.Addresses?.FirstOrDefault()}/playground");
+                Log.Information("GraphQL API доступен по адресу: {GraphQLUrl}", $"{addresses?.Addresses?.FirstOrDefault()}/graphql");
+                Log.Information("Документация API доступна по адресу: {DocsUrl}", $"{addresses?.Addresses?.FirstOrDefault()}/docs");
+            });
             
             await app.RunAsync();
             
