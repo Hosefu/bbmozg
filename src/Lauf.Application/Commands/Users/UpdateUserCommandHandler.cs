@@ -8,7 +8,7 @@ namespace Lauf.Application.Commands.Users;
 /// <summary>
 /// Обработчик команды обновления пользователя
 /// </summary>
-public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UpdateUserCommandResult>
+public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserDto>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<UpdateUserCommandHandler> _logger;
@@ -21,7 +21,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Updat
         _logger = logger;
     }
 
-    public async Task<UpdateUserCommandResult> Handle(
+    public async Task<UserDto> Handle(
         UpdateUserCommand request, 
         CancellationToken cancellationToken)
     {
@@ -31,11 +31,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Updat
             var user = await _unitOfWork.Users.GetByIdAsync(request.UserId, cancellationToken);
             if (user == null)
             {
-                return new UpdateUserCommandResult
-                {
-                    Success = false,
-                    ErrorMessage = $"Пользователь с ID {request.UserId} не найден"
-                };
+                throw new ArgumentException($"Пользователь с ID {request.UserId} не найден");
             }
 
             // Обновляем поля пользователя, если они переданы
@@ -85,21 +81,12 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Updat
                 LastActivityAt = user.LastActiveAt
             };
 
-            return new UpdateUserCommandResult
-            {
-                User = userDto,
-                Success = true
-            };
+            return userDto;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при обновлении пользователя {UserId}", request.UserId);
-            
-            return new UpdateUserCommandResult
-            {
-                Success = false,
-                ErrorMessage = "Произошла ошибка при обновлении пользователя"
-            };
+            throw;
         }
     }
 }

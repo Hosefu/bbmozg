@@ -1,0 +1,39 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!-- Пакеты для тестирования и покрытия кода -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Lauf.Domain.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Shared.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Application.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Infrastructure.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Api.Tests'">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.6.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="6.12.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="6.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Настройки покрытия кода -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Lauf.Domain.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Shared.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Application.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Infrastructure.Tests' OR '$(MSBuildProjectName)' == 'Lauf.Api.Tests'">
+    <CollectCoverage>true</CollectCoverage>
+    <CoverletOutputFormat>cobertura,opencover,json,lcov</CoverletOutputFormat>
+    <CoverletOutput>../TestResults/</CoverletOutput>
+    <Include>[Lauf.*]*</Include>
+    <Exclude>[Lauf.*.Tests]*,[*]*.Migrations.*</Exclude>
+    <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+    <ExcludeByFile>**/*.Designer.cs,**/Migrations/*.cs</ExcludeByFile>
+    <SkipAutoProps>true</SkipAutoProps>
+  </PropertyGroup>
+</Project>

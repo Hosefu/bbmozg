@@ -25,14 +25,16 @@ public class Mutation
     {
         var command = new CreateUserCommand
         {
-            TelegramId = input.TelegramId,
+            TelegramUserId = input.TelegramId,
             Email = input.Email,
-            FullName = input.FullName,
-            Position = input.Position
+            FirstName = input.FullName.Split(' ').FirstOrDefault() ?? "",
+            LastName = string.Join(" ", input.FullName.Split(' ').Skip(1)),
+            Position = input.Position,
+            Language = "ru"
         };
 
         var result = await mediator.Send(command, cancellationToken);
-        return result.User;
+        return result;
     }
 
     /// <summary>
@@ -53,7 +55,7 @@ public class Mutation
         };
 
         var result = await mediator.Send(command, cancellationToken);
-        return result.User;
+        return result;
     }
 
     /// <summary>

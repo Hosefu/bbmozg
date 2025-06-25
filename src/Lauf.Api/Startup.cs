@@ -8,8 +8,10 @@ using Lauf.Infrastructure.Persistence;
 using Lauf.Infrastructure.Persistence.Repositories;
 using Lauf.Infrastructure.Persistence.Interceptors;
 using Lauf.Infrastructure.Services;
-using Lauf.Infrastructure.ExternalServices.FileStorage;
+using Lauf.Infrastructure.ExternalServices.FileStorage; 
 using Lauf.Infrastructure.ExternalServices.Cache;
+using Lauf.Infrastructure.ExternalServices.BackgroundJobs;
+using Lauf.Domain.Interfaces.ExternalServices;
 using Lauf.Api.Services;
 using MediatR;
 
@@ -87,10 +89,11 @@ public class Startup
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IDateTimeService, DateTimeService>();
 
-        // Регистрация внешних сервисов (этап 8)
+        // Регистрация внешних сервисов (этап 8)  
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddMemoryCache();
         services.AddScoped<ICacheService, InMemoryCacheService>();
+        services.AddScoped<IBackgroundJobService, MemoryBackgroundJobService>();
 
         // GraphQL настройка (этап 9)
         services.AddGraphQLServer()
@@ -132,6 +135,8 @@ public class Startup
             app.UseSwagger();
             app.UseSwaggerUI();
             app.UseDeveloperExceptionPage();
+            
+            // GraphQL интерфейс для разработки включается автоматически в HotChocolate 13.x
         }
         else
         {
@@ -168,8 +173,23 @@ public class Startup
             endpoints.MapGraphQL("/graphql");
             
             // SignalR hubs (этап 9)
-            endpoints.MapHub<Lauf.Api.Hubs.NotificationHub>("/hubs/notifications");
-            endpoints.MapHub<Lauf.Api.Hubs.ProgressHub>("/hubs/progress");
+            endpoints.MapHub<Lauf.Api.SignalR.NotificationHub>("/hubs/notifications");
+            endpoints.MapHub<Lauf.Api.SignalR.ProgressHub>("/hubs/progress");
+            
+            // Документация API
+            endpoints.MapFallbackToFile("/docs", "/docs/index.html");
+            endpoints.MapFallbackToFile("/voyager", "/voyager/index.html");
+            endpoints.MapFallbackToFile("/playground", "/playground/index.html");
+            
+            // Redirect корня на документацию в development
+            if (env.IsDevelopment())
+            {
+                endpoints.MapGet("/", context =>
+                {
+                    context.Response.Redirect("/docs");
+                    return Task.CompletedTask;
+                });
+            }
         });
     }
 }

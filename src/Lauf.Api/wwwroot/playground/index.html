@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8/>
+    <meta name="viewport" content="user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+    <title>GraphQL Playground - Lauf API</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.28/build/static/css/index.css" />
+    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.28/build/favicon.png" />
+    <script src="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.28/build/static/js/middleware.js"></script>
+</head>
+
+<body>
+    <div id="root">
+        <style>
+            body {
+                background-color: rgb(23, 42, 58);
+                font-family: Open Sans, sans-serif;
+                height: 90vh;
+            }
+
+            #root {
+                height: 100%;
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .loading {
+                font-size: 32px;
+                font-weight: 200;
+                color: rgba(255, 255, 255, .6);
+                margin-left: 20px;
+            }
+
+            img {
+                width: 78px;
+                height: 78px;
+            }
+
+            .title {
+                font-weight: 400;
+            }
+        </style>
+        <img src="https://cdn.jsdelivr.net/npm/graphql-playground-react@1.7.28/build/logo.png" alt="">
+        <div class="loading"> Loading
+            <span class="title">GraphQL Playground</span>
+        </div>
+    </div>
+    <script>
+        window.addEventListener('load', function (event) {
+            GraphQLPlayground.init(document.getElementById('root'), {
+                endpoint: '/graphql',
+                settings: {
+                    'editor.theme': 'dark',
+                    'editor.cursorShape': 'line',
+                    'editor.fontSize': 14,
+                    'editor.fontFamily': "'Source Code Pro', 'Consolas', 'Inconsolata', 'Droid Sans Mono', 'Monaco', monospace",
+                    'editor.reuseHeaders': true,
+                    'tracing.hideTracingResponse': true,
+                    'queryPlan.hideQueryPlanResponse': true,
+                    'editor.folding': true,
+                    'request.credentials': 'include',
+                },
+                tabs: [
+                    {
+                        endpoint: '/graphql',
+                        query: `# Добро пожаловать в GraphQL Playground для Lauf API! 🚀
+# 
+# Примеры запросов:
+
+# 1. Получить список пользователей
+query GetUsers {
+  users {
+    id
+    firstName
+    lastName
+    email
+    isActive
+    position
+    language
+  }
+}
+
+# 2. Получить список потоков
+query GetFlows {
+  flows {
+    id
+    title
+    description
+    status
+    category
+    totalSteps
+    estimatedDurationMinutes
+  }
+}
+
+# 3. Получить детальную информацию о потоке
+query GetFlowDetails($flowId: ID!) {
+  flowDetails(flowId: $flowId) {
+    id
+    title
+    description
+    steps {
+      id
+      title
+      description
+      order
+      estimatedDurationMinutes
+    }
+    statistics {
+      totalAssignments
+      activeAssignments
+      completedAssignments
+    }
+  }
+}
+
+# 4. Создать нового пользователя
+mutation CreateUser($input: CreateUserInput!) {
+  createUser(input: $input) {
+    id
+    firstName
+    lastName
+    email
+    isActive
+  }
+}`,
+                        variables: `{
+  "flowId": "00000000-0000-0000-0000-000000000000",
+  "input": {
+    "firstName": "Иван",
+    "lastName": "Иванов",
+    "email": "ivan@example.com",
+    "position": "Developer",
+    "telegramUserId": 123456789,
+    "language": "ru"
+  }
+}`,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                ]
+            })
+        })
+    </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ namespace Lauf.Application.Commands.Users;
 /// <summary>
 /// Команда обновления пользователя
 /// </summary>
-public class UpdateUserCommand : IRequest<UpdateUserCommandResult>
+public class UpdateUserCommand : IRequest<UserDto>
 {
     /// <summary>
     /// ID пользователя

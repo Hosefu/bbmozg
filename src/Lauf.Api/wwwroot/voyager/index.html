@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>GraphQL Voyager - Lauf API</title>
+    <style>
+        body { height: 100%; margin: 0; width: 100%; overflow: hidden; }
+        #voyager { height: 100vh; }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/react@16/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@16/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/graphql-voyager@1.0.0-rc.31/dist/voyager.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/graphql-voyager@1.0.0-rc.31/dist/voyager.css" />
+</head>
+<body>
+    <div id="voyager">Loading...</div>
+    <script>
+        function introspectionProvider(introspectionQuery) {
+            return fetch('/graphql', {
+                method: 'post',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({query: introspectionQuery}),
+            }).then(function (response) {
+                return response.json();
+            });
+        }
+
+        GraphQLVoyager.init(document.getElementById('voyager'), {
+            introspection: introspectionProvider,
+            displayOptions: {
+                rootType: 'Query',
+                skipRelay: false,
+                skipDeprecated: false,
+                showLeafFields: true,
+                sortByAlphabet: false,
+                hideRoot: false
+            }
+        });
+    </script>
+</body>
+</html>

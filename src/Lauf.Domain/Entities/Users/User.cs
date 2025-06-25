@@ -44,6 +44,16 @@ public class User
     public string? Email { get; set; }
 
     /// <summary>
+    /// Должность пользователя
+    /// </summary>
+    public string? Position { get; set; }
+
+    /// <summary>
+    /// Язык интерфейса
+    /// </summary>
+    public string Language { get; set; } = "ru";
+
+    /// <summary>
     /// Активен ли пользователь
     /// </summary>
     public bool IsActive { get; set; } = true;

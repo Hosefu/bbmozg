@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lauf API Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 60px;
+        }
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .apis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .api-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .api-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        .api-card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        .api-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn.secondary {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+        .features {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 40px;
+        }
+        .features h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        .feature {
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .feature p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .footer {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 40px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Lauf API</h1>
+            <p>Корпоративная система онбординга сотрудников</p>
+            <span class="status-badge">Online</span>
+        </div>
+
+        <div class="apis-grid">
+            <!-- REST API -->
+            <div class="api-card">
+                <h2>🌐 REST API</h2>
+                <p>Традиционный RESTful API для интеграции с внешними системами. Поддерживает стандартные HTTP методы и JSON формат.</p>
+                <a href="/swagger" class="btn">📖 Swagger Docs</a>
+                <a href="/swagger/v1/swagger.json" class="btn secondary">📄 OpenAPI Schema</a>
+            </div>
+
+            <!-- GraphQL API -->
+            <div class="api-card">
+                <h2>🔍 GraphQL API</h2>
+                <p>Современный GraphQL API с мощными возможностями запросов. Позволяет получать именно те данные, которые нужны.</p>
+                <a href="/playground" class="btn">🎮 Playground</a>
+                <a href="/voyager" class="btn secondary">🗺️ Schema Explorer</a>
+                <a href="/graphql" class="btn secondary">🔗 Endpoint</a>
+            </div>
+
+            <!-- SignalR Hubs -->
+            <div class="api-card">
+                <h2>⚡ Real-time API</h2>
+                <p>SignalR хабы для real-time уведомлений и отслеживания прогресса. Поддерживает WebSockets и long-polling.</p>
+                <a href="#signalr-docs" class="btn">📡 Hub Documentation</a>
+                <a href="/hubs/notifications" class="btn secondary">🔔 Notifications Hub</a>
+                <a href="/hubs/progress" class="btn secondary">📊 Progress Hub</a>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>✨ Возможности API</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">👥</div>
+                    <h3>Управление пользователями</h3>
+                    <p>Создание, обновление и управление профилями пользователей с ролями и правами доступа</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📚</div>
+                    <h3>Потоки обучения</h3>
+                    <p>Создание и управление образовательными потоками с шагами и компонентами</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Назначения</h3>
+                    <p>Назначение потоков пользователям с дедлайнами и отслеживанием прогресса</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Аналитика</h3>
+                    <p>Детальная отчетность по прогрессу и статистике прохождения</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔔</div>
+                    <h3>Уведомления</h3>
+                    <p>Real-time уведомления через SignalR и интеграция с Telegram</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🤝</div>
+                    <h3>Наставничество</h3>
+                    <p>Система назначения наставников и отслеживания прогресса подопечных</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>🔗 Быстрые ссылки</h2>
+            <div style="text-align: center;">
+                <a href="/health" class="btn">💚 Health Check</a>
+                <a href="/swagger/v1/swagger.json" class="btn">📜 OpenAPI Schema</a>
+                <a href="/graphql?sdl" class="btn">📋 GraphQL Schema</a>
+                <a href="https://github.com/Hosefu/bbmozg" class="btn secondary">📦 GitHub Repository</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🤖 Generated with <a href="https://claude.ai/code" style="color: #fff;">Claude Code</a></p>
+            <p>Lauf API © 2024 | Powered by ASP.NET Core 9.0</p>
+        </div>
+    </div>
+
+    <script>
+        // Проверяем статус API
+        fetch('/health')
+            .then(response => {
+                const badge = document.querySelector('.status-badge');
+                if (response.ok) {
+                    badge.textContent = 'Online';
+                    badge.style.background = '#28a745';
+                } else {
+                    badge.textContent = 'Degraded';
+                    badge.style.background = '#ffc107';
+                }
+            })
+            .catch(() => {
+                const badge = document.querySelector('.status-badge');
+                badge.textContent = 'Offline';
+                badge.style.background = '#dc3545';
+            });
+    </script>
+</body>
+</html>

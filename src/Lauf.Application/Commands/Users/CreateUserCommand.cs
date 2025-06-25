@@ -6,12 +6,17 @@ namespace Lauf.Application.Commands.Users;
 /// <summary>
 /// Команда создания пользователя
 /// </summary>
-public class CreateUserCommand : IRequest<CreateUserCommandResult>
+public class CreateUserCommand : IRequest<UserDto>
 {
     /// <summary>
-    /// Telegram ID пользователя
+    /// Имя пользователя
     /// </summary>
-    public long TelegramId { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Фамилия пользователя
+    /// </summary>
+    public string LastName { get; set; } = string.Empty;
 
     /// <summary>
     /// Email пользователя
@@ -19,33 +24,18 @@ public class CreateUserCommand : IRequest<CreateUserCommandResult>
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// Полное имя пользователя
-    /// </summary>
-    public string FullName { get; set; } = string.Empty;
-
-    /// <summary>
     /// Должность пользователя
     /// </summary>
     public string? Position { get; set; }
+
+    /// <summary>
+    /// Telegram ID пользователя
+    /// </summary>
+    public long TelegramUserId { get; set; }
+
+    /// <summary>
+    /// Язык интерфейса
+    /// </summary>
+    public string Language { get; set; } = "ru";
 }
 
-/// <summary>
-/// Результат команды создания пользователя
-/// </summary>
-public class CreateUserCommandResult
-{
-    /// <summary>
-    /// Созданный пользователь
-    /// </summary>
-    public UserDto User { get; set; } = null!;
-
-    /// <summary>
-    /// Успешность операции
-    /// </summary>
-    public bool Success { get; set; }
-
-    /// <summary>
-    /// Сообщение об ошибке
-    /// </summary>
-    public string? ErrorMessage { get; set; }
-}
