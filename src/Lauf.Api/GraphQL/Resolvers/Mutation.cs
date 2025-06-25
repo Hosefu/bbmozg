@@ -12,7 +12,6 @@ namespace Lauf.Api.GraphQL.Resolvers;
 /// <summary>
 /// GraphQL Mutation resolver
 /// </summary>
-[MutationType]
 public class Mutation
 {
     /// <summary>

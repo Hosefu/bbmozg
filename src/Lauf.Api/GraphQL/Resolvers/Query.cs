@@ -11,7 +11,6 @@ namespace Lauf.Api.GraphQL.Resolvers;
 /// <summary>
 /// GraphQL Query resolver
 /// </summary>
-[QueryType]
 public class Query
 {
     /// <summary>
