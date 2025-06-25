@@ -25,7 +25,7 @@ public record DeadlineCalculation
     /// <summary>
     /// Рабочие дни недели
     /// </summary>
-    public List<Enums.DayOfWeek> WorkingDaysOfWeek { get; }
+    public List<Lauf.Domain.Enums.DayOfWeek> WorkingDaysOfWeek { get; }
 
     /// <summary>
     /// Праздничные дни
@@ -42,7 +42,7 @@ public record DeadlineCalculation
     public DeadlineCalculation(
         int workingDays,
         DateTime startDate,
-        List<Enums.DayOfWeek>? workingDaysOfWeek = null,
+        List<Lauf.Domain.Enums.DayOfWeek>? workingDaysOfWeek = null,
         List<DateTime>? holidays = null)
     {
         if (workingDays <= 0)
@@ -71,7 +71,7 @@ public record DeadlineCalculation
             currentDate = currentDate.AddDays(1);
 
             // Проверяем, является ли день рабочим
-            var dayOfWeek = (Enums.DayOfWeek)((int)currentDate.DayOfWeek == 0 ? 7 : (int)currentDate.DayOfWeek);
+            var dayOfWeek = (Lauf.Domain.Enums.DayOfWeek)((int)currentDate.DayOfWeek == 0 ? 7 : (int)currentDate.DayOfWeek);
             var isWorkingDay = WorkingDaysOfWeek.Contains(dayOfWeek);
             var isHoliday = Holidays.Any(h => h.Date == currentDate.Date);
 
@@ -87,15 +87,15 @@ public record DeadlineCalculation
     /// <summary>
     /// Получить стандартные рабочие дни (пн-пт)
     /// </summary>
-    private static List<Enums.DayOfWeek> GetDefaultWorkingDays()
+    private static List<Lauf.Domain.Enums.DayOfWeek> GetDefaultWorkingDays()
     {
-        return new List<Enums.DayOfWeek>
+        return new List<Lauf.Domain.Enums.DayOfWeek>
         {
-            Enums.DayOfWeek.Monday,
-            Enums.DayOfWeek.Tuesday,
-            Enums.DayOfWeek.Wednesday,
-            Enums.DayOfWeek.Thursday,
-            Enums.DayOfWeek.Friday
+            Lauf.Domain.Enums.DayOfWeek.Monday,
+            Lauf.Domain.Enums.DayOfWeek.Tuesday,
+            Lauf.Domain.Enums.DayOfWeek.Wednesday,
+            Lauf.Domain.Enums.DayOfWeek.Thursday,
+            Lauf.Domain.Enums.DayOfWeek.Friday
         };
     }
 

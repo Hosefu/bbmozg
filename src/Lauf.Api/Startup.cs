@@ -1,4 +1,17 @@
+using Microsoft.EntityFrameworkCore;
 using Lauf.Shared.Extensions;
+using Lauf.Application.Commands.FlowAssignment;
+using Lauf.Application.Services.Interfaces;
+using Lauf.Domain.Interfaces;
+using Lauf.Domain.Interfaces.Repositories;
+using Lauf.Infrastructure.Persistence;
+using Lauf.Infrastructure.Persistence.Repositories;
+using Lauf.Infrastructure.Persistence.Interceptors;
+using Lauf.Infrastructure.Services;
+using Lauf.Infrastructure.ExternalServices.FileStorage;
+using Lauf.Infrastructure.ExternalServices.Cache;
+using Lauf.Api.Services;
+using MediatR;
 
 namespace Lauf.Api;
 
@@ -48,11 +61,61 @@ public class Startup
         // Health checks для мониторинга состояния приложения
         services.AddHealthChecks();
 
-        // TODO: Настройка GraphQL (HotChocolate) - будет добавлено в следующих этапах
-        // TODO: Настройка аутентификации и авторизации - будет добавлено в следующих этапах  
-        // TODO: Настройка SignalR для real-time коммуникации - будет добавлено в следующих этапах
-        // TODO: Настройка Redis для кэширования - будет добавлено в следующих этапах
-        // TODO: Настройка Hangfire для фоновых задач - будет добавлено в следующих этапах
+        // Настройка Entity Framework
+        services.AddDbContext<ApplicationDbContext>(options =>
+        {
+            options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
+        });
+
+        // Регистрация перехватчиков
+        services.AddScoped<AuditInterceptor>();
+        services.AddScoped<DomainEventInterceptor>();
+
+        // Регистрация MediatR
+        services.AddMediatR(typeof(AssignFlowCommand).Assembly);
+
+        // Регистрация репозиториев (этап 8)
+        services.AddScoped<IUserRepository, SimpleUserRepository>();
+        services.AddScoped<IFlowRepository, FlowRepository>();
+        services.AddScoped<IFlowAssignmentRepository, FlowAssignmentRepository>();
+
+        // Регистрация Unit of Work
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Регистрация инфраструктурных сервисов (этап 8)
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IDateTimeService, DateTimeService>();
+
+        // Регистрация внешних сервисов (этап 8)
+        services.AddScoped<IFileStorageService, LocalFileStorageService>();
+        services.AddMemoryCache();
+        services.AddScoped<ICacheService, InMemoryCacheService>();
+
+        // GraphQL настройка (этап 9)
+        services.AddGraphQLServer()
+            .AddQueryType<Lauf.Api.GraphQL.Resolvers.Query>()
+            .AddMutationType<Lauf.Api.GraphQL.Resolvers.Mutation>()
+            .AddType<Lauf.Api.GraphQL.Types.UserType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowDetailsType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowStepType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowStepDetailsType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowStepComponentType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowStepComponentDetailsType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowAssignmentType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowSettingsType>()
+            .AddType<Lauf.Api.GraphQL.Types.FlowStatisticsType>()
+            .AddType<Lauf.Api.GraphQL.Types.UserFlowProgressType>()
+            .AddType<Lauf.Api.GraphQL.Types.ComponentProgressType>()
+            .AddType<Lauf.Api.GraphQL.Types.AssignFlowResultType>()
+            .AddProjections()
+            .AddFiltering()
+            .AddSorting();
+
+        // SignalR настройка (этап 9)
+        services.AddSignalR();
+        services.AddScoped<Lauf.Api.Services.SignalRNotificationService>();
     }
 
     /// <summary>
@@ -101,8 +164,12 @@ public class Startup
         {
             endpoints.MapControllers();
             
-            // TODO: Добавить GraphQL endpoint - будет настроено в следующих этапах
-            // TODO: Добавить SignalR hubs - будет настроено в следующих этапах
+            // GraphQL endpoint (этап 9)
+            endpoints.MapGraphQL("/graphql");
+            
+            // SignalR hubs (этап 9)
+            endpoints.MapHub<Lauf.Api.Hubs.NotificationHub>("/hubs/notifications");
+            endpoints.MapHub<Lauf.Api.Hubs.ProgressHub>("/hubs/progress");
         });
     }
 }

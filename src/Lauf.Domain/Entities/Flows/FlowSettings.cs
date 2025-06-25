@@ -122,11 +122,10 @@ public class FlowSettings
             deadline = AdjustForWeekends(deadline);
         }
 
-        // TODO: Реализовать исключение праздников при наличии сервиса календаря
-        // if (ExcludeHolidays)
-        // {
-        //     deadline = AdjustForHolidays(deadline);
-        // }
+        if (ExcludeHolidays)
+        {
+            deadline = AdjustForHolidays(deadline);
+        }
 
         return deadline;
     }
@@ -143,6 +142,50 @@ public class FlowSettings
             date = date.AddDays(1);
         }
         return date;
+    }
+
+    /// <summary>
+    /// Корректирует дату с учетом праздничных дней
+    /// </summary>
+    /// <param name="date">Исходная дата</param>
+    /// <returns>Скорректированная дата</returns>
+    private DateTime AdjustForHolidays(DateTime date)
+    {
+        // Основные российские праздники
+        var holidays = GetRussianHolidays(date.Year);
+        
+        while (holidays.Contains(date.Date))
+        {
+            date = date.AddDays(1);
+        }
+        
+        return date;
+    }
+
+    /// <summary>
+    /// Получает список российских праздников для указанного года
+    /// </summary>
+    /// <param name="year">Год</param>
+    /// <returns>Список праздников</returns>
+    private HashSet<DateTime> GetRussianHolidays(int year)
+    {
+        return new HashSet<DateTime>
+        {
+            new DateTime(year, 1, 1),  // Новый год
+            new DateTime(year, 1, 2),  // Новогодние каникулы
+            new DateTime(year, 1, 3),  // Новогодние каникулы
+            new DateTime(year, 1, 4),  // Новогодние каникулы
+            new DateTime(year, 1, 5),  // Новогодние каникулы
+            new DateTime(year, 1, 6),  // Новогодние каникулы
+            new DateTime(year, 1, 7),  // Рождество
+            new DateTime(year, 1, 8),  // Новогодние каникулы
+            new DateTime(year, 2, 23), // День защитника Отечества
+            new DateTime(year, 3, 8),  // Международный женский день
+            new DateTime(year, 5, 1),  // Праздник Весны и Труда
+            new DateTime(year, 5, 9),  // День Победы
+            new DateTime(year, 6, 12), // День России
+            new DateTime(year, 11, 4)  // День народного единства
+        };
     }
 
     /// <summary>

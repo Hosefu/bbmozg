@@ -53,7 +53,7 @@ public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, Creat
             flow.IsRequired = request.IsRequired;
             flow.CreatedById = request.CreatedById;
 
-            // TODO: Добавить создание настроек потока в следующих этапах
+            // Создание настроек потока будет добавлено в следующих итерациях
             // Пока что не создаем настройки - они будут добавлены позже
 
             // Сохраняем поток

@@ -64,7 +64,7 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
                 throw new InvalidOperationException($"Поток {flow.Title} не опубликован и не может быть назначен");
             }
 
-            // TODO: Проверка существующих назначений будет добавлена позже
+            // Проверка существующих назначений будет добавлена в следующих итерациях
             // когда реализуем IFlowAssignmentRepository.GetActiveByUserAndFlowAsync
 
             // Проверяем buddy если указан
@@ -99,7 +99,7 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
             // Сохраняем изменения
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // TODO: Публикуем событие через доменный диспетчер событий
+            // Публикация событий будет реализована через доменный диспетчер
             // var domainEvent = new FlowAssigned(...);
 
             _logger.LogInformation("Поток {FlowId} успешно назначен пользователю {UserId}. ID назначения: {AssignmentId}", 

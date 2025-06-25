@@ -18,7 +18,7 @@ public class FlowMappingProfile : Profile
             .ForMember(dest => dest.TotalSteps, opt => opt.MapFrom(src => src.TotalSteps))
             .ForMember(dest => dest.EstimatedDurationMinutes, opt => opt.MapFrom(src => src.EstimatedDurationMinutes));
 
-        // TODO: Маппинг FlowSettings -> FlowSettingsDto будет добавлен позже
+        // Маппинг FlowSettings -> FlowSettingsDto будет добавлен когда понадобится в API
         // CreateMap<FlowSettings, FlowSettingsDto>();
 
         // Маппинг FlowStep -> FlowStepDto

@@ -44,6 +44,22 @@ public interface IFlowAssignmentRepository
     Task<IReadOnlyList<FlowAssignment>> GetByUserAsync(Guid userId, int skip = 0, int take = 50, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Получает назначения пользователя (все)
+    /// </summary>
+    /// <param name="userId">Идентификатор пользователя</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список назначений</returns>
+    Task<IEnumerable<FlowAssignment>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает назначения по потоку
+    /// </summary>
+    /// <param name="flowId">Идентификатор потока</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список назначений</returns>
+    Task<IEnumerable<FlowAssignment>> GetByFlowIdAsync(Guid flowId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Получает назначения по статусу
     /// </summary>
     /// <param name="status">Статус назначения</param>

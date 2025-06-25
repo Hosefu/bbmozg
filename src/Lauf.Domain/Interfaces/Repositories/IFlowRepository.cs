@@ -25,6 +25,14 @@ public interface IFlowRepository
     Task<Flow?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Получает поток с шагами
+    /// </summary>
+    /// <param name="id">Идентификатор потока</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Поток с шагами или null</returns>
+    Task<Flow?> GetByIdWithStepsAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Получает поток по названию
     /// </summary>
     /// <param name="title">Название потока</param>
