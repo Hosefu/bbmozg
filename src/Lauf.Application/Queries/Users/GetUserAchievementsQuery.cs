@@ -2,6 +2,7 @@ using MediatR;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Domain.Enums;
 using Lauf.Domain.Entities.Users;
+using Lauf.Application.Services;
 
 namespace Lauf.Application.Queries.Users;
 
@@ -86,13 +87,16 @@ public class GetUserAchievementsQueryHandler : IRequestHandler<GetUserAchievemen
 {
     private readonly IAchievementRepository _achievementRepository;
     private readonly IUserAchievementRepository _userAchievementRepository;
+    private readonly AchievementCalculationService _achievementCalculationService;
 
     public GetUserAchievementsQueryHandler(
         IAchievementRepository achievementRepository,
-        IUserAchievementRepository userAchievementRepository)
+        IUserAchievementRepository userAchievementRepository,
+        AchievementCalculationService achievementCalculationService)
     {
         _achievementRepository = achievementRepository ?? throw new ArgumentNullException(nameof(achievementRepository));
         _userAchievementRepository = userAchievementRepository ?? throw new ArgumentNullException(nameof(userAchievementRepository));
+        _achievementCalculationService = achievementCalculationService ?? throw new ArgumentNullException(nameof(achievementCalculationService));
     }
 
     /// <summary>
@@ -113,33 +117,30 @@ public class GetUserAchievementsQueryHandler : IRequestHandler<GetUserAchievemen
         var userAchievements = await _userAchievementRepository.GetByUserIdAsync(request.UserId, cancellationToken);
         var earnedAchievementIds = userAchievements.ToDictionary(ua => ua.AchievementId, ua => ua.EarnedAt);
 
-        var result = allAchievements.Select(achievement => new UserAchievementDto
+        var result = new List<UserAchievementDto>();
+        
+        foreach (var achievement in allAchievements)
         {
-            AchievementId = achievement.Id,
-            Title = achievement.Title,
-            Description = achievement.Description,
-            Rarity = achievement.Rarity,
-            IconUrl = achievement.IconUrl,
-            EarnedAt = earnedAchievementIds.GetValueOrDefault(achievement.Id),
-            Progress = CalculateProgress(achievement, request.UserId) // Прогресс будет рассчитываться по критериям достижения
-        });
+            var progress = await _achievementCalculationService.CalculateProgressAsync(achievement, request.UserId, cancellationToken);
+            
+            result.Add(new UserAchievementDto
+            {
+                AchievementId = achievement.Id,
+                Title = achievement.Title,
+                Description = achievement.Description,
+                Rarity = achievement.Rarity,
+                IconUrl = achievement.IconUrl,
+                EarnedAt = earnedAchievementIds.GetValueOrDefault(achievement.Id),
+                Progress = progress
+            });
+        }
 
         // Фильтруем только полученные если указано
         if (request.OnlyEarned)
         {
-            result = result.Where(a => a.IsEarned);
+            result = result.Where(a => a.IsEarned).ToList();
         }
 
         return result.OrderByDescending(a => a.EarnedAt).ThenBy(a => a.Title);
-    }
-
-    /// <summary>
-    /// Расчет прогресса к получению достижения
-    /// </summary>
-    private decimal CalculateProgress(Achievement achievement, Guid userId)
-    {
-        // Базовая реализация - прогресс будет рассчитываться на основе критериев
-        // Для простоты возвращаем 0
-        return 0;
     }
 }

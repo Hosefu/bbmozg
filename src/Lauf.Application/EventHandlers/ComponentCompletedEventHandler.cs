@@ -2,7 +2,10 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Lauf.Domain.Events;
 using Lauf.Domain.Interfaces.Repositories;
+using Lauf.Domain.Interfaces.Services;
+using Lauf.Domain.Services;
 using Lauf.Application.EventHandlers.Events;
+using Lauf.Application.Services;
 
 namespace Lauf.Application.EventHandlers;
 
@@ -14,17 +17,29 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
     private readonly ILogger<ComponentCompletedEventHandler> _logger;
     private readonly IUserProgressRepository _progressRepository;
     private readonly IFlowAssignmentRepository _assignmentRepository;
+    private readonly INotificationService _notificationService;
+    private readonly ProgressCalculationService _progressCalculationService;
+    private readonly AchievementCalculationService _achievementCalculationService;
+    private readonly IUserAchievementRepository _userAchievementRepository;
     private readonly IMediator _mediator;
 
     public ComponentCompletedEventHandler(
         ILogger<ComponentCompletedEventHandler> logger,
         IUserProgressRepository progressRepository,
         IFlowAssignmentRepository assignmentRepository,
+        INotificationService notificationService,
+        ProgressCalculationService progressCalculationService,
+        AchievementCalculationService achievementCalculationService,
+        IUserAchievementRepository userAchievementRepository,
         IMediator mediator)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _progressRepository = progressRepository ?? throw new ArgumentNullException(nameof(progressRepository));
         _assignmentRepository = assignmentRepository ?? throw new ArgumentNullException(nameof(assignmentRepository));
+        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
+        _progressCalculationService = progressCalculationService ?? throw new ArgumentNullException(nameof(progressCalculationService));
+        _achievementCalculationService = achievementCalculationService ?? throw new ArgumentNullException(nameof(achievementCalculationService));
+        _userAchievementRepository = userAchievementRepository ?? throw new ArgumentNullException(nameof(userAchievementRepository));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
@@ -61,6 +76,9 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
                 await CheckStepUnlockAsync(domainEvent, cancellationToken);
             }
 
+            // Отправляем уведомление о завершении компонента
+            await SendComponentCompletedNotificationAsync(domainEvent, cancellationToken);
+
             // Проверяем достижения
             await CheckAchievementsAsync(domainEvent, cancellationToken);
 
@@ -82,13 +100,51 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
     /// </summary>
     private async Task UpdateUserProgressAsync(ComponentCompleted @event, CancellationToken cancellationToken)
     {
-        // Обновление прогресса будет реализовано через UserProgress сущность
-        _logger.LogInformation(
-            "Обновление прогресса пользователя. UserId: {UserId}, ComponentSnapshotId: {ComponentSnapshotId}",
-            @event.UserId,
-            @event.ComponentSnapshotId);
+        try
+        {
+            _logger.LogInformation(
+                "Обновление прогресса пользователя. UserId: {UserId}, ComponentSnapshotId: {ComponentSnapshotId}",
+                @event.UserId,
+                @event.ComponentSnapshotId);
 
-        await Task.CompletedTask;
+            // Завершаем компонент и пересчитываем связанный прогресс
+            var result = await _progressCalculationService.CompleteComponentAsync(
+                @event.ComponentSnapshotId,
+                @event.UserId,
+                @event.TimeSpentMinutes,
+                cancellationToken);
+
+            _logger.LogInformation(
+                "Прогресс обновлен. Компонент завершен: {ComponentCompleted}, Шаг завершен: {StepCompleted}, Поток завершен: {FlowCompleted}",
+                result.ComponentCompleted,
+                result.StepCompleted,
+                result.FlowCompleted);
+
+            // Если шаг завершен, отправляем уведомление
+            if (result.StepCompleted && result.StepId.HasValue)
+            {
+                await NotifyStepCompletedAsync(@event.UserId, result.StepId.Value, cancellationToken);
+            }
+
+            // Если разблокирован следующий шаг, отправляем уведомление
+            if (result.NextStepUnlocked && result.NextStepId.HasValue)
+            {
+                await NotifyStepUnlockedAsync(@event.UserId, result.NextStepId.Value, cancellationToken);
+            }
+
+            // Если поток завершен, отправляем уведомление
+            if (result.FlowCompleted && result.FlowId.HasValue)
+            {
+                await NotifyFlowCompletedAsync(@event.UserId, @event.AssignmentId, result.FlowId.Value, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка обновления прогресса пользователя. UserId: {UserId}, ComponentSnapshotId: {ComponentSnapshotId}",
+                @event.UserId, @event.ComponentSnapshotId);
+            // Не пробрасываем исключение, чтобы не нарушить основной процесс
+        }
     }
 
     /// <summary>
@@ -120,15 +176,168 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
     }
 
     /// <summary>
+    /// Отправка уведомления о завершении компонента
+    /// </summary>
+    private async Task SendComponentCompletedNotificationAsync(ComponentCompleted @event, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Получаем информацию о компоненте и потоке
+            // Пока используем заглушки для названий
+            var componentTitle = $"Компонент {@event.ComponentSnapshotId}";
+            var flowTitle = "Поток обучения";
+
+            await _notificationService.NotifyComponentCompletedAsync(
+                @event.UserId,
+                componentTitle,
+                flowTitle,
+                @event.ComponentSnapshotId,
+                cancellationToken);
+
+            _logger.LogInformation(
+                "Уведомление о завершении компонента отправлено пользователю {UserId}",
+                @event.UserId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка отправки уведомления о завершении компонента. UserId: {UserId}",
+                @event.UserId);
+            // Не пробрасываем исключение
+        }
+    }
+
+    /// <summary>
+    /// Уведомление о завершении шага
+    /// </summary>
+    private async Task NotifyStepCompletedAsync(Guid userId, Guid stepId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Заглушка для названия шага - в реальности получаем из снапшота
+            var stepTitle = $"Шаг {stepId}";
+            var flowTitle = "Поток обучения";
+
+            _logger.LogInformation(
+                "Отправка уведомления о завершении шага {StepId} пользователю {UserId}",
+                stepId, userId);
+
+            await Task.CompletedTask; // TODO: Реализовать уведомления о завершении шага
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка отправки уведомления о завершении шага");
+        }
+    }
+
+    /// <summary>
+    /// Уведомление о разблокировке следующего шага
+    /// </summary>
+    private async Task NotifyStepUnlockedAsync(Guid userId, Guid stepId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Заглушка для названия шага - в реальности получаем из снапшота
+            var stepTitle = $"Шаг {stepId}";
+            var flowTitle = "Поток обучения";
+
+            await _notificationService.NotifyStepUnlockedAsync(
+                userId, stepTitle, flowTitle, stepId, cancellationToken);
+
+            _logger.LogInformation(
+                "Отправлено уведомление о разблокировке шага {StepId} пользователю {UserId}",
+                stepId, userId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка отправки уведомления о разблокировке шага");
+        }
+    }
+
+    /// <summary>
+    /// Уведомление о завершении потока
+    /// </summary>
+    private async Task NotifyFlowCompletedAsync(Guid userId, Guid assignmentId, Guid flowId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Заглушка для названия потока - в реальности получаем из репозитория
+            var flowTitle = "Поток обучения";
+
+            _logger.LogInformation(
+                "Отправка уведомления о завершении потока {FlowId} пользователю {UserId}",
+                flowId, userId);
+
+            await Task.CompletedTask; // TODO: Реализовать уведомления о завершении потока
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка отправки уведомления о завершении потока");
+        }
+    }
+
+    /// <summary>
     /// Проверка достижений
     /// </summary>
     private async Task CheckAchievementsAsync(ComponentCompleted @event, CancellationToken cancellationToken)
     {
-        // Проверка достижений будет реализована в системе достижений
-        _logger.LogInformation(
-            "Проверка достижений пользователя. UserId: {UserId}",
-            @event.UserId);
+        try
+        {
+            _logger.LogInformation(
+                "Проверка достижений пользователя. UserId: {UserId}",
+                @event.UserId);
 
-        await Task.CompletedTask; // Заглушка
+            // Получаем новые достижения
+            var newAchievements = await _achievementCalculationService.CheckNewAchievementsAsync(@event.UserId, cancellationToken);
+
+            foreach (var achievement in newAchievements)
+            {
+                // TODO: Временно закомментируем до реализации IUserAchievementRepository
+                _logger.LogInformation(
+                    "Обнаружено достижение '{AchievementTitle}' для пользователя {UserId}",
+                    achievement.Title, @event.UserId);
+                
+                /*
+                // Проверяем, что достижение еще не получено
+                var existingAchievement = await _userAchievementRepository.GetByUserAndAchievementAsync(@event.UserId, achievement.Id, cancellationToken);
+                if (existingAchievement == null)
+                {
+                    // Создаем новое достижение пользователя
+                    var userAchievement = new Domain.Entities.Users.UserAchievement
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = @event.UserId,
+                        AchievementId = achievement.Id,
+                        EarnedAt = DateTime.UtcNow
+                    };
+
+                    await _userAchievementRepository.AddAsync(userAchievement, cancellationToken);
+
+                    // Отправляем уведомление о новом достижении
+                    await _notificationService.NotifyAchievementEarnedAsync(
+                        @event.UserId,
+                        achievement.Title,
+                        achievement.Description,
+                        achievement.Id,
+                        cancellationToken);
+                */
+
+                    // _logger.LogInformation(
+                    //     "Получено новое достижение '{AchievementTitle}' пользователем {UserId}",
+                    //     achievement.Title, @event.UserId);
+                // }
+            }
+
+            _logger.LogInformation(
+                "Проверка достижений завершена. Найдено новых достижений: {NewAchievementsCount}",
+                newAchievements.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка проверки достижений пользователя. UserId: {UserId}",
+                @event.UserId);
+            // Не пробрасываем исключение, чтобы не нарушить основной процесс
+        }
     }
 }

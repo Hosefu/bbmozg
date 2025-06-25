@@ -4,9 +4,11 @@ using Lauf.Domain.Entities.Users;
 using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Entities.Snapshots;
 using Lauf.Domain.Entities.Progress;
-// Компоненты, уведомления, достижения и системные сущности будут добавлены в этапе 4
+using Lauf.Domain.Entities.Notifications;
+using Lauf.Domain.ValueObjects;
 using Lauf.Infrastructure.Persistence.Configurations;
 using Lauf.Infrastructure.Persistence.Interceptors;
+using Lauf.Infrastructure.Persistence.Seeds;
 
 namespace Lauf.Infrastructure.Persistence;
 
@@ -54,7 +56,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<FlowStepSnapshot> FlowStepSnapshots { get; set; } = null!;
     public DbSet<ComponentSnapshot> ComponentSnapshots { get; set; } = null!;
 
-    // Components, Notifications, Achievements, System будут добавлены в следующих итерациях
+    // Progress
+    public DbSet<UserProgress> UserProgress { get; set; } = null!;
+
+    // Notifications
+    public DbSet<Notification> Notifications { get; set; } = null!;
 
     /// <summary>
     /// Настройка модели базы данных
@@ -111,6 +117,24 @@ public class ApplicationDbContext : DbContext
         finally
         {
             await transaction.DisposeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Инициализация seed данных
+    /// </summary>
+    public async Task SeedDataAsync()
+    {
+        try
+        {
+            // Seeding достижений
+            await AchievementSeeder.SeedAsync(this);
+        }
+        catch (Exception)
+        {
+            // Логируем ошибку, но не прерываем работу приложения
+            // В production здесь должно быть более детальное логирование
+            throw;
         }
     }
 }

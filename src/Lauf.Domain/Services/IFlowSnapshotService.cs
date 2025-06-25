@@ -34,6 +34,14 @@ public interface IFlowSnapshotService
     Task<FlowSnapshot?> GetFlowSnapshotAsync(Guid snapshotId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Получить существующий снапшот потока или создать новый
+    /// </summary>
+    /// <param name="flowId">ID потока</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <returns>Снапшот потока</returns>
+    Task<FlowSnapshot> GetOrCreateFlowSnapshotAsync(Guid flowId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Получить снапшот потока по назначению
     /// </summary>
     /// <param name="assignmentId">ID назначения потока</param>

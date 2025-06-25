@@ -1,4 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using FluentValidation;
+using MediatR;
+using Lauf.Application.Behaviors;
+using Lauf.Application.Services;
+using Lauf.Domain.Interfaces.Services;
 
 namespace Lauf.Application;
 
@@ -16,14 +22,29 @@ public static class ServiceCollectionExtensions
     /// <returns>Коллекцию сервисов для цепочки вызовов</returns>
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        // Пока базовая реализация - полная настройка будет в следующих этапах
-        // Здесь будут регистрироваться:
-        // - MediatR для CQRS
-        // - AutoMapper для маппинга
-        // - FluentValidation для валидации
-        // - Pipeline behaviors
-        // - Event handlers
-        
+        var assembly = Assembly.GetExecutingAssembly();
+
+        // MediatR для CQRS паттерна
+        services.AddMediatR(assembly);
+
+        // AutoMapper для маппинга между слоями
+        services.AddAutoMapper(assembly);
+
+        // FluentValidation для валидации команд и запросов
+        services.AddValidatorsFromAssembly(assembly);
+
+        // Pipeline behaviors
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+        // Application сервисы
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<Services.AchievementCalculationService>();
+
+        // Background Jobs
+        services.AddScoped<BackgroundJobs.DailyReminderJob>();
+        services.AddScoped<BackgroundJobs.DeadlineCheckJob>();
+
         return services;
     }
 }

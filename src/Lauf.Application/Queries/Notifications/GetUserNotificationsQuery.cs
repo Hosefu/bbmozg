@@ -1,5 +1,7 @@
 using MediatR;
+using AutoMapper;
 using Lauf.Domain.Enums;
+using Lauf.Domain.Interfaces.Repositories;
 
 namespace Lauf.Application.Queries.Notifications;
 
@@ -104,11 +106,15 @@ public class NotificationDto
 /// </summary>
 public class GetUserNotificationsQueryHandler : IRequestHandler<GetUserNotificationsQuery, IEnumerable<NotificationDto>>
 {
-    // Система уведомлений будет реализована в следующих итерациях
+    private readonly INotificationRepository _notificationRepository;
+    private readonly IMapper _mapper;
     
-    public GetUserNotificationsQueryHandler()
+    public GetUserNotificationsQueryHandler(
+        INotificationRepository notificationRepository,
+        IMapper mapper)
     {
-        // Базовая реализация
+        _notificationRepository = notificationRepository;
+        _mapper = mapper;
     }
 
     /// <summary>
@@ -116,9 +122,22 @@ public class GetUserNotificationsQueryHandler : IRequestHandler<GetUserNotificat
     /// </summary>
     public async Task<IEnumerable<NotificationDto>> Handle(GetUserNotificationsQuery request, CancellationToken cancellationToken)
     {
-        // Получение уведомлений будет реализовано через NotificationRepository
-        await Task.Delay(1, cancellationToken);
-        
-        return new List<NotificationDto>();
+        var includeRead = !request.OnlyUnread;
+        var notifications = await _notificationRepository.GetUserNotificationsAsync(
+            request.UserId, 
+            includeRead, 
+            request.Take,
+            cancellationToken);
+
+        // Если указан тип уведомлений, фильтруем
+        if (request.Type.HasValue)
+        {
+            notifications = notifications.Where(n => n.Type == request.Type.Value).ToList();
+        }
+
+        // Применяем пагинацию
+        var pagedNotifications = notifications.Skip(request.Skip).Take(request.Take).ToList();
+
+        return _mapper.Map<IEnumerable<NotificationDto>>(pagedNotifications);
     }
 }

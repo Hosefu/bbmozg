@@ -2,21 +2,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Lauf.Shared.Extensions;
-using Lauf.Application.Commands.FlowAssignment;
-using Lauf.Application.Services.Interfaces;
-using Lauf.Domain.Interfaces;
-using Lauf.Domain.Interfaces.Repositories;
+using Lauf.Application;
+using Lauf.Infrastructure;
+using Lauf.Infrastructure.BackgroundJobs;
 using Lauf.Infrastructure.Persistence;
-using Lauf.Infrastructure.Persistence.Repositories;
-using Lauf.Infrastructure.Persistence.Interceptors;
-using Lauf.Infrastructure.Services;
-using Lauf.Infrastructure.ExternalServices.FileStorage; 
-using Lauf.Infrastructure.ExternalServices.Cache;
-using Lauf.Infrastructure.ExternalServices.BackgroundJobs;
-using Lauf.Domain.Interfaces.ExternalServices;
 using Lauf.Api.Services;
-using MediatR;
 
 namespace Lauf.Api;
 
@@ -90,46 +83,12 @@ public class Startup
 
         services.AddAuthorization();
 
-        // Настройка Entity Framework
-        services.AddDbContext<ApplicationDbContext>(options =>
-        {
-            options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection"));
-        });
+        // Регистрация слоев приложения
+        services.AddApplicationServices();
+        services.AddInfrastructureServices(_configuration);
 
-        // Регистрация перехватчиков
-        services.AddScoped<AuditInterceptor>();
-        services.AddScoped<DomainEventInterceptor>();
-
-        // Регистрация MediatR - только основные обработчики команд
-        services.AddMediatR(typeof(AssignFlowCommand).Assembly);
-        
-        // Регистрация AutoMapper
-        services.AddAutoMapper(typeof(AssignFlowCommand).Assembly);
-
-        // Регистрация репозиториев (этап 8)
-        services.AddScoped<IUserRepository, SimpleUserRepository>();
-        services.AddScoped<IFlowRepository, FlowRepository>();
-        services.AddScoped<IFlowAssignmentRepository, FlowAssignmentRepository>();
-        
-        // Полноценные репозитории
-        services.AddScoped<Domain.Interfaces.Repositories.IAchievementRepository, Infrastructure.Persistence.Repositories.AchievementRepository>();
-        services.AddScoped<Domain.Interfaces.Repositories.IUserAchievementRepository, Infrastructure.Persistence.Repositories.UserAchievementRepository>();
-        services.AddScoped<Domain.Interfaces.Repositories.IUserProgressRepository, Infrastructure.Persistence.Repositories.UserProgressRepository>();
-        services.AddScoped<Domain.Services.FlowSnapshotService>();
-
-        // Регистрация Unit of Work
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        // Регистрация инфраструктурных сервисов (этап 8)
+        // Дополнительные API сервисы
         services.AddHttpContextAccessor();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
-        services.AddScoped<IDateTimeService, DateTimeService>();
-
-        // Регистрация внешних сервисов (этап 8)  
-        services.AddScoped<IFileStorageService, LocalFileStorageService>();
-        services.AddMemoryCache();
-        services.AddScoped<ICacheService, InMemoryCacheService>();
-        services.AddScoped<IBackgroundJobService, MemoryBackgroundJobService>();
 
         // GraphQL настройка (этап 9)
         services.AddGraphQLServer()
@@ -156,11 +115,21 @@ public class Startup
         services.AddSignalR();
         services.AddScoped<Lauf.Api.Services.SignalRNotificationService>();
         
-        // Telegram авторизация
-        services.AddScoped<Lauf.Api.Services.TelegramAuthValidator>(provider =>
+        // Hangfire configuration для background jobs
+        services.AddHangfire(configuration => configuration
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseMemoryStorage());
+
+        services.AddHangfireServer();
+        services.AddScoped<HangfireJobScheduler>();
+        
+        // API-специфичные Telegram сервисы
+        services.AddScoped<TelegramAuthValidator>(provider =>
         {
             var botToken = _configuration.GetSection("TelegramBot")["Token"] ?? "default-token";
-            return new Lauf.Api.Services.TelegramAuthValidator(botToken);
+            return new TelegramAuthValidator(botToken);
         });
     }
 
@@ -210,6 +179,15 @@ public class Startup
         // Health checks endpoint
         app.UseHealthChecks("/health");
 
+        // Hangfire Dashboard (только для development)
+        if (env.IsDevelopment())
+        {
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new HangfireAuthorizationFilter() }
+            });
+        }
+
         // Настройка endpoints
         app.UseEndpoints(endpoints =>
         {
@@ -237,5 +215,59 @@ public class Startup
                 });
             }
         });
+        
+        // Инициализация seed данных и Hangfire jobs в фоне
+        Task.Run(async () => 
+        {
+            await InitializeSeedDataAsync(app.ApplicationServices);
+            
+            // Небольшая задержка перед настройкой Hangfire jobs
+            await Task.Delay(1000);
+            ConfigureHangfireJobs(app.ApplicationServices);
+        });
+    }
+
+    /// <summary>
+    /// Настройка регулярных задач Hangfire
+    /// </summary>
+    /// <param name="serviceProvider">Провайдер сервисов</param>
+    private static void ConfigureHangfireJobs(IServiceProvider serviceProvider)
+    {
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var jobScheduler = scope.ServiceProvider.GetRequiredService<HangfireJobScheduler>();
+            jobScheduler.ConfigureRecurringJobs();
+        }
+        catch (Exception ex)
+        {
+            // Логируем ошибку, но не прерываем запуск приложения
+            var logger = serviceProvider.GetService<ILogger<Startup>>();
+                         logger?.LogError(ex, "Ошибка настройки Hangfire jobs");
+        }
+    }
+
+    /// <summary>
+    /// Инициализация seed данных
+    /// </summary>
+    /// <param name="serviceProvider">Провайдер сервисов</param>
+    private static async Task InitializeSeedDataAsync(IServiceProvider serviceProvider)
+    {
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            
+            // Применяем миграции если необходимо
+            await context.Database.EnsureCreatedAsync();
+            
+            // Инициализируем seed данные
+            await context.SeedDataAsync();
+        }
+        catch (Exception ex)
+        {
+            var logger = serviceProvider.GetService<ILogger<Startup>>();
+            logger?.LogError(ex, "Ошибка инициализации seed данных");
+        }
     }
 }

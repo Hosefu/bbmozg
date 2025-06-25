@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Lauf.Domain.Interfaces.Repositories;
+using Lauf.Domain.Interfaces.Services;
 using Lauf.Domain.Enums;
 
 namespace Lauf.Application.BackgroundJobs;
@@ -12,15 +13,18 @@ public class DailyReminderJob
     private readonly ILogger<DailyReminderJob> _logger;
     private readonly IFlowAssignmentRepository _assignmentRepository;
     private readonly IUserRepository _userRepository;
+    private readonly INotificationService _notificationService;
 
     public DailyReminderJob(
         ILogger<DailyReminderJob> logger,
         IFlowAssignmentRepository assignmentRepository,
-        IUserRepository userRepository)
+        IUserRepository userRepository,
+        INotificationService notificationService)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _assignmentRepository = assignmentRepository ?? throw new ArgumentNullException(nameof(assignmentRepository));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
     }
 
     /// <summary>
@@ -151,19 +155,68 @@ public class DailyReminderJob
         ReminderType reminderType,
         CancellationToken cancellationToken)
     {
-        // Отправка уведомлений будет реализована через NotificationService
-        // Можно отправлять через:
-        // - Email
-        // - Telegram
-        // - Push-уведомления
-        // - Внутренние уведомления системы
+        try
+        {
+            _logger.LogInformation(
+                "Отправка напоминания типа {ReminderType} пользователю {Email}",
+                reminderType,
+                user.Email);
 
-        _logger.LogInformation(
-            "Отправка напоминания типа {ReminderType} пользователю {Email}",
-            reminderType,
-            user.Email);
+            // Отправляем напоминание через NotificationService в зависимости от типа
+            switch (reminderType)
+            {
+                case ReminderType.NotStarted:
+                    await _notificationService.NotifyReminderNotStartedAsync(
+                        user.Id,
+                        assignment.Flow.Title,
+                        assignment.DueDate ?? DateTime.UtcNow.AddDays(7),
+                        assignment.Id,
+                        cancellationToken);
+                    break;
 
-        await Task.CompletedTask; // Заглушка
+                case ReminderType.InProgress:
+                    await _notificationService.NotifyReminderInProgressAsync(
+                        user.Id,
+                        assignment.Flow.Title,
+                        assignment.ProgressPercent,
+                        assignment.DueDate ?? DateTime.UtcNow.AddDays(7),
+                        assignment.Id,
+                        cancellationToken);
+                    break;
+
+                case ReminderType.ApproachingDeadline:
+                    await _notificationService.NotifyApproachingDeadlineAsync(
+                        user.Id,
+                        assignment.Flow.Title,
+                        assignment.DueDate!.Value,
+                        (int)(assignment.DueDate!.Value - DateTime.UtcNow).TotalDays,
+                        assignment.Id,
+                        cancellationToken);
+                    break;
+
+                case ReminderType.UrgentDeadline:
+                    await _notificationService.NotifyUrgentDeadlineAsync(
+                        user.Id,
+                        assignment.Flow.Title,
+                        assignment.DueDate!.Value,
+                        assignment.Id,
+                        cancellationToken);
+                    break;
+            }
+
+            _logger.LogInformation(
+                "Напоминание типа {ReminderType} успешно отправлено пользователю {UserId}",
+                reminderType,
+                user.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка отправки напоминания типа {ReminderType} пользователю {UserId}",
+                reminderType,
+                user.Id);
+            // Не пробрасываем исключение, чтобы не прерывать обработку других напоминаний
+        }
     }
 }
 

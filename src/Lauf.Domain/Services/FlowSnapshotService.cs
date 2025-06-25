@@ -121,6 +121,31 @@ public class FlowSnapshotService : IFlowSnapshotService
     }
 
     /// <summary>
+    /// Получить существующий снапшот потока или создать новый
+    /// </summary>
+    public async Task<FlowSnapshot> GetOrCreateFlowSnapshotAsync(Guid flowId, CancellationToken cancellationToken = default)
+    {
+        // Сначала пытаемся найти существующий снапшот
+        var existingSnapshots = await _snapshotRepository.GetByOriginalFlowIdAsync(flowId, cancellationToken);
+        if (existingSnapshots.Any())
+        {
+            // Возвращаем последний снапшот
+            var latestSnapshot = existingSnapshots.OrderByDescending(s => s.Version).First();
+            return await _snapshotRepository.GetByIdWithDetailsAsync(latestSnapshot.Id, cancellationToken) 
+                ?? throw new InvalidOperationException("Снапшот найден, но не удалось загрузить детали");
+        }
+
+        // Если снапшота нет, создаем новый
+        var flow = await _flowRepository.GetWithDetailsAsync(flowId, cancellationToken);
+        if (flow == null)
+        {
+            throw new FlowNotFoundException(flowId);
+        }
+
+        return await CreateFlowSnapshotAsync(flow, cancellationToken);
+    }
+
+    /// <summary>
     /// Проверить целостность снапшота
     /// </summary>
     public async Task<bool> ValidateSnapshotIntegrityAsync(Guid snapshotId, CancellationToken cancellationToken = default)

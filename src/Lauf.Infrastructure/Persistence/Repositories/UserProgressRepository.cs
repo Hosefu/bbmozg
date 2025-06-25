@@ -109,6 +109,100 @@ public class UserProgressRepository : IUserProgressRepository
 
         return progressList;
     }
+
+    // Методы для работы с FlowProgress
+    public async Task<FlowProgress?> GetFlowProgressByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default)
+    {
+        var assignment = await _context.FlowAssignments
+            .Include(a => a.Flow)
+            .FirstOrDefaultAsync(a => a.Id == assignmentId, cancellationToken);
+
+        if (assignment == null)
+            return null;
+
+        var flowProgress = new FlowProgress(
+            assignmentId,
+            assignment.FlowId,
+            assignment.UserId,
+            0, // completedStepsCount
+            assignment.TotalSteps); // totalStepsCount
+
+        return flowProgress;
+    }
+
+    public async Task AddFlowProgressAsync(FlowProgress flowProgress, CancellationToken cancellationToken = default)
+    {
+        // В текущей реализации FlowProgress не сохраняется отдельно
+        // Прогресс вычисляется на основе FlowAssignment
+        await Task.CompletedTask;
+    }
+
+    public async Task UpdateFlowProgressAsync(FlowProgress flowProgress, CancellationToken cancellationToken = default)
+    {
+        // В текущей реализации FlowProgress не сохраняется отдельно
+        // Прогресс вычисляется на основе FlowAssignment
+        await Task.CompletedTask;
+    }
+
+    // Методы для работы с ComponentProgress
+    public async Task<ComponentProgress?> GetComponentProgressAsync(Guid assignmentId, Guid componentId, CancellationToken cancellationToken = default)
+    {
+        // Базовая реализация - возвращаем новый прогресс компонента
+        var componentProgress = new ComponentProgress(
+            assignmentId,
+            componentId,
+            0, // order
+            false); // isRequired
+
+        return componentProgress;
+    }
+
+    public async Task UpdateComponentProgressAsync(ComponentProgress componentProgress, CancellationToken cancellationToken = default)
+    {
+        // В текущей реализации ComponentProgress не сохраняется отдельно
+        await Task.CompletedTask;
+    }
+
+    public async Task UpdateStepProgressAsync(StepProgress stepProgress, CancellationToken cancellationToken = default)
+    {
+        // В текущей реализации StepProgress не сохраняется отдельно
+        await Task.CompletedTask;
+    }
+
+    // Методы для работы с UserProgress
+    public async Task<UserProgress?> GetUserProgressAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var assignments = await _context.FlowAssignments
+            .Where(a => a.UserId == userId)
+            .ToListAsync(cancellationToken);
+
+        if (!assignments.Any())
+            return null;
+
+        // Создаем агрегированный прогресс пользователя
+        var totalProgress = assignments.Average(a => a.ProgressPercent);
+        
+        return new SimpleUserProgress
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            OverallProgress = new ProgressPercentage((decimal)totalProgress),
+            CreatedAt = assignments.Min(a => a.CreatedAt),
+            UpdatedAt = assignments.Max(a => a.UpdatedAt)
+        };
+    }
+
+    public async Task AddUserProgressAsync(UserProgress userProgress, CancellationToken cancellationToken = default)
+    {
+        // В текущей реализации UserProgress не сохраняется отдельно
+        await Task.CompletedTask;
+    }
+
+    public async Task UpdateUserProgressAsync(UserProgress userProgress, CancellationToken cancellationToken = default)
+    {
+        // В текущей реализации UserProgress не сохраняется отдельно
+        await Task.CompletedTask;
+    }
 }
 
 /// <summary>
@@ -116,12 +210,12 @@ public class UserProgressRepository : IUserProgressRepository
 /// </summary>
 public class SimpleUserProgress : UserProgress
 {
-    public Guid Id { get; set; }
+    public new Guid Id { get; set; }
     public Guid AssignmentId { get; set; }
-    public Guid UserId { get; set; }
-    public ProgressPercentage OverallProgress { get; set; }
+    public new Guid UserId { get; set; }
+    public new ProgressPercentage OverallProgress { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public new DateTime UpdatedAt { get; set; }
 
     public SimpleUserProgress() : base(Guid.Empty)
     {

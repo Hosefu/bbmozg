@@ -46,6 +46,11 @@ public enum NotificationType
     AchievementEarned = 8,
 
     /// <summary>
+    /// Разблокировка достижения
+    /// </summary>
+    AchievementUnlocked = 12,
+
+    /// <summary>
     /// Назначение потока
     /// </summary>
     FlowAssigned = 9,
@@ -58,5 +63,20 @@ public enum NotificationType
     /// <summary>
     /// Сообщение от бадди
     /// </summary>
-    BuddyMessage = 11
+    BuddyMessage = 11,
+
+    /// <summary>
+    /// Назначение бадди
+    /// </summary>
+    BuddyAssigned = 13,
+
+    /// <summary>
+    /// Напоминание о прогрессе
+    /// </summary>
+    ProgressReminder = 14,
+
+    /// <summary>
+    /// Срочный дедлайн
+    /// </summary>
+    UrgentDeadline = 15
 }

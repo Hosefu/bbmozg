@@ -21,4 +21,21 @@ public interface IUserProgressRepository
     /// Получить активный прогресс пользователя (незавершенные назначения)
     /// </summary>
     Task<IEnumerable<UserProgress>> GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    // Flow Progress methods
+    Task<FlowProgress?> GetFlowProgressByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default);
+    Task AddFlowProgressAsync(FlowProgress flowProgress, CancellationToken cancellationToken = default);
+    Task UpdateFlowProgressAsync(FlowProgress flowProgress, CancellationToken cancellationToken = default);
+
+    // Component Progress methods
+    Task<ComponentProgress?> GetComponentProgressAsync(Guid componentSnapshotId, Guid userId, CancellationToken cancellationToken = default);
+    Task UpdateComponentProgressAsync(ComponentProgress componentProgress, CancellationToken cancellationToken = default);
+
+    // Step Progress methods
+    Task UpdateStepProgressAsync(StepProgress stepProgress, CancellationToken cancellationToken = default);
+
+    // User Progress methods
+    Task<UserProgress?> GetUserProgressAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task AddUserProgressAsync(UserProgress userProgress, CancellationToken cancellationToken = default);
+    Task UpdateUserProgressAsync(UserProgress userProgress, CancellationToken cancellationToken = default);
 }

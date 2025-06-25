@@ -5,12 +5,20 @@ namespace Lauf.Domain.ValueObjects;
 /// <summary>
 /// Value Object для хранения данных прогресса компонентов
 /// </summary>
-public record ComponentProgressData
+public class ComponentProgressData
 {
     /// <summary>
     /// JSON-данные прогресса
     /// </summary>
-    public string JsonData { get; }
+    public string JsonData { get; set; } = "{}";
+
+    /// <summary>
+    /// Безпараметрический конструктор для Entity Framework
+    /// </summary>
+    public ComponentProgressData()
+    {
+        JsonData = "{}";
+    }
 
     /// <summary>
     /// Конструктор с JSON-данными
