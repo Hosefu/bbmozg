@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Lauf.Infrastructure.Persistence;
 using System.Text;
 using System.Text.Json;
+using Xunit;
 
 namespace Lauf.Api.Tests.Infrastructure;
 

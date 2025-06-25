@@ -8,6 +8,7 @@ using System.Net.Http.Json;
 using System.Text;
 using Newtonsoft.Json;
 using System.Net;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Lauf.Api.Tests.Infrastructure;

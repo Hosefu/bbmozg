@@ -22,19 +22,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.6" />
     <PackageReference Include="FluentAssertions" Version="6.12.1" />
-    <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lauf.Api\Lauf.Api.csproj" />
-    <ProjectReference Include="..\..\src\Lauf.Application\Lauf.Application.csproj" />
-    <ProjectReference Include="..\..\src\Lauf.Domain\Lauf.Domain.csproj" />
-    <ProjectReference Include="..\..\src\Lauf.Infrastructure\Lauf.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\Lauf.Shared\Lauf.Shared.csproj" />
   </ItemGroup>
 
 </Project>
