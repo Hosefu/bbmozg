@@ -5,6 +5,7 @@ using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Entities.Snapshots;
 using Lauf.Domain.Entities.Progress;
 using Lauf.Domain.Entities.Notifications;
+using Lauf.Domain.Entities.Components;
 using Lauf.Domain.ValueObjects;
 using Lauf.Infrastructure.Persistence.Configurations;
 using Lauf.Infrastructure.Persistence.Interceptors;
@@ -61,6 +62,16 @@ public class ApplicationDbContext : DbContext
 
     // Notifications
     public DbSet<Notification> Notifications { get; set; } = null!;
+
+    // Components (TPT)
+    public DbSet<ComponentBase> Components { get; set; } = null!;
+    public DbSet<ArticleComponent> ArticleComponents { get; set; } = null!;
+    public DbSet<QuizComponent> QuizComponents { get; set; } = null!;
+    public DbSet<TaskComponent> TaskComponents { get; set; } = null!;
+    public DbSet<QuestionOption> QuestionOptions { get; set; } = null!;
+    
+    // Component Links
+    public DbSet<FlowStepComponentLink> FlowStepComponentLinks { get; set; } = null!;
 
     /// <summary>
     /// Настройка модели базы данных

@@ -134,6 +134,13 @@ public interface IFlowRepository
     Task<IReadOnlyList<Flow>> GetAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Получает все потоки с шагами и компонентами
+    /// </summary>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список всех потоков с шагами</returns>
+    Task<IReadOnlyList<Flow>> GetAllWithStepsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Получает поток по идентификатору шага
     /// </summary>
     /// <param name="stepId">Идентификатор шага</param>
@@ -149,4 +156,12 @@ public interface IFlowRepository
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Добавленный шаг</returns>
     Task<FlowStep> AddStepAsync(Guid flowId, FlowStep step, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает шаг потока по ID
+    /// </summary>
+    /// <param name="stepId">Идентификатор шага</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Шаг потока или null</returns>
+    Task<FlowStep?> GetStepByIdAsync(Guid stepId, CancellationToken cancellationToken = default);
 }

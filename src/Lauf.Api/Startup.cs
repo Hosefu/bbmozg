@@ -262,7 +262,7 @@ public class Startup
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             
             // Применяем миграции если необходимо
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.MigrateAsync();
             
             // Инициализируем seed данные
             await context.SeedDataAsync();

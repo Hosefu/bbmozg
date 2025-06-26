@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lauf.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class CleanInitialCreate : Migration
+    public partial class SimplifiedComponentsInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -27,6 +27,26 @@ namespace Lauf.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Achievements", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Components",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
+                    Status = table.Column<string>(type: "TEXT", nullable: false, defaultValue: "Draft"),
+                    EstimatedDurationMinutes = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 15),
+                    MaxAttempts = table.Column<int>(type: "INTEGER", nullable: true),
+                    MinPassingScore = table.Column<int>(type: "INTEGER", nullable: true),
+                    Instructions = table.Column<string>(type: "TEXT", maxLength: 2000, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Components", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -107,6 +127,63 @@ namespace Lauf.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ArticleComponents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    ReadingTimeMinutes = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 15)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ArticleComponents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ArticleComponents_Components_Id",
+                        column: x => x.Id,
+                        principalTable: "Components",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "QuizComponents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    QuestionText = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QuizComponents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_QuizComponents_Components_Id",
+                        column: x => x.Id,
+                        principalTable: "Components",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TaskComponents",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Instruction = table.Column<string>(type: "TEXT", maxLength: 2000, nullable: false),
+                    CodeWord = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Hint = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TaskComponents", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TaskComponents_Components_Id",
+                        column: x => x.Id,
+                        principalTable: "Components",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -365,6 +442,57 @@ namespace Lauf.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "QuestionOptions",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Text = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
+                    IsCorrect = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false),
+                    Message = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
+                    Points = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 1),
+                    QuizComponentId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QuestionOptions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_QuestionOptions_QuizComponents_QuizComponentId",
+                        column: x => x.QuizComponentId,
+                        principalTable: "QuizComponents",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FlowStepComponentLinks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    FlowStepId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    ComponentId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsRequired = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FlowStepComponentLinks", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_FlowStepComponentLinks_Components_ComponentId",
+                        column: x => x.ComponentId,
+                        principalTable: "Components",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_FlowStepComponentLinks_FlowSteps_FlowStepId",
+                        column: x => x.FlowStepId,
+                        principalTable: "FlowSteps",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "FlowStepComponents",
                 columns: table => new
                 {
@@ -563,6 +691,11 @@ namespace Lauf.Infrastructure.Migrations
                 column: "Title");
 
             migrationBuilder.CreateIndex(
+                name: "IX_ArticleComponents_ReadingTimeMinutes",
+                table: "ArticleComponents",
+                column: "ReadingTimeMinutes");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ComponentProgress_ComponentSnapshotId",
                 table: "ComponentProgress",
                 column: "ComponentSnapshotId");
@@ -571,6 +704,21 @@ namespace Lauf.Infrastructure.Migrations
                 name: "IX_ComponentProgress_StepProgressId",
                 table: "ComponentProgress",
                 column: "StepProgressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Components_CreatedAt",
+                table: "Components",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Components_Status",
+                table: "Components",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Components_Title",
+                table: "Components",
+                column: "Title");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ComponentSnapshots_StepSnapshotId",
@@ -654,6 +802,38 @@ namespace Lauf.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_FlowStepComponentLinks_ComponentId",
+                table: "FlowStepComponentLinks",
+                column: "ComponentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlowStepComponentLinks_FlowStepId",
+                table: "FlowStepComponentLinks",
+                column: "FlowStepId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlowStepComponentLinks_FlowStepId_ComponentId",
+                table: "FlowStepComponentLinks",
+                columns: new[] { "FlowStepId", "ComponentId" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlowStepComponentLinks_FlowStepId_Order",
+                table: "FlowStepComponentLinks",
+                columns: new[] { "FlowStepId", "Order" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlowStepComponentLinks_IsRequired",
+                table: "FlowStepComponentLinks",
+                column: "IsRequired");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FlowStepComponentLinks_Order",
+                table: "FlowStepComponentLinks",
+                column: "Order");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_FlowStepComponents_FlowStepId",
                 table: "FlowStepComponents",
                 column: "FlowStepId");
@@ -699,6 +879,26 @@ namespace Lauf.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_QuestionOptions_IsCorrect",
+                table: "QuestionOptions",
+                column: "IsCorrect");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionOptions_Order",
+                table: "QuestionOptions",
+                column: "Order");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuestionOptions_QuizComponentId",
+                table: "QuestionOptions",
+                column: "QuizComponentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuizComponents_QuestionText",
+                table: "QuizComponents",
+                column: "QuestionText");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StepProgress_FlowProgressId",
                 table: "StepProgress",
                 column: "FlowProgressId");
@@ -707,6 +907,11 @@ namespace Lauf.Infrastructure.Migrations
                 name: "IX_StepProgress_StepSnapshotId",
                 table: "StepProgress",
                 column: "StepSnapshotId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TaskComponents_CodeWord",
+                table: "TaskComponents",
+                column: "CodeWord");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserAchievements_AchievementId",
@@ -760,16 +965,28 @@ namespace Lauf.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "ArticleComponents");
+
+            migrationBuilder.DropTable(
                 name: "ComponentProgress");
 
             migrationBuilder.DropTable(
                 name: "FlowSettings");
 
             migrationBuilder.DropTable(
+                name: "FlowStepComponentLinks");
+
+            migrationBuilder.DropTable(
                 name: "FlowStepComponents");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
+
+            migrationBuilder.DropTable(
+                name: "QuestionOptions");
+
+            migrationBuilder.DropTable(
+                name: "TaskComponents");
 
             migrationBuilder.DropTable(
                 name: "UserAchievements");
@@ -787,6 +1004,9 @@ namespace Lauf.Infrastructure.Migrations
                 name: "FlowSteps");
 
             migrationBuilder.DropTable(
+                name: "QuizComponents");
+
+            migrationBuilder.DropTable(
                 name: "Achievements");
 
             migrationBuilder.DropTable(
@@ -797,6 +1017,9 @@ namespace Lauf.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "FlowStepSnapshots");
+
+            migrationBuilder.DropTable(
+                name: "Components");
 
             migrationBuilder.DropTable(
                 name: "FlowAssignments");

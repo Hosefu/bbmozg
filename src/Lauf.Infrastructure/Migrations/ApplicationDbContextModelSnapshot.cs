@@ -17,6 +17,106 @@ namespace Lauf.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
 
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.ComponentBase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("EstimatedDurationMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(15);
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("MaxAttempts")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MinPassingScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Draft");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("Title");
+
+                    b.ToTable("Components", (string)null);
+
+                    b.UseTptMappingStrategy();
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.QuestionOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Points")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(1);
+
+                    b.Property<Guid?>("QuizComponentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsCorrect")
+                        .HasDatabaseName("IX_QuestionOptions_IsCorrect");
+
+                    b.HasIndex("Order")
+                        .HasDatabaseName("IX_QuestionOptions_Order");
+
+                    b.HasIndex("QuizComponentId");
+
+                    b.ToTable("QuestionOptions", (string)null);
+                });
+
             modelBuilder.Entity("Lauf.Domain.Entities.Flows.Flow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -933,6 +1033,48 @@ namespace Lauf.Infrastructure.Migrations
                     b.ToTable("UserAchievements", (string)null);
                 });
 
+            modelBuilder.Entity("Lauf.Infrastructure.Persistence.Configurations.FlowStepComponentLink", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ComponentId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("FlowStepId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRequired")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComponentId");
+
+                    b.HasIndex("FlowStepId");
+
+                    b.HasIndex("IsRequired");
+
+                    b.HasIndex("Order");
+
+                    b.HasIndex("FlowStepId", "ComponentId")
+                        .IsUnique();
+
+                    b.HasIndex("FlowStepId", "Order")
+                        .IsUnique();
+
+                    b.ToTable("FlowStepComponentLinks", (string)null);
+                });
+
             modelBuilder.Entity("UserRoles", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -946,6 +1088,73 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("UserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.ArticleComponent", b =>
+                {
+                    b.HasBaseType("Lauf.Domain.Entities.Components.ComponentBase");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ReadingTimeMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(15);
+
+                    b.HasIndex("ReadingTimeMinutes")
+                        .HasDatabaseName("IX_ArticleComponents_ReadingTimeMinutes");
+
+                    b.ToTable("ArticleComponents", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.QuizComponent", b =>
+                {
+                    b.HasBaseType("Lauf.Domain.Entities.Components.ComponentBase");
+
+                    b.Property<string>("QuestionText")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("QuestionText")
+                        .HasDatabaseName("IX_QuizComponents_QuestionText");
+
+                    b.ToTable("QuizComponents", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.TaskComponent", b =>
+                {
+                    b.HasBaseType("Lauf.Domain.Entities.Components.ComponentBase");
+
+                    b.Property<string>("CodeWord")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Hint")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Instruction")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.HasIndex("CodeWord")
+                        .HasDatabaseName("IX_TaskComponents_CodeWord");
+
+                    b.ToTable("TaskComponents", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.QuestionOption", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Components.QuizComponent", null)
+                        .WithMany("Options")
+                        .HasForeignKey("QuizComponentId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Lauf.Domain.Entities.Flows.FlowAssignment", b =>
@@ -1174,6 +1383,25 @@ namespace Lauf.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Lauf.Infrastructure.Persistence.Configurations.FlowStepComponentLink", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Components.ComponentBase", "Component")
+                        .WithMany()
+                        .HasForeignKey("ComponentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lauf.Domain.Entities.Flows.FlowStep", "FlowStep")
+                        .WithMany()
+                        .HasForeignKey("FlowStepId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Component");
+
+                    b.Navigation("FlowStep");
+                });
+
             modelBuilder.Entity("UserRoles", b =>
                 {
                     b.HasOne("Lauf.Domain.Entities.Users.Role", null)
@@ -1185,6 +1413,33 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasOne("Lauf.Domain.Entities.Users.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.ArticleComponent", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Components.ComponentBase", null)
+                        .WithOne()
+                        .HasForeignKey("Lauf.Domain.Entities.Components.ArticleComponent", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.QuizComponent", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Components.ComponentBase", null)
+                        .WithOne()
+                        .HasForeignKey("Lauf.Domain.Entities.Components.QuizComponent", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.TaskComponent", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Components.ComponentBase", null)
+                        .WithOne()
+                        .HasForeignKey("Lauf.Domain.Entities.Components.TaskComponent", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -1232,6 +1487,11 @@ namespace Lauf.Infrastructure.Migrations
             modelBuilder.Entity("Lauf.Domain.Entities.Users.User", b =>
                 {
                     b.Navigation("FlowAssignments");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.QuizComponent", b =>
+                {
+                    b.Navigation("Options");
                 });
 #pragma warning restore 612, 618
         }

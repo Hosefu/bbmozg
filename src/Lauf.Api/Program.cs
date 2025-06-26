@@ -7,6 +7,7 @@ using Lauf.Shared.Extensions;
 using Serilog;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lauf.Api;
 
@@ -41,6 +42,9 @@ public class Program
             // Регистрация сервисов из разных слоев
             builder.Services.AddApplicationServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
+            
+            // Добавление AutoMapper профилей API слоя
+            builder.Services.AddAutoMapper(typeof(Program).Assembly);
             
             // Настройка API слоя
             var startup = new Startup(builder.Configuration);
@@ -96,7 +100,7 @@ public class Program
             Log.Information("Начинаем инициализацию данных...");
             
             // Применяем миграции
-            await context.Database.EnsureCreatedAsync();
+            await context.Database.MigrateAsync();
             
             // Сидинг ролей
             await RoleSeed.SeedAsync(context);

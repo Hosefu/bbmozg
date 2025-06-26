@@ -33,7 +33,9 @@ public class GetFlowsQueryHandler : IRequestHandler<GetFlowsQuery, GetFlowsQuery
                 request.Skip, request.Take);
 
             // Получаем потоки из репозитория
-            var flows = await _flowRepository.GetAllAsync(cancellationToken);
+            var flows = request.IncludeSteps 
+                ? await _flowRepository.GetAllWithStepsAsync(cancellationToken)
+                : await _flowRepository.GetAllAsync(cancellationToken);
             
             // Применяем фильтры
             var filteredFlows = flows.AsEnumerable();
@@ -59,21 +61,8 @@ public class GetFlowsQueryHandler : IRequestHandler<GetFlowsQuery, GetFlowsQuery
                 .Take(request.Take)
                 .ToList();
 
-            // Конвертируем в DTO
-            var flowDtos = pagedFlows.Select(flow => new FlowDto
-            {
-                Id = flow.Id,
-                Title = flow.Title,
-                Description = flow.Description,
-                Status = flow.Status,
-                Tags = ParseTagsFromJson(flow.Tags),
-                Priority = flow.Priority,
-                IsRequired = flow.IsRequired,
-                CreatedAt = flow.CreatedAt,
-                UpdatedAt = flow.UpdatedAt,
-                CreatedById = flow.CreatedById,
-                TotalSteps = flow.TotalSteps
-            }).ToList();
+            // Конвертируем в DTO с помощью AutoMapper
+            var flowDtos = _mapper.Map<List<FlowDto>>(pagedFlows);
 
             _logger.LogInformation("Найдено {TotalCount} потоков, возвращено {Count}", 
                 totalCount, flowDtos.Count);
@@ -97,18 +86,5 @@ public class GetFlowsQueryHandler : IRequestHandler<GetFlowsQuery, GetFlowsQuery
         }
     }
 
-    private static List<string> ParseTagsFromJson(string? tagsJson)
-    {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(tagsJson))
-                return new List<string>();
-                
-            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(tagsJson) ?? new List<string>();
-        }
-        catch
-        {
-            return new List<string>();
-        }
-    }
+
 }

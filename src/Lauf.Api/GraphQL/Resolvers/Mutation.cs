@@ -7,11 +7,15 @@ using Lauf.Application.Commands.Flows;
 using Lauf.Application.Commands.FlowManagement;
 using Lauf.Application.Commands.FlowAssignment;
 using Lauf.Application.Commands.FlowSteps;
-using Lauf.Application.Commands.FlowComponents;
+
+using Lauf.Application.Commands.Components;
+using Lauf.Application.Queries.Flows;
 using Lauf.Application.Services.Interfaces;
 using Lauf.Api.GraphQL.Types;
+using Lauf.Api.GraphQL.Types.Components;
 using Microsoft.Extensions.Logging;
 using Lauf.Domain.Enums;
+using AutoMapper;
 
 namespace Lauf.Api.GraphQL.Resolvers;
 
@@ -95,36 +99,58 @@ public class Mutation
         CreateFlowInput input,
         CancellationToken cancellationToken = default)
     {
-        var userId = currentUserService.GetCurrentUserId() ?? throw new UnauthorizedAccessException("User not authenticated");
-        
-        var command = new CreateFlowCommand
+        try
         {
-            Title = input.Title,
-            Description = input.Description,
-            CreatedById = userId,
-            Settings = new CreateFlowSettingsCommand
+            _logger.LogInformation("Начинается создание флоу через GraphQL: {Title}", input.Title);
+            
+            var userId = currentUserService.GetCurrentUserId() ?? throw new UnauthorizedAccessException("User not authenticated");
+            
+            _logger.LogInformation("Пользователь аутентифицирован: {UserId}", userId);
+            
+            var command = new CreateFlowCommand
             {
-                RequireSequentialCompletion = input.IsSequential,
-                AllowRetry = input.AllowRetry,
-                TimeToCompleteWorkingDays = input.TimeLimit,
-                MaxAttempts = input.PassingScore
+                Title = input.Title,
+                Description = input.Description,
+                CreatedById = userId,
+                Settings = new CreateFlowSettingsCommand
+                {
+                    RequireSequentialCompletion = input.IsSequential,
+                    AllowRetry = input.AllowRetry,
+                    TimeToCompleteWorkingDays = input.TimeLimit,
+                    MaxAttempts = input.PassingScore
+                }
+            };
+
+            _logger.LogInformation("Отправляем команду создания флоу");
+            var result = await mediator.Send(command, cancellationToken);
+            
+            if (!result.IsSuccess)
+            {
+                _logger.LogError("Ошибка создания флоу: {Message}", result.Message);
+                throw new InvalidOperationException(result.Message);
             }
-        };
 
-        var result = await mediator.Send(command, cancellationToken);
-        
-        if (!result.IsSuccess)
-        {
-            throw new InvalidOperationException(result.Message);
+            _logger.LogInformation("Флоу создан успешно с ID: {FlowId}", result.FlowId);
+
+            // Получаем полную информацию о созданном флоу
+            var getFlowQuery = new Lauf.Application.Queries.Flows.GetFlowByIdQuery(result.FlowId, false);
+            _logger.LogInformation("Запрашиваем данные созданного флоу");
+            var flowDto = await mediator.Send(getFlowQuery, cancellationToken);
+            
+            if (flowDto == null)
+            {
+                _logger.LogError("Созданный флоу не найден по ID: {FlowId}", result.FlowId);
+                throw new InvalidOperationException("Созданный флоу не найден");
+            }
+
+            _logger.LogInformation("Флоу успешно получен, возвращаем результат");
+            return flowDto;
         }
-
-        // Конвертируем результат в FlowDto
-        return new FlowDto
+        catch (Exception ex)
         {
-            Id = result.FlowId,
-            Title = result.Title,
-            Status = Lauf.Domain.Enums.FlowStatus.Draft
-        };
+            _logger.LogError(ex, "Ошибка при создании флоу через GraphQL: {Title}", input.Title);
+            throw new GraphQLException($"Не удалось создать флоу: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -238,35 +264,81 @@ public class Mutation
         }
     }
 
+
+
     /// <summary>
-    /// Создать компонент шага
+    /// Создать типизированный компонент (новый метод)
     /// </summary>
     [Authorize]
-    public async Task<CreateFlowComponentCommandResult> CreateFlowComponent(
+    public async Task<CreateComponentResult> CreateComponent(
         [Service] IMediator mediator,
-        CreateFlowComponentInput input,
+        [Service] IMapper mapper,
+        CreateComponentInput input,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            var command = new CreateFlowComponentCommand
+            // Определяем тип компонента и создаем соответствующую команду
+            if (input.Article != null)
             {
-                FlowStepId = input.FlowStepId,
-                Title = input.Title,
-                Description = input.Description,
-                Type = input.Type,
-                Content = input.Content,
-                Order = input.Order,
-                IsRequired = input.IsRequired,
-            };
+                var command = mapper.Map<CreateArticleComponentCommand>(input.Article);
+                var result = await mediator.Send(command, cancellationToken);
+                
+                return new CreateComponentResult
+                {
+                    Article = new ArticleComponentResult
+                    {
+                        IsSuccess = result.IsSuccess,
+                        Message = result.Message,
+                        ComponentId = result.ComponentId,
+                        LinkId = result.LinkId,
+                        Component = result.Component
+                    }
+                };
+            }
+            
+            if (input.Quiz != null)
+            {
+                var command = mapper.Map<CreateQuizComponentCommand>(input.Quiz);
+                var result = await mediator.Send(command, cancellationToken);
+                
+                return new CreateComponentResult
+                {
+                    Quiz = new QuizComponentResult
+                    {
+                        IsSuccess = result.IsSuccess,
+                        Message = result.Message,
+                        ComponentId = result.ComponentId,
+                        LinkId = result.LinkId,
+                        Component = result.Component
+                    }
+                };
+            }
+            
+            if (input.Task != null)
+            {
+                var command = mapper.Map<CreateTaskComponentCommand>(input.Task);
+                var result = await mediator.Send(command, cancellationToken);
+                
+                return new CreateComponentResult
+                {
+                    Task = new TaskComponentResult
+                    {
+                        IsSuccess = result.IsSuccess,
+                        Message = result.Message,
+                        ComponentId = result.ComponentId,
+                        LinkId = result.LinkId,
+                        Component = result.Component
+                    }
+                };
+            }
 
-            var result = await mediator.Send(command, cancellationToken);
-            return result;
+            throw new GraphQLException("Необходимо указать один из типов компонента: Article, Quiz или Task");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при создании компонента шага {StepId}", input.FlowStepId);
-            throw new GraphQLException("Не удалось создать компонент шага");
+            _logger.LogError(ex, "Ошибка при создании типизированного компонента");
+            throw new GraphQLException("Не удалось создать компонент");
         }
     }
 }
@@ -322,11 +394,3 @@ public record CreateFlowStepInput(
     string Instructions = "",
     string Notes = "");
 
-public record CreateFlowComponentInput(
-    Guid FlowStepId,
-    string Title,
-    string Description,
-    ComponentType Type,
-    string Content = "{}",
-    int? Order = null,
-    bool IsRequired = true);

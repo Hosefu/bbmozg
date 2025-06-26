@@ -162,6 +162,15 @@ public class FlowRepository : IFlowRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Flow>> GetAllWithStepsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Flows
+            .Include(f => f.Settings)
+            .Include(f => f.Steps)
+                .ThenInclude(s => s.Components)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Flow?> GetFlowByStepIdAsync(Guid stepId, CancellationToken cancellationToken = default)
     {
         return await _context.Flows
@@ -207,5 +216,12 @@ public class FlowRepository : IFlowRepository
             await transaction.RollbackAsync(cancellationToken);
             throw;
         }
+    }
+
+    public async Task<FlowStep?> GetStepByIdAsync(Guid stepId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FlowSteps
+            .Include(s => s.Components)
+            .FirstOrDefaultAsync(s => s.Id == stepId, cancellationToken);
     }
 }

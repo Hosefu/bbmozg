@@ -49,7 +49,7 @@ public class Query
         int take = 50,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetFlowsQuery { Skip = skip, Take = take };
+        var query = new GetFlowsQuery { Skip = skip, Take = take, IncludeSteps = true };
         var result = await mediator.Send(query, cancellationToken);
         return result.Flows;
     }

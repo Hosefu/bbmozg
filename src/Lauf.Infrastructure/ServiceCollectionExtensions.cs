@@ -52,6 +52,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFlowSnapshotRepository, FlowSnapshotRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAchievementRepository, AchievementRepository>();
+        services.AddScoped<IComponentRepository, ComponentRepository>();
         services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
         services.AddScoped<IUserProgressRepository, UserProgressRepository>();
 

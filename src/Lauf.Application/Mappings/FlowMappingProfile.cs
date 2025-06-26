@@ -17,8 +17,16 @@ public class FlowMappingProfile : Profile
             .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => ParseTags(src.Tags)))
             .ForMember(dest => dest.TotalSteps, opt => opt.MapFrom(src => src.TotalSteps));
 
-        // Маппинг FlowSettings -> FlowSettingsDto будет добавлен когда понадобится в API
-        // CreateMap<FlowSettings, FlowSettingsDto>();
+        // Маппинг FlowSettings -> FlowSettingsDto
+        CreateMap<FlowSettings, FlowSettingsDto>()
+            .ForMember(dest => dest.AllowSkipping, opt => opt.MapFrom(src => !src.RequiresBuddy))
+            .ForMember(dest => dest.RequireSequentialCompletion, opt => opt.MapFrom(src => !src.AllowSelfPaced))
+            .ForMember(dest => dest.MaxAttempts, opt => opt.Ignore())
+            .ForMember(dest => dest.TimeToCompleteWorkingDays, opt => opt.MapFrom(src => src.DaysToComplete))
+            .ForMember(dest => dest.ShowProgress, opt => opt.MapFrom(src => src.SendDailyProgress))
+            .ForMember(dest => dest.AllowRetry, opt => opt.MapFrom(src => src.AllowPause))
+            .ForMember(dest => dest.SendReminders, opt => opt.MapFrom(src => src.SendDeadlineReminders))
+            .ForMember(dest => dest.AdditionalSettings, opt => opt.MapFrom(src => ParseAdditionalSettings(src.CustomSettings)));
 
         // Маппинг FlowStep -> FlowStepDto
         CreateMap<FlowStep, FlowStepDto>()
