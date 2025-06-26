@@ -48,7 +48,7 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Flow)
-            .WithMany()
+            .WithMany(x => x.Assignments)
             .HasForeignKey(x => x.FlowId)
             .OnDelete(DeleteBehavior.Restrict);
 
