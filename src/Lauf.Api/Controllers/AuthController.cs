@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Lauf.Domain.Interfaces.Repositories;
+using Lauf.Domain.Interfaces;
 using Lauf.Domain.ValueObjects;
 using Lauf.Shared.Constants;
 
@@ -19,13 +20,15 @@ public class AuthController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IConfiguration configuration, IUserRepository userRepository, IRoleRepository roleRepository, ILogger<AuthController> logger)
+    public AuthController(IConfiguration configuration, IUserRepository userRepository, IRoleRepository roleRepository, IUnitOfWork unitOfWork, ILogger<AuthController> logger)
     {
         _configuration = configuration;
         _userRepository = userRepository;
         _roleRepository = roleRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -82,6 +85,7 @@ public class AuthController : ControllerBase
             
             _logger.LogInformation("Создаем нового пользователя с TelegramId: {TelegramId}", request.TelegramId);
             await _userRepository.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
             _logger.LogInformation("Пользователь создан с Id: {UserId}", user.Id);
         }
         else
@@ -94,6 +98,7 @@ public class AuthController : ControllerBase
             user.Language = request.LanguageCode ?? user.Language;
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdateLastActivity();
+            await _unitOfWork.SaveChangesAsync();
         }
 
         _logger.LogInformation("Генерируем JWT токен для пользователя: {UserId}", user.Id);
@@ -174,6 +179,7 @@ public class AuthController : ControllerBase
             }
             
             await _userRepository.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
         }
         else
         {
@@ -184,6 +190,7 @@ public class AuthController : ControllerBase
             user.Language = userData.LanguageCode ?? user.Language;
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdateLastActivity();
+            await _unitOfWork.SaveChangesAsync();
         }
 
         var token = GenerateJwtToken(user);

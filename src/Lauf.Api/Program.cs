@@ -1,6 +1,8 @@
 using Lauf.Api;
 using Lauf.Application;
 using Lauf.Infrastructure;
+using Lauf.Infrastructure.Persistence;
+using Lauf.Infrastructure.Persistence.Seeds;
 using Lauf.Shared.Extensions;
 using Serilog;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -49,6 +51,9 @@ public class Program
             // Настройка middleware pipeline
             startup.Configure(app, app.Environment);
 
+            // Инициализация данных
+            await InitializeDataAsync(app);
+
             Log.Information("Lauf API приложение готово к запуску");
             
             // Регистрируем слушателя для получения информации о запущенных адресах
@@ -74,6 +79,34 @@ public class Program
         {
             // Корректное завершение логирования
             await Log.CloseAndFlushAsync();
+        }
+    }
+
+    /// <summary>
+    /// Инициализирует начальные данные в базе данных
+    /// </summary>
+    /// <param name="app">Экземпляр приложения</param>
+    private static async Task InitializeDataAsync(WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        
+        try
+        {
+            Log.Information("Начинаем инициализацию данных...");
+            
+            // Применяем миграции
+            await context.Database.EnsureCreatedAsync();
+            
+            // Сидинг ролей
+            await RoleSeed.SeedAsync(context);
+            
+            Log.Information("Инициализация данных завершена успешно");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Ошибка при инициализации данных");
+            throw;
         }
     }
 }

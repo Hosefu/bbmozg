@@ -13,18 +13,16 @@ namespace Lauf.Application.Services;
 public class NotificationService : INotificationService
 {
     private readonly INotificationRepository _notificationRepository;
-    private readonly INotificationService _externalNotificationService;
+    // Убираем циклическую зависимость
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<NotificationService> _logger;
 
     public NotificationService(
         INotificationRepository notificationRepository,
-        INotificationService externalNotificationService,
         IUnitOfWork unitOfWork,
         ILogger<NotificationService> logger)
     {
         _notificationRepository = notificationRepository;
-        _externalNotificationService = externalNotificationService;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }

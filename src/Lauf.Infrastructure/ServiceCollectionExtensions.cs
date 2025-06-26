@@ -46,15 +46,17 @@ public static class ServiceCollectionExtensions
 
         // Repositories
         services.AddScoped<IUserRepository, SimpleUserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IFlowRepository, FlowRepository>();
         services.AddScoped<IFlowAssignmentRepository, FlowAssignmentRepository>();
+        services.AddScoped<IFlowSnapshotRepository, FlowSnapshotRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAchievementRepository, AchievementRepository>();
         services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
         services.AddScoped<IUserProgressRepository, UserProgressRepository>();
 
         // Domain services
-        services.AddScoped<FlowSnapshotService>();
+        services.AddScoped<IFlowSnapshotService, FlowSnapshotService>();
         services.AddScoped<ProgressCalculationService>();
 
         // Infrastructure services
@@ -70,7 +72,8 @@ public static class ServiceCollectionExtensions
         // Telegram services
         services.AddHttpClient<TelegramNotificationService>();
         services.AddScoped<TelegramNotificationService>();
-        services.AddScoped<ExternalServices.TelegramBot.TelegramWebhookHandler>();
+        // TODO: Добавить регистрацию ITelegramBotClient перед включением TelegramWebhookHandler
+        // services.AddScoped<ExternalServices.TelegramBot.TelegramWebhookHandler>();
 
         return services;
     }

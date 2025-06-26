@@ -64,11 +64,13 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersQuery
                 TelegramUserId = user.TelegramUserId.Value,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-
+                Username = user.TelegramUsername,
                 Position = user.Position,
                 Language = user.Language,
                 IsActive = user.IsActive,
+                Roles = user.Roles.Select(r => r.Name).ToList(),
                 CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt,
                 LastActivityAt = user.LastActiveAt
             }).ToList();
 
