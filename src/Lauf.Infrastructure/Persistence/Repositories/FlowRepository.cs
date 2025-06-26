@@ -150,4 +150,13 @@ public class FlowRepository : IFlowRepository
             .Include(f => f.Steps)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Flow?> GetFlowByStepIdAsync(Guid stepId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Flows
+            .Include(f => f.Steps)
+                .ThenInclude(s => s.Components)
+            .Where(f => f.Steps.Any(s => s.Id == stepId))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

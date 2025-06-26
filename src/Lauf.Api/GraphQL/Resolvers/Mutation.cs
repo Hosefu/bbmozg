@@ -6,9 +6,12 @@ using Lauf.Application.Commands.Users;
 using Lauf.Application.Commands.Flows;
 using Lauf.Application.Commands.FlowManagement;
 using Lauf.Application.Commands.FlowAssignment;
+using Lauf.Application.Commands.FlowSteps;
+using Lauf.Application.Commands.FlowComponents;
 using Lauf.Application.Services.Interfaces;
 using Lauf.Api.GraphQL.Types;
 using Microsoft.Extensions.Logging;
+using Lauf.Domain.Enums;
 
 namespace Lauf.Api.GraphQL.Resolvers;
 
@@ -202,6 +205,70 @@ public class Mutation
         var result = await mediator.Send(command, cancellationToken);
         return result.Assignment;
     }
+
+    /// <summary>
+    /// Создать шаг потока
+    /// </summary>
+    [Authorize]
+    public async Task<CreateFlowStepCommandResult> CreateFlowStep(
+        [Service] IMediator mediator,
+        CreateFlowStepInput input,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var command = new CreateFlowStepCommand
+            {
+                FlowId = input.FlowId,
+                Title = input.Title,
+                Description = input.Description,
+                Order = input.Order,
+                IsRequired = input.IsRequired,
+                Instructions = input.Instructions,
+                Notes = input.Notes
+            };
+
+            var result = await mediator.Send(command, cancellationToken);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при создании шага потока {FlowId}", input.FlowId);
+            throw new GraphQLException("Не удалось создать шаг потока");
+        }
+    }
+
+    /// <summary>
+    /// Создать компонент шага
+    /// </summary>
+    [Authorize]
+    public async Task<CreateFlowComponentCommandResult> CreateFlowComponent(
+        [Service] IMediator mediator,
+        CreateFlowComponentInput input,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var command = new CreateFlowComponentCommand
+            {
+                FlowStepId = input.FlowStepId,
+                Title = input.Title,
+                Description = input.Description,
+                Type = input.Type,
+                Content = input.Content,
+                Order = input.Order,
+                IsRequired = input.IsRequired,
+            };
+
+            var result = await mediator.Send(command, cancellationToken);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при создании компонента шага {StepId}", input.FlowStepId);
+            throw new GraphQLException("Не удалось создать компонент шага");
+        }
+    }
 }
 
 /// <summary>
@@ -245,3 +312,21 @@ public record StartFlowInput(
 public record CompleteFlowInput(
     Guid AssignmentId,
     string? CompletionNotes);
+
+public record CreateFlowStepInput(
+    Guid FlowId,
+    string Title,
+    string Description,
+    int? Order = null,
+    bool IsRequired = true,
+    string Instructions = "",
+    string Notes = "");
+
+public record CreateFlowComponentInput(
+    Guid FlowStepId,
+    string Title,
+    string Description,
+    ComponentType Type,
+    string Content = "{}",
+    int? Order = null,
+    bool IsRequired = true);

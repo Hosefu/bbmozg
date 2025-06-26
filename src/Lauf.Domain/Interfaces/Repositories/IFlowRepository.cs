@@ -132,4 +132,12 @@ public interface IFlowRepository
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Список всех потоков</returns>
     Task<IReadOnlyList<Flow>> GetAllAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает поток по идентификатору шага
+    /// </summary>
+    /// <param name="stepId">Идентификатор шага</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Поток содержащий указанный шаг</returns>
+    Task<Flow?> GetFlowByStepIdAsync(Guid stepId, CancellationToken cancellationToken = default);
 }
