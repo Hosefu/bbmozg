@@ -9,15 +9,13 @@ namespace Lauf.Api.SignalR;
 /// SignalR хаб для уведомлений
 /// </summary>
 [Authorize]
-public class NotificationHub : Hub
+public class NotificationHub : BaseLoggingHub
 {
     private readonly ICurrentUserService _currentUserService;
-    private readonly ILogger<NotificationHub> _logger;
 
-    public NotificationHub(ICurrentUserService currentUserService, ILogger<NotificationHub> logger)
+    public NotificationHub(ICurrentUserService currentUserService, ILogger<NotificationHub> logger) : base(logger)
     {
         _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -28,12 +26,11 @@ public class NotificationHub : Hub
         var userId = GetCurrentUserId();
         if (userId.HasValue)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
-            _logger.LogInformation("Пользователь {UserId} подключился к NotificationHub", userId);
+            await LoggedAddToGroupAsync($"User_{userId}");
         }
         else
         {
-            _logger.LogWarning("Попытка подключения к NotificationHub без идентификации пользователя");
+            _logger.LogWarning("⚡ [HUB-Notification] CONNECT_FAILED {ConnectionId} - no user identification", Context.ConnectionId);
         }
 
         await base.OnConnectedAsync();
@@ -47,13 +44,7 @@ public class NotificationHub : Hub
         var userId = GetCurrentUserId();
         if (userId.HasValue)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"User_{userId}");
-            _logger.LogInformation("Пользователь {UserId} отключился от NotificationHub", userId);
-        }
-
-        if (exception != null)
-        {
-            _logger.LogError(exception, "Ошибка при отключении от NotificationHub");
+            await LoggedRemoveFromGroupAsync($"User_{userId}");
         }
 
         await base.OnDisconnectedAsync(exception);
@@ -65,14 +56,16 @@ public class NotificationHub : Hub
     /// <param name="notificationType">Тип уведомлений</param>
     public async Task SubscribeToNotificationType(string notificationType)
     {
+        LogMethodCall(nameof(SubscribeToNotificationType), new { notificationType });
+        
         var userId = GetCurrentUserId();
         if (userId.HasValue)
         {
             var groupName = $"NotificationType_{notificationType}";
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            await LoggedAddToGroupAsync(groupName);
             
+            LogClientCall("SubscriptionConfirmed", Context.ConnectionId, notificationType);
             await Clients.Caller.SendAsync("SubscriptionConfirmed", notificationType);
-            _logger.LogInformation("Пользователь {UserId} подписался на уведомления типа {NotificationType}", userId, notificationType);
         }
     }
 

@@ -26,6 +26,7 @@ public class MemoryBackgroundJobService : IBackgroundJobService
     public string Enqueue(Expression<Action> methodCall)
     {
         var jobId = GenerateJobId();
+        var methodName = ExtractMethodName(methodCall);
         var jobInfo = new JobInfo
         {
             Id = jobId,
@@ -36,7 +37,9 @@ public class MemoryBackgroundJobService : IBackgroundJobService
         };
 
         _jobs[jobId] = jobInfo;
-        _logger.LogInformation("Задача {JobId} добавлена в очередь: {Method}", jobId, methodCall.ToString());
+        _logger.LogInformation(
+            "⚙️ [JOB-{JobId}] ENQUEUE {MethodName} | Queue size: {QueueSize}",
+            jobId, methodName, _jobs.Count);
         
         // Симулируем немедленное выполнение для разработки
         _ = Task.Run(async () => await ExecuteJob(jobInfo));
@@ -216,30 +219,78 @@ public class MemoryBackgroundJobService : IBackgroundJobService
     }
 
     /// <summary>
+    /// Извлечь имя метода из Expression
+    /// </summary>
+    private string ExtractMethodName(Expression expression)
+    {
+        try
+        {
+            if (expression is LambdaExpression lambda)
+            {
+                if (lambda.Body is MethodCallExpression methodCall)
+                {
+                    return $"{methodCall.Method.DeclaringType?.Name}.{methodCall.Method.Name}";
+                }
+            }
+            
+            // Fallback для других типов выражений
+            var expressionString = expression.ToString();
+            if (expressionString.Contains("=>"))
+            {
+                var methodPart = expressionString.Split("=>")[1].Trim();
+                return methodPart.Split('(')[0].Trim();
+            }
+            
+            return "UnknownMethod";
+        }
+        catch
+        {
+            return "UnknownMethod";
+        }
+    }
+
+    /// <summary>
     /// Симулировать выполнение задачи
     /// </summary>
     private async Task ExecuteJob(JobInfo jobInfo)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        
         try
         {
             if (jobInfo.State == "Deleted")
+            {
+                _logger.LogInformation("⚙️ [JOB-{JobId}] CANCELLED - job was deleted", jobInfo.Id);
                 return;
+            }
 
             jobInfo.State = "Processing";
-            _logger.LogInformation("Начало выполнения задачи {JobId}: {Method}", jobInfo.Id, jobInfo.MethodCall);
+            var methodName = ExtractMethodName(System.Linq.Expressions.Expression.Constant(jobInfo.MethodCall));
+            
+            _logger.LogInformation(
+                "⚙️ [JOB-{JobId}] START {MethodName} | Queued for: {QueuedTime}ms",
+                jobInfo.Id, methodName, (DateTime.UtcNow - jobInfo.CreatedAt).TotalMilliseconds);
             
             // Симулируем выполнение задачи
             await Task.Delay(100); // Короткая задержка для симуляции работы
             
+            stopwatch.Stop();
             jobInfo.State = "Succeeded";
             jobInfo.CompletedAt = DateTime.UtcNow;
-            _logger.LogInformation("Задача {JobId} выполнена успешно", jobInfo.Id);
+            
+            _logger.LogInformation(
+                "✅ [JOB-{JobId}] SUCCESS {MethodName} за {ElapsedMs}ms",
+                jobInfo.Id, methodName, stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
+            stopwatch.Stop();
             jobInfo.State = "Failed";
             jobInfo.CompletedAt = DateTime.UtcNow;
-            _logger.LogError(ex, "Ошибка выполнения задачи {JobId}", jobInfo.Id);
+            
+            _logger.LogError(ex, 
+                "🚨 [JOB-{JobId}] FAILED за {ElapsedMs}ms | Error: {ErrorMessage}",
+                jobInfo.Id, stopwatch.ElapsedMilliseconds, ex.Message);
         }
     }
 

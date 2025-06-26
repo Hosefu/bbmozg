@@ -166,6 +166,9 @@ public class Startup
         // Обслуживание статических файлов
         app.UseStaticFiles();
 
+        // Логирование запросов (должно быть перед маршрутизацией)
+        app.UseMiddleware<Lauf.Api.Middleware.RequestLoggingMiddleware>();
+
         // Маршрутизация
         app.UseRouting();
 
