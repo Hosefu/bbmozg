@@ -25,7 +25,7 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Applicatio
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         
-        optionsBuilder.UseNpgsql(connectionString);
+        optionsBuilder.UseSqlite(connectionString);
 
         // Используем конструктор без перехватчиков для миграций
         return new ApplicationDbContext(optionsBuilder.Options);

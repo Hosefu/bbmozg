@@ -37,6 +37,11 @@ public class SimpleUserConfiguration : IEntityTypeConfiguration<User>
             telegramBuilder.Property(x => x.Value)
                 .HasColumnName("TelegramUserId")
                 .IsRequired();
+                
+            // Индекс на Telegram User ID
+            telegramBuilder.HasIndex(x => x.Value)
+                .IsUnique()
+                .HasDatabaseName("IX_Users_TelegramUserId");
         });
 
         // IsActive поле
@@ -74,10 +79,6 @@ public class SimpleUserConfiguration : IEntityTypeConfiguration<User>
             .OnDelete(DeleteBehavior.Cascade);
 
         // Индексы
-        builder.HasIndex(x => x.TelegramUserId.Value)
-            .IsUnique()
-            .HasDatabaseName("IX_Users_TelegramUserId");
-
         builder.HasIndex(x => x.IsActive);
         builder.HasIndex(x => x.CreatedAt);
     }
