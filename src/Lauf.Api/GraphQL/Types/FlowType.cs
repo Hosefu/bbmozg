@@ -21,8 +21,6 @@ public class FlowType : ObjectType<FlowDto>
         descriptor.Field(f => f.Description)
             .Description("Описание потока");
 
-        descriptor.Field(f => f.Category)
-            .Description("Категория потока");
 
         descriptor.Field(f => f.Tags)
             .Description("Теги потока");
@@ -30,8 +28,6 @@ public class FlowType : ObjectType<FlowDto>
         descriptor.Field(f => f.Status)
             .Description("Статус потока");
 
-        descriptor.Field(f => f.Version)
-            .Description("Версия потока");
 
         descriptor.Field(f => f.Priority)
             .Description("Приоритет потока");
@@ -54,8 +50,6 @@ public class FlowType : ObjectType<FlowDto>
         descriptor.Field(f => f.TotalSteps)
             .Description("Общее количество шагов");
 
-        descriptor.Field(f => f.EstimatedDurationMinutes)
-            .Description("Приблизительное время прохождения в минутах");
 
         descriptor.Field(f => f.Settings)
             .Description("Настройки потока")

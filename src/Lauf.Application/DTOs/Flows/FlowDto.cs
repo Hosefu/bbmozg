@@ -23,11 +23,6 @@ public class FlowDto
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Категория потока
-    /// </summary>
-    public string Category { get; set; } = string.Empty;
-
-    /// <summary>
     /// Теги потока
     /// </summary>
     public List<string> Tags { get; set; } = new();
@@ -36,11 +31,6 @@ public class FlowDto
     /// Статус потока
     /// </summary>
     public FlowStatus Status { get; set; }
-
-    /// <summary>
-    /// Версия потока
-    /// </summary>
-    public int Version { get; set; }
 
     /// <summary>
     /// Приоритет потока
@@ -76,11 +66,6 @@ public class FlowDto
     /// Общее количество шагов
     /// </summary>
     public int TotalSteps { get; set; }
-
-    /// <summary>
-    /// Приблизительное время прохождения в минутах
-    /// </summary>
-    public int EstimatedDurationMinutes { get; set; }
 
     /// <summary>
     /// Настройки потока

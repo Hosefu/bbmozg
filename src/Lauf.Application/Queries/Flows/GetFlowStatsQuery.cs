@@ -223,7 +223,8 @@ public class GetFlowStatsQueryHandler : IRequestHandler<GetFlowStatsQuery, FlowS
                     // Оценка времени на основе оценки длительности
                     if (isStepCompleted)
                     {
-                        stepTimeList.Add(step.EstimatedDurationMinutes / 60.0); // Переводим в часы
+                        // Поскольку EstimatedDurationMinutes больше нет, используем примерное время 1 час на шаг
+                        stepTimeList.Add(1.0);
                     }
                 }
             }

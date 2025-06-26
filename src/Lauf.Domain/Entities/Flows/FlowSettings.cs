@@ -55,15 +55,7 @@ public class FlowSettings
     /// </summary>
     public bool AllowPause { get; set; } = true;
 
-    /// <summary>
-    /// Максимальное количество попыток прохождения
-    /// </summary>
-    public int? MaxAttempts { get; set; }
 
-    /// <summary>
-    /// Минимальный проходной балл для всего потока (в процентах)
-    /// </summary>
-    public int? MinPassingScorePercent { get; set; }
 
     /// <summary>
     /// Отправлять уведомления о приближении дедлайна

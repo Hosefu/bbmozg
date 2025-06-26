@@ -51,11 +51,7 @@ public class GetFlowsQueryHandler : IRequestHandler<GetFlowsQuery, GetFlowsQuery
                     f.Description.ToLowerInvariant().Contains(searchTerm));
             }
 
-            if (!string.IsNullOrWhiteSpace(request.Category))
-            {
-                filteredFlows = filteredFlows.Where(f => 
-                    f.Category != null && f.Category.Equals(request.Category, StringComparison.OrdinalIgnoreCase));
-            }
+            // Фильтрация по категории удалена, так как поле Category больше не существует
 
             var totalCount = filteredFlows.Count();
             var pagedFlows = filteredFlows
@@ -70,13 +66,13 @@ public class GetFlowsQueryHandler : IRequestHandler<GetFlowsQuery, GetFlowsQuery
                 Title = flow.Title,
                 Description = flow.Description,
                 Status = flow.Status,
-                Category = flow.Category,
                 Tags = ParseTagsFromJson(flow.Tags),
                 Priority = flow.Priority,
                 IsRequired = flow.IsRequired,
                 CreatedAt = flow.CreatedAt,
                 UpdatedAt = flow.UpdatedAt,
-                CreatedById = flow.CreatedById
+                CreatedById = flow.CreatedById,
+                TotalSteps = flow.TotalSteps
             }).ToList();
 
             _logger.LogInformation("Найдено {TotalCount} потоков, возвращено {Count}", 

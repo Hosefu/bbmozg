@@ -66,10 +66,6 @@ public class UpdateFlowCommandHandler : IRequestHandler<UpdateFlowCommand, Updat
                 statusProperty?.SetValue(flow, request.Status.Value);
             }
 
-            if (!string.IsNullOrWhiteSpace(request.Category))
-            {
-                flow.Category = request.Category;
-            }
 
             if (!string.IsNullOrWhiteSpace(request.Tags))
             {
@@ -102,13 +98,13 @@ public class UpdateFlowCommandHandler : IRequestHandler<UpdateFlowCommand, Updat
                 Title = flow.Title,
                 Description = flow.Description,
                 Status = flow.Status,
-                Category = flow.Category,
                 Tags = ParseTags(flow.Tags),
                 Priority = flow.Priority,
                 IsRequired = flow.IsRequired,
                 CreatedAt = flow.CreatedAt,
                 UpdatedAt = flow.UpdatedAt,
-                CreatedById = flow.CreatedById
+                CreatedById = flow.CreatedById,
+                TotalSteps = flow.TotalSteps
             };
 
             return new UpdateFlowCommandResult

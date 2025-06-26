@@ -22,10 +22,6 @@ public class Flow
     /// </summary>
     public string Description { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Категория потока
-    /// </summary>
-    public string Category { get; set; } = string.Empty;
 
     /// <summary>
     /// Теги для поиска
@@ -37,10 +33,6 @@ public class Flow
     /// </summary>
     public FlowStatus Status { get; set; } = FlowStatus.Draft;
 
-    /// <summary>
-    /// Версия потока
-    /// </summary>
-    public int Version { get; set; } = 1;
 
     /// <summary>
     /// Приоритет отображения
@@ -98,7 +90,6 @@ public class Flow
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         Status = FlowStatus.Draft;
-        Version = 1;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
@@ -113,10 +104,6 @@ public class Flow
     /// </summary>
     public int TotalSteps => Steps.Count;
 
-    /// <summary>
-    /// Получает приблизительное время прохождения в минутах
-    /// </summary>
-    public int EstimatedDurationMinutes => Steps.Sum(s => s.EstimatedDurationMinutes);
 
     /// <summary>
     /// Проверяет, может ли поток быть опубликован
@@ -163,14 +150,6 @@ public class Flow
         UpdatedAt = DateTime.UtcNow;
     }
 
-    /// <summary>
-    /// Обновляет версию потока
-    /// </summary>
-    public void IncrementVersion()
-    {
-        Version++;
-        UpdatedAt = DateTime.UtcNow;
-    }
 
     /// <summary>
     /// Добавляет шаг в поток

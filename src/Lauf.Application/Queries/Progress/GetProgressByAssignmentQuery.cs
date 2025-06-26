@@ -320,7 +320,7 @@ public class GetProgressByAssignmentQueryHandler : IRequestHandler<GetProgressBy
             Title = flow.Title,
             Description = flow.Description,
             TotalSteps = flow.Steps?.Count ?? 0,
-            EstimatedHours = (int?)flow.Steps?.Sum(s => s.EstimatedDurationMinutes / 60.0)
+            EstimatedHours = null // Расчетное время удалено из модели
         };
     }
 

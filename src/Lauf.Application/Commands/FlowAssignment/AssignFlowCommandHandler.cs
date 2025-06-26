@@ -129,9 +129,9 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
 
     private static DateTime CalculateDefaultDeadline(Flow flow)
     {
-        // Простой расчет: добавляем к текущей дате количество дней равное расчетному времени прохождения в часах
-        var estimatedHours = flow.EstimatedDurationMinutes / 60.0;
-        var estimatedDays = Math.Max(1, Math.Ceiling(estimatedHours / 8.0)); // 8 часов рабочий день
+        // Простой расчет: добавляем к текущей дате количество дней на основе количества шагов
+        // Примерно 1 день на каждые 2 шага, минимум 7 дней
+        var estimatedDays = Math.Max(7, Math.Ceiling(flow.TotalSteps / 2.0));
         
         return DateTime.UtcNow.AddDays(estimatedDays);
     }

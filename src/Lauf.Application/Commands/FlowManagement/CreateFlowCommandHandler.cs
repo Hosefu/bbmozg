@@ -50,7 +50,6 @@ public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, Creat
             var flow = new Flow(request.Title, request.Description);
             
             // Заполняем дополнительные свойства
-            flow.Category = request.Category;
             flow.Tags = request.Tags;
             flow.Priority = request.Priority;
             flow.IsRequired = request.IsRequired;

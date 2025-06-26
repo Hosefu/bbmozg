@@ -39,7 +39,6 @@ public class SearchFlowsQueryHandler : IRequestHandler<SearchFlowsQuery, SearchF
                 filteredFlows = filteredFlows.Where(f => 
                     f.Title.ToLowerInvariant().Contains(searchTerm) ||
                     f.Description.ToLowerInvariant().Contains(searchTerm) ||
-                    (f.Category != null && f.Category.ToLowerInvariant().Contains(searchTerm)) ||
                     (f.Tags != null && ParseTagsFromJson(f.Tags).Any(tag => tag.ToLowerInvariant().Contains(searchTerm))));
             }
 
@@ -56,13 +55,13 @@ public class SearchFlowsQueryHandler : IRequestHandler<SearchFlowsQuery, SearchF
                 Title = flow.Title,
                 Description = flow.Description,
                 Status = flow.Status,
-                Category = flow.Category,
                 Tags = ParseTagsFromJson(flow.Tags),
                 Priority = flow.Priority,
                 IsRequired = flow.IsRequired,
                 CreatedAt = flow.CreatedAt,
                 UpdatedAt = flow.UpdatedAt,
-                CreatedById = flow.CreatedById
+                CreatedById = flow.CreatedById,
+                TotalSteps = flow.TotalSteps
             }).ToList();
 
             _logger.LogInformation("По запросу '{SearchTerm}' найдено {TotalCount} потоков, возвращено {Count}", 

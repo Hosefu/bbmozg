@@ -32,9 +32,6 @@ public class SimpleFlowConfiguration : IEntityTypeConfiguration<Flow>
             .HasConversion<string>()
             .HasDefaultValue(FlowStatus.Draft);
 
-        builder.Property(x => x.Version)
-            .IsRequired()
-            .HasDefaultValue(1);
 
         // Аудит
         builder.Property(x => x.CreatedAt)
