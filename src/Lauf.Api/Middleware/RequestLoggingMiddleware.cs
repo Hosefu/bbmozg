@@ -25,15 +25,13 @@ public class RequestLoggingMiddleware
         // Логируем входящий запрос
         await LogIncomingRequest(context, requestId);
 
-        // Сохраняем оригинальный stream для чтения ответа
-        var originalBodyStream = context.Response.Body;
-
-        using var responseBody = new MemoryStream();
-        context.Response.Body = responseBody;
-
         try
         {
             await _next(context);
+            stopwatch.Stop();
+            
+            // Логируем ответ без перехвата потока
+            LogResponse(context, requestId, stopwatch.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
@@ -43,14 +41,6 @@ public class RequestLoggingMiddleware
                 requestId, context.Request.Method, context.Request.Path, stopwatch.ElapsedMilliseconds);
             throw;
         }
-
-        stopwatch.Stop();
-
-        // Логируем ответ
-        await LogResponse(context, requestId, stopwatch.ElapsedMilliseconds, responseBody);
-
-        // Возвращаем оригинальный stream
-        await responseBody.CopyToAsync(originalBodyStream);
     }
 
     private async Task LogIncomingRequest(HttpContext context, string requestId)
@@ -106,56 +96,60 @@ public class RequestLoggingMiddleware
         }
     }
 
-    private async Task LogResponse(HttpContext context, string requestId, long elapsedMs, MemoryStream responseBody)
-    {
-        var response = context.Response;
-        var responseSize = responseBody.Length;
-        
-        // Определяем уровень логирования по статус коду
-        var logLevel = GetLogLevelByStatusCode(response.StatusCode);
-        var icon = GetResponseIcon(response.StatusCode);
-        var statusCategory = GetStatusCategory(response.StatusCode);
-
-        _logger.Log(logLevel,
-            "{Icon} [REQ-{RequestId}] {StatusCategory} {StatusCode} | {ElapsedMs}ms | {ResponseSize} bytes | {ContentType}",
-            icon, requestId, statusCategory, response.StatusCode, elapsedMs, responseSize, 
-            response.ContentType ?? "unknown");
-
-        // Логируем медленные запросы отдельно
-        if (elapsedMs > 1000)
-        {
-            _logger.LogWarning(
-                "🐌 [REQ-{RequestId}] МЕДЛЕННЫЙ ЗАПРОС: {Method} {Path} выполнялся {ElapsedMs}ms",
-                requestId, context.Request.Method, context.Request.Path, elapsedMs);
-        }
-
-        // Логируем GraphQL операции отдельно
-        if (IsGraphQLRequest(context.Request))
-        {
-            await LogGraphQLOperation(context, requestId, responseBody);
-        }
-    }
-
-    private async Task LogGraphQLOperation(HttpContext context, string requestId, MemoryStream responseBody)
+    private void LogResponse(HttpContext context, string requestId, long elapsedMs)
     {
         try
         {
-            // Пытаемся извлечь операцию из запроса
-            context.Request.EnableBuffering();
-            context.Request.Body.Position = 0;
-            var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
+            var response = context.Response;
+            var responseSize = response.ContentLength ?? 0;
             
-            if (!string.IsNullOrEmpty(requestBody))
+            // Определяем уровень логирования по статус коду
+            var logLevel = GetLogLevelByStatusCode(response.StatusCode);
+            var icon = GetResponseIcon(response.StatusCode);
+            var statusCategory = GetStatusCategory(response.StatusCode);
+
+            _logger.Log(logLevel,
+                "{Icon} [REQ-{RequestId}] {StatusCategory} {StatusCode} | {ElapsedMs}ms | {ResponseSize} bytes | {ContentType}",
+                icon, requestId, statusCategory, response.StatusCode, elapsedMs, responseSize, 
+                response.ContentType ?? "unknown");
+
+            // Логируем медленные запросы отдельно
+            if (elapsedMs > 1000)
             {
-                // Простой парсинг GraphQL запроса для извлечения operationName
-                var operationName = ExtractGraphQLOperation(requestBody);
-                if (!string.IsNullOrEmpty(operationName))
-                {
-                    _logger.LogInformation(
-                        "🔸 [REQ-{RequestId}] GraphQL Operation: {OperationName}",
-                        requestId, operationName);
-                }
+                _logger.LogWarning(
+                    "🐌 [REQ-{RequestId}] МЕДЛЕННЫЙ ЗАПРОС: {Method} {Path} выполнялся {ElapsedMs}ms",
+                    requestId, context.Request.Method, context.Request.Path, elapsedMs);
             }
+
+            // Логируем GraphQL операции отдельно
+            if (IsGraphQLRequest(context.Request))
+            {
+                LogGraphQLOperation(context, requestId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[REQ-{RequestId}] Ошибка при логировании ответа", requestId);
+        }
+    }
+
+    private void LogGraphQLOperation(HttpContext context, string requestId)
+    {
+        try
+        {
+            // Извлекаем информацию из query string для SDL запросов
+            if (context.Request.Query.ContainsKey("sdl"))
+            {
+                _logger.LogInformation(
+                    "🔸 [REQ-{RequestId}] GraphQL Schema Request (SDL)",
+                    requestId);
+                return;
+            }
+
+            // Для других GraphQL запросов просто логируем базовую информацию
+            _logger.LogInformation(
+                "🔸 [REQ-{RequestId}] GraphQL Operation",
+                requestId);
         }
         catch (Exception ex)
         {
@@ -163,55 +157,7 @@ public class RequestLoggingMiddleware
         }
     }
 
-    private string ExtractGraphQLOperation(string requestBody)
-    {
-        try
-        {
-            // Простое извлечение имени операции из GraphQL запроса
-            if (requestBody.Contains("operationName"))
-            {
-                var lines = requestBody.Split('\n', '\r');
-                foreach (var line in lines)
-                {
-                    if (line.Trim().StartsWith("\"operationName\""))
-                    {
-                        var parts = line.Split(':');
-                        if (parts.Length > 1)
-                        {
-                            return parts[1].Trim().Trim('"', ',', ' ');
-                        }
-                    }
-                }
-            }
 
-            // Попытка извлечь из текста запроса
-            if (requestBody.Contains("query ") || requestBody.Contains("mutation ") || requestBody.Contains("subscription "))
-            {
-                var queryStart = Math.Max(Math.Max(
-                    requestBody.IndexOf("query "), 
-                    requestBody.IndexOf("mutation ")), 
-                    requestBody.IndexOf("subscription "));
-                
-                if (queryStart >= 0)
-                {
-                    var afterKeyword = requestBody.Substring(queryStart);
-                    var spaceIndex = afterKeyword.IndexOf(' ');
-                    if (spaceIndex > 0)
-                    {
-                        var nextPart = afterKeyword.Substring(spaceIndex + 1).Trim();
-                        var operationName = nextPart.Split('(', '{', ' ')[0];
-                        return operationName;
-                    }
-                }
-            }
-
-            return "UnknownOperation";
-        }
-        catch
-        {
-            return "UnknownOperation";
-        }
-    }
 
     private string GetRequestType(HttpRequest request)
     {
