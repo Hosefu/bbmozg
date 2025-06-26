@@ -14,6 +14,11 @@ public interface IUnitOfWork : IDisposable
     IUserRepository Users { get; }
 
     /// <summary>
+    /// Репозиторий ролей
+    /// </summary>
+    IRoleRepository Roles { get; }
+
+    /// <summary>
     /// Репозиторий потоков
     /// </summary>
     IFlowRepository Flows { get; }
@@ -55,7 +60,7 @@ public interface IUnitOfWork : IDisposable
 public interface ITransaction : IAsyncDisposable
 {
     /// <summary>
-    /// Подтверждает транзакцию
+    /// Фиксирует транзакцию
     /// </summary>
     /// <param name="cancellationToken">Токен отмены</param>
     Task CommitAsync(CancellationToken cancellationToken = default);

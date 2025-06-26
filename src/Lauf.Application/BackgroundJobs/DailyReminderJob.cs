@@ -158,9 +158,9 @@ public class DailyReminderJob
         try
         {
             _logger.LogInformation(
-                "Отправка напоминания типа {ReminderType} пользователю {Email}",
+                "Отправка напоминания типа {ReminderType} пользователю {UserId}",
                 reminderType,
-                user.Email);
+                user.Id);
 
             // Отправляем напоминание через NotificationService в зависимости от типа
             switch (reminderType)

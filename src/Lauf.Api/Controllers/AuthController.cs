@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Domain.ValueObjects;
+using Lauf.Shared.Constants;
 
 namespace Lauf.Api.Controllers;
 
@@ -17,12 +18,14 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
+    private readonly IRoleRepository _roleRepository;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IConfiguration configuration, IUserRepository userRepository, ILogger<AuthController> logger)
+    public AuthController(IConfiguration configuration, IUserRepository userRepository, IRoleRepository roleRepository, ILogger<AuthController> logger)
     {
         _configuration = configuration;
         _userRepository = userRepository;
+        _roleRepository = roleRepository;
         _logger = logger;
     }
 
@@ -55,7 +58,6 @@ public class AuthController : ControllerBase
             {
                 Id = Guid.NewGuid(),
                 TelegramUserId = telegramUserId,
-                Email = $"user{request.TelegramId}@telegram.local", // Telegram не предоставляет email
                 FirstName = request.FirstName ?? "Пользователь",
                 LastName = request.LastName ?? "",
                 TelegramUsername = request.Username,
@@ -64,6 +66,19 @@ public class AuthController : ControllerBase
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+
+            // В dev режиме позволяем указать роль, иначе Employee по умолчанию
+            var roleName = !string.IsNullOrEmpty(request.Role) ? request.Role : Roles.Employee;
+            var role = await _roleRepository.GetByNameAsync(roleName);
+            if (role != null)
+            {
+                user.Roles.Add(role);
+                _logger.LogInformation("Пользователю назначена роль: {Role}", roleName);
+            }
+            else
+            {
+                _logger.LogWarning("Роль {Role} не найдена. Пользователь создан без роли", roleName);
+            }
             
             _logger.LogInformation("Создаем нового пользователя с TelegramId: {TelegramId}", request.TelegramId);
             await _userRepository.AddAsync(user);
@@ -91,11 +106,11 @@ public class AuthController : ControllerBase
             {
                 id = user.Id,
                 telegramId = user.TelegramUserId.Value,
-                email = user.Email,
                 firstName = user.FirstName,
                 lastName = user.LastName,
                 position = user.Position,
-                isActive = user.IsActive
+                isActive = user.IsActive,
+                roles = user.Roles.Select(r => r.Name).ToArray()
             }
         });
     }
@@ -137,7 +152,6 @@ public class AuthController : ControllerBase
             {
                 Id = Guid.NewGuid(),
                 TelegramUserId = new TelegramUserId(userData.Id),
-                Email = $"user{userData.Id}@telegram.local", // Telegram не предоставляет email
                 FirstName = userData.FirstName ?? "Пользователь",
                 LastName = userData.LastName ?? "",
                 TelegramUsername = userData.Username,
@@ -146,6 +160,18 @@ public class AuthController : ControllerBase
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+
+            // Назначаем роль Employee по умолчанию при первом обращении
+            var employeeRole = await _roleRepository.GetByNameAsync(Roles.Employee);
+            if (employeeRole != null)
+            {
+                user.Roles.Add(employeeRole);
+                _logger.LogInformation("Новому пользователю назначена роль Employee по умолчанию");
+            }
+            else
+            {
+                _logger.LogWarning("Роль Employee не найдена в системе. Пользователь создан без роли");
+            }
             
             await _userRepository.AddAsync(user);
         }
@@ -169,11 +195,11 @@ public class AuthController : ControllerBase
             {
                 id = user.Id,
                 telegramId = user.TelegramUserId.Value,
-                email = user.Email,
                 firstName = user.FirstName,
                 lastName = user.LastName,
                 position = user.Position,
-                isActive = user.IsActive
+                isActive = user.IsActive,
+                roles = user.Roles.Select(r => r.Name).ToArray()
             }
         });
     }
@@ -185,16 +211,21 @@ public class AuthController : ControllerBase
             jwtSettings["Key"] ?? "default-secret-key-for-development-only-32chars"));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
             new Claim("telegram_id", user.TelegramUserId.Value.ToString()),
             new Claim("first_name", user.FirstName),
             new Claim("last_name", user.LastName),
             new Claim("position", user.Position ?? string.Empty),
             new Claim("is_active", user.IsActive.ToString())
         };
+
+        // Добавляем роли как отдельные claims
+        foreach (var role in user.Roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role.Name));
+        }
 
         var token = new JwtSecurityToken(
             claims: claims,
@@ -214,7 +245,8 @@ public record DevLoginRequest(
     string? FirstName = null,
     string? LastName = null,
     string? Username = null,
-    string? LanguageCode = null);
+    string? LanguageCode = null,
+    string? Role = null);
 
 /// <summary>
 /// Запрос для Telegram Web App авторизации

@@ -27,12 +27,6 @@ public class UserType : ObjectType<UserDto>
         descriptor.Field(f => f.Username)
             .Description("Username в Telegram");
 
-        descriptor.Field(f => f.Email)
-            .Description("Email пользователя");
-
-        descriptor.Field(f => f.Phone)
-            .Description("Телефон пользователя");
-
         descriptor.Field(f => f.Position)
             .Description("Должность пользователя");
 
@@ -52,15 +46,15 @@ public class UserType : ObjectType<UserDto>
             .Description("Роли пользователя");
 
         descriptor.Field(f => f.CreatedAt)
-            .Description("Дата регистрации");
+            .Description("Дата создания пользователя");
 
         descriptor.Field(f => f.LastActivityAt)
-            .Description("Дата последней активности");
-
-        descriptor.Field(f => f.FullName)
-            .Description("Полное имя пользователя");
+            .Description("Дата последней активности пользователя");
 
         descriptor.Field(f => f.DisplayName)
             .Description("Отображаемое имя пользователя");
+
+        descriptor.Field(f => f.FullName)
+            .Description("Полное имя пользователя");
     }
 }

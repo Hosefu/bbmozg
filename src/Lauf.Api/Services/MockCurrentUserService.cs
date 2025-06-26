@@ -18,11 +18,11 @@ public class MockCurrentUserService : ICurrentUserService
     }
 
     /// <summary>
-    /// Получить email текущего пользователя
+    /// Получить Telegram ID текущего пользователя
     /// </summary>
-    public string? GetCurrentUserEmail()
+    public long? GetCurrentUserTelegramId()
     {
-        return "test@example.com";
+        return 123456789;
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public class MockCurrentUserService : ICurrentUserService
     }
 
     /// <summary>
-    /// Проверить, аутентифицирован ли пользователь
+    /// Проверить, авторизован ли пользователь
     /// </summary>
     public bool IsAuthenticated()
     {
@@ -42,7 +42,7 @@ public class MockCurrentUserService : ICurrentUserService
     }
 
     /// <summary>
-    /// Проверить, есть ли у пользователя определенная роль
+    /// Проверить, имеет ли пользователь указанную роль
     /// </summary>
     public bool IsInRole(string role)
     {
@@ -50,30 +50,14 @@ public class MockCurrentUserService : ICurrentUserService
     }
 
     /// <summary>
-    /// Проверить, является ли пользователь администратором
-    /// </summary>
-    public bool IsAdmin()
-    {
-        return IsInRole("Admin");
-    }
-
-    /// <summary>
-    /// Проверить, является ли пользователь бадди
-    /// </summary>
-    public bool IsBuddy()
-    {
-        return IsInRole("Buddy");
-    }
-
-    /// <summary>
     /// Получить все claims пользователя
     /// </summary>
-    public Dictionary<string, string> GetUserClaims()
+    public IDictionary<string, string> GetUserClaims()
     {
         return new Dictionary<string, string>
         {
             { "sub", GetCurrentUserId()?.ToString() ?? "" },
-            { "email", GetCurrentUserEmail() ?? "" },
+            { "telegram_id", GetCurrentUserTelegramId()?.ToString() ?? "" },
             { "role", "Admin" }
         };
     }

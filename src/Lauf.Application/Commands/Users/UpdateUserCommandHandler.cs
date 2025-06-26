@@ -2,6 +2,9 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Lauf.Domain.Interfaces;
 using Lauf.Application.DTOs.Users;
+using Lauf.Domain.Entities.Users;
+using Lauf.Domain.Exceptions;
+using Lauf.Domain.ValueObjects;
 
 namespace Lauf.Application.Commands.Users;
 
@@ -34,28 +37,29 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserD
                 throw new ArgumentException($"Пользователь с ID {request.UserId} не найден");
             }
 
-            // Обновляем поля пользователя, если они переданы
-            if (!string.IsNullOrEmpty(request.Email))
+            // Обновляем поля пользователя
+            user.FirstName = request.FirstName;
+            user.LastName = request.LastName;
+
+            if (request.TelegramUserId.HasValue)
             {
-                user.Email = request.Email;
+                user.TelegramUserId = new TelegramUserId(request.TelegramUserId.Value);
             }
 
-            if (!string.IsNullOrEmpty(request.FullName))
+            if (request.RoleIds != null && request.RoleIds.Any())
             {
-                var nameParts = request.FullName.Split(' ');
-                user.FirstName = nameParts.FirstOrDefault() ?? "";
-                user.LastName = string.Join(" ", nameParts.Skip(1));
-            }
-
-            if (request.IsActive.HasValue)
-            {
-                if (request.IsActive.Value)
+                // Получаем роли по ID
+                var roles = await _unitOfWork.Roles.GetByIdsAsync(request.RoleIds, cancellationToken);
+                if (roles.Count != request.RoleIds.Count)
                 {
-                    user.Activate();
+                    throw new ArgumentException("Одна или несколько указанных ролей не найдены");
                 }
-                else
+
+                // Очищаем текущие роли и устанавливаем новые
+                user.Roles.Clear();
+                foreach (var role in roles)
                 {
-                    user.Deactivate();
+                    user.Roles.Add(role);
                 }
             }
 
@@ -67,21 +71,18 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, UserD
 
             _logger.LogInformation("Пользователь {UserId} успешно обновлен", request.UserId);
 
-            // Создаем DTO для ответа
-            var userDto = new UserDto
+            // Возвращаем обновленного пользователя
+            return new UserDto
             {
                 Id = user.Id,
-                TelegramUserId = user.TelegramUserId.Value,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email,
-                Position = request.Position,
+                TelegramUserId = user.TelegramUserId.Value,
                 IsActive = user.IsActive,
                 CreatedAt = user.CreatedAt,
-                LastActivityAt = user.LastActiveAt
+                UpdatedAt = user.UpdatedAt,
+                Roles = user.Roles.Select(r => r.Name).ToList()
             };
-
-            return userDto;
         }
         catch (Exception ex)
         {

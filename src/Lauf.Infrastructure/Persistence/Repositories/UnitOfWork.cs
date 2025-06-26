@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
 
     // Репозитории (полная версия этап 8)
     private IUserRepository? _userRepository;
+    private IRoleRepository? _roleRepository;
     private IFlowRepository? _flowRepository;
     private IFlowAssignmentRepository? _flowAssignmentRepository;
 
@@ -29,6 +30,12 @@ public class UnitOfWork : IUnitOfWork
     /// </summary>
     public IUserRepository Users => 
         _userRepository ??= new SimpleUserRepository(_context);
+
+    /// <summary>
+    /// Репозиторий ролей
+    /// </summary>
+    public IRoleRepository Roles => 
+        _roleRepository ??= new RoleRepository(_context);
 
     /// <summary>
     /// Репозиторий потоков

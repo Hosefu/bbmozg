@@ -173,8 +173,8 @@ public class DeadlineCheckJob
         }
 
         _logger.LogInformation(
-            "Отправка уведомления о просрочке пользователю {Email}",
-            user.Email);
+                            "Отправка уведомления о просрочке пользователю {UserId}",
+                user.Id);
 
         // Отправка уведомлений будет реализована через NotificationService
         await Task.CompletedTask;
@@ -199,8 +199,8 @@ public class DeadlineCheckJob
         }
 
         _logger.LogInformation(
-            "Отправка уведомления бадди {Email} о просрочке подопечного",
-            buddy.Email);
+                            "Отправка уведомления бадди {UserId} о просрочке подопечного",
+                buddy.Id);
 
         // Отправка уведомлений будет реализована через NotificationService
         await Task.CompletedTask;

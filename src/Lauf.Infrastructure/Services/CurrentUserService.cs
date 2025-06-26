@@ -5,7 +5,7 @@ using Lauf.Application.Services.Interfaces;
 namespace Lauf.Infrastructure.Services;
 
 /// <summary>
-/// Сервис для работы с текущим пользователем
+/// Сервис для получения информации о текущем пользователе
 /// </summary>
 public class CurrentUserService : ICurrentUserService
 {
@@ -17,28 +17,23 @@ public class CurrentUserService : ICurrentUserService
     }
 
     /// <summary>
-    /// Получить идентификатор текущего пользователя
+    /// Получить ID текущего пользователя
     /// </summary>
     public Guid? GetCurrentUserId()
     {
         var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                         ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
+            ?? _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value;
 
-        if (Guid.TryParse(userIdClaim, out var userId))
-        {
-            return userId;
-        }
-
-        return null;
+        return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
     }
 
     /// <summary>
-    /// Получить email текущего пользователя
+    /// Получить Telegram ID текущего пользователя
     /// </summary>
-    public string? GetCurrentUserEmail()
+    public long? GetCurrentUserTelegramId()
     {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value
-               ?? _httpContextAccessor.HttpContext?.User?.FindFirst("email")?.Value;
+        var telegramIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("telegram_id")?.Value;
+        return long.TryParse(telegramIdClaim, out var telegramId) ? telegramId : null;
     }
 
     /// <summary>
@@ -46,32 +41,23 @@ public class CurrentUserService : ICurrentUserService
     /// </summary>
     public IEnumerable<string> GetCurrentUserRoles()
     {
-        var user = _httpContextAccessor.HttpContext?.User;
-        if (user == null)
-        {
-            return Enumerable.Empty<string>();
-        }
-
-        return user.FindAll(ClaimTypes.Role)
-            .Select(c => c.Value)
-            .Concat(user.FindAll("role").Select(c => c.Value))
-            .Distinct();
+        return _httpContextAccessor.HttpContext?.User?.FindAll(ClaimTypes.Role)?.Select(c => c.Value) ?? Enumerable.Empty<string>();
     }
 
     /// <summary>
-    /// Проверить, аутентифицирован ли пользователь
+    /// Проверить, авторизован ли пользователь
     /// </summary>
     public bool IsAuthenticated()
     {
-        return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
+        return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
     }
 
     /// <summary>
-    /// Проверить, есть ли у пользователя роль
+    /// Проверить, имеет ли пользователь указанную роль
     /// </summary>
     public bool IsInRole(string role)
     {
-        return GetCurrentUserRoles().Contains(role, StringComparer.OrdinalIgnoreCase);
+        return _httpContextAccessor.HttpContext?.User?.IsInRole(role) ?? false;
     }
 
     /// <summary>
@@ -93,14 +79,18 @@ public class CurrentUserService : ICurrentUserService
     /// <summary>
     /// Получить все claims пользователя
     /// </summary>
-    public Dictionary<string, string> GetUserClaims()
+    public IDictionary<string, string> GetUserClaims()
     {
-        var user = _httpContextAccessor.HttpContext?.User;
-        if (user == null)
+        var claims = new Dictionary<string, string>();
+        
+        if (_httpContextAccessor.HttpContext?.User?.Claims != null)
         {
-            return new Dictionary<string, string>();
+            foreach (var claim in _httpContextAccessor.HttpContext.User.Claims)
+            {
+                claims[claim.Type] = claim.Value;
+            }
         }
 
-        return user.Claims.ToDictionary(c => c.Type, c => c.Value);
+        return claims;
     }
 }

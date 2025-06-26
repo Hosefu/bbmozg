@@ -8,6 +8,7 @@ using Lauf.Application.Commands.FlowManagement;
 using Lauf.Application.Commands.FlowAssignment;
 using Lauf.Application.Services.Interfaces;
 using Lauf.Api.GraphQL.Types;
+using Microsoft.Extensions.Logging;
 
 namespace Lauf.Api.GraphQL.Resolvers;
 
@@ -16,6 +17,15 @@ namespace Lauf.Api.GraphQL.Resolvers;
 /// </summary>
 public class Mutation
 {
+    private readonly IMediator _mediator;
+    private readonly ILogger<Mutation> _logger;
+
+    public Mutation(IMediator mediator, ILogger<Mutation> logger)
+    {
+        _mediator = mediator;
+        _logger = logger;
+    }
+
     /// <summary>
     /// Создать пользователя
     /// </summary>
@@ -24,18 +34,23 @@ public class Mutation
         CreateUserInput input,
         CancellationToken cancellationToken = default)
     {
-        var command = new CreateUserCommand
+        try
         {
-            TelegramUserId = input.TelegramId,
-            Email = input.Email,
-            FirstName = input.FullName.Split(' ').FirstOrDefault() ?? "",
-            LastName = string.Join(" ", input.FullName.Split(' ').Skip(1)),
-            Position = input.Position,
-            Language = "ru"
-        };
+            var command = new CreateUserCommand
+            {
+                FirstName = input.FirstName,
+                LastName = input.LastName,
+                TelegramUserId = input.TelegramUserId
+            };
 
-        var result = await mediator.Send(command, cancellationToken);
-        return result;
+            var result = await mediator.Send(command, cancellationToken);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при создании пользователя");
+            throw new GraphQLException("Не удалось создать пользователя");
+        }
     }
 
     /// <summary>
@@ -46,17 +61,25 @@ public class Mutation
         UpdateUserInput input,
         CancellationToken cancellationToken = default)
     {
-        var command = new UpdateUserCommand
+        try
         {
-            UserId = input.Id,
-            Email = input.Email,
-            FullName = input.FullName,
-            Position = input.Position,
-            IsActive = input.IsActive
-        };
+            var command = new UpdateUserCommand
+            {
+                UserId = input.UserId,
+                FirstName = input.FirstName,
+                LastName = input.LastName,
+                TelegramUserId = input.TelegramUserId,
+                RoleIds = input.RoleIds
+            };
 
-        var result = await mediator.Send(command, cancellationToken);
-        return result;
+            var result = await mediator.Send(command, cancellationToken);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при обновлении пользователя с ID {UserId}", input.UserId);
+            throw new GraphQLException("Не удалось обновить пользователя");
+        }
     }
 
     /// <summary>
@@ -185,17 +208,16 @@ public class Mutation
 /// Input типы для мутаций
 /// </summary>
 public record CreateUserInput(
-    long TelegramId,
-    string Email,
-    string FullName,
-    string? Position);
+    string FirstName,
+    string LastName,
+    long? TelegramUserId);
 
 public record UpdateUserInput(
-    Guid Id,
-    string? Email,
-    string? FullName,
-    string? Position,
-    bool? IsActive);
+    Guid UserId,
+    string FirstName,
+    string LastName,
+    long? TelegramUserId,
+    List<Guid>? RoleIds);
 
 public record CreateFlowInput(
     string Title,

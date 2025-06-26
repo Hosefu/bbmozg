@@ -31,16 +31,6 @@ public class UserDto
     public string? Username { get; set; }
 
     /// <summary>
-    /// Email пользователя
-    /// </summary>
-    public string? Email { get; set; }
-
-    /// <summary>
-    /// Телефон пользователя
-    /// </summary>
-    public string? Phone { get; set; }
-
-    /// <summary>
     /// Должность
     /// </summary>
     public string? Position { get; set; }
@@ -76,17 +66,22 @@ public class UserDto
     public DateTime CreatedAt { get; set; }
 
     /// <summary>
+    /// Дата последнего обновления
+    /// </summary>
+    public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
     /// Дата последней активности
     /// </summary>
     public DateTime? LastActivityAt { get; set; }
 
     /// <summary>
-    /// Полное имя пользователя
+    /// Отображаемое имя пользователя
     /// </summary>
-    public string FullName => $"{FirstName} {LastName}".Trim();
+    public string DisplayName => $"{FirstName} {LastName}".Trim();
 
     /// <summary>
-    /// Отображаемое имя (FullName или Username)
+    /// Полное имя пользователя
     /// </summary>
-    public string DisplayName => !string.IsNullOrEmpty(FullName) ? FullName : Username ?? $"User{TelegramUserId}";
+    public string FullName => DisplayName;
 }

@@ -39,11 +39,6 @@ public class User
     public TelegramUserId TelegramUserId { get; set; } = null!;
 
     /// <summary>
-    /// Электронная почта
-    /// </summary>
-    public string? Email { get; set; }
-
-    /// <summary>
     /// Должность пользователя
     /// </summary>
     public string? Position { get; set; }

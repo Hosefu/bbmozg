@@ -138,9 +138,9 @@ public class UserInfoDto
     public string LastName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Email пользователя
+    /// Telegram ID пользователя
     /// </summary>
-    public string Email { get; set; } = string.Empty;
+    public long TelegramUserId { get; set; }
 }
 
 /// <summary>
@@ -339,7 +339,7 @@ public class GetProgressByAssignmentQueryHandler : IRequestHandler<GetProgressBy
             Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Email = user.Email
+            TelegramUserId = user.TelegramUserId?.Value ?? 0
         };
     }
 

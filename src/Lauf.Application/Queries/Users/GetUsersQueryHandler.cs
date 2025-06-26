@@ -48,8 +48,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersQuery
                 var searchTerm = request.SearchTerm.ToLowerInvariant();
                 filteredUsers = filteredUsers.Where(u => 
                     u.FirstName.ToLowerInvariant().Contains(searchTerm) ||
-                    u.LastName.ToLowerInvariant().Contains(searchTerm) ||
-                    u.Email.ToLowerInvariant().Contains(searchTerm));
+                    u.LastName.ToLowerInvariant().Contains(searchTerm));
             }
 
             var totalCount = filteredUsers.Count();
@@ -65,7 +64,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersQuery
                 TelegramUserId = user.TelegramUserId.Value,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email,
+
                 Position = user.Position,
                 Language = user.Language,
                 IsActive = user.IsActive,

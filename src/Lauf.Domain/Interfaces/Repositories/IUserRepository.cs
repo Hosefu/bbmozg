@@ -9,12 +9,67 @@ namespace Lauf.Domain.Interfaces.Repositories;
 public interface IUserRepository
 {
     /// <summary>
-    /// Получает пользователя по ID
+    /// Получает пользователя по его ID
     /// </summary>
-    /// <param name="id">Идентификатор пользователя</param>
+    /// <param name="id">ID пользователя</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Пользователь или null</returns>
     Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает пользователя по его Telegram ID
+    /// </summary>
+    /// <param name="telegramUserId">Telegram ID пользователя</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Пользователь или null, если не найден</returns>
+    Task<User?> GetByTelegramUserIdAsync(long telegramUserId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает список пользователей с пагинацией
+    /// </summary>
+    /// <param name="pageNumber">Номер страницы (начиная с 1)</param>
+    /// <param name="pageSize">Размер страницы</param>
+    /// <param name="searchTerm">Поисковый запрос (опционально)</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список пользователей</returns>
+    Task<IList<User>> GetPagedAsync(int pageNumber, int pageSize, string? searchTerm = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает общее количество пользователей
+    /// </summary>
+    /// <param name="searchTerm">Поисковый запрос (опционально)</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Общее количество пользователей</returns>
+    Task<int> GetTotalCountAsync(string? searchTerm = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает пользователей по списку ID
+    /// </summary>
+    /// <param name="userIds">Список ID пользователей</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Список пользователей</returns>
+    Task<IList<User>> GetByIdsAsync(IEnumerable<Guid> userIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Добавляет пользователя
+    /// </summary>
+    /// <param name="user">Пользователь для добавления</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    Task AddAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Обновляет пользователя
+    /// </summary>
+    /// <param name="user">Пользователь для обновления</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    Task UpdateAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Удаляет пользователя
+    /// </summary>
+    /// <param name="user">Пользователь для удаления</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    Task DeleteAsync(User user, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получает пользователя по Telegram ID
@@ -23,14 +78,6 @@ public interface IUserRepository
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Пользователь или null</returns>
     Task<User?> GetByTelegramIdAsync(TelegramUserId telegramUserId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получает пользователя по email
-    /// </summary>
-    /// <param name="email">Email пользователя</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    /// <returns>Пользователь или null</returns>
-    Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получает пользователя с ролями
@@ -71,29 +118,6 @@ public interface IUserRepository
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>true, если пользователь существует</returns>
     Task<bool> ExistsByTelegramIdAsync(TelegramUserId telegramUserId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Добавляет нового пользователя
-    /// </summary>
-    /// <param name="user">Пользователь</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    /// <returns>Добавленный пользователь</returns>
-    Task<User> AddAsync(User user, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Обновляет пользователя
-    /// </summary>
-    /// <param name="user">Пользователь</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    /// <returns>Обновленный пользователь</returns>
-    Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Удаляет пользователя
-    /// </summary>
-    /// <param name="user">Пользователь</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    Task DeleteAsync(User user, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получает всех пользователей

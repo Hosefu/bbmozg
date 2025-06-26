@@ -32,11 +32,11 @@ public class SimpleUserRepository : IUserRepository
             .FirstOrDefaultAsync(x => x.TelegramUserId.Value == telegramUserId.Value, cancellationToken);
     }
 
-    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
+    public async Task<User?> GetByTelegramUserIdAsync(long telegramUserId, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
+            .FirstOrDefaultAsync(x => x.TelegramUserId != null && x.TelegramUserId.Value == telegramUserId, cancellationToken);
     }
 
     public async Task<User?> GetWithRolesAsync(Guid id, CancellationToken cancellationToken = default)
@@ -74,18 +74,14 @@ public class SimpleUserRepository : IUserRepository
             .AnyAsync(x => x.TelegramUserId.Value == telegramUserId.Value, cancellationToken);
     }
 
-    public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
+    public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Add(user);
-        await _context.SaveChangesAsync(cancellationToken);
-        return user;
     }
 
-    public async Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Update(user);
-        await _context.SaveChangesAsync(cancellationToken);
-        return user;
     }
 
     public async Task DeleteAsync(User user, CancellationToken cancellationToken = default)
@@ -98,6 +94,47 @@ public class SimpleUserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.Roles)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IList<User>> GetPagedAsync(int pageNumber, int pageSize, string? searchTerm = null, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Users.Include(u => u.Roles).AsQueryable();
+        
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLowerInvariant();
+            query = query.Where(u => 
+                u.FirstName.ToLowerInvariant().Contains(term) ||
+                u.LastName.ToLowerInvariant().Contains(term));
+        }
+
+        return await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetTotalCountAsync(string? searchTerm = null, CancellationToken cancellationToken = default)
+    {
+        var query = _context.Users.AsQueryable();
+        
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLowerInvariant();
+            query = query.Where(u => 
+                u.FirstName.ToLowerInvariant().Contains(term) ||
+                u.LastName.ToLowerInvariant().Contains(term));
+        }
+
+        return await query.CountAsync(cancellationToken);
+    }
+
+    public async Task<IList<User>> GetByIdsAsync(IEnumerable<Guid> userIds, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users
+            .Include(u => u.Roles)
+            .Where(u => userIds.Contains(u.Id))
             .ToListAsync(cancellationToken);
     }
 }

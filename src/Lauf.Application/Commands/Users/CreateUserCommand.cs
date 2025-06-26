@@ -19,11 +19,6 @@ public class CreateUserCommand : IRequest<UserDto>
     public string LastName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Email пользователя
-    /// </summary>
-    public string Email { get; set; } = string.Empty;
-
-    /// <summary>
     /// Должность пользователя
     /// </summary>
     public string? Position { get; set; }
@@ -31,7 +26,7 @@ public class CreateUserCommand : IRequest<UserDto>
     /// <summary>
     /// Telegram ID пользователя
     /// </summary>
-    public long TelegramUserId { get; set; }
+    public long? TelegramUserId { get; set; }
 
     /// <summary>
     /// Язык интерфейса

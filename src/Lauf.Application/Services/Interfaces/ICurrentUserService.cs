@@ -1,19 +1,19 @@
 namespace Lauf.Application.Services.Interfaces;
 
 /// <summary>
-/// Сервис для работы с текущим пользователем
+/// Интерфейс для получения информации о текущем пользователе
 /// </summary>
 public interface ICurrentUserService
 {
     /// <summary>
-    /// Получить идентификатор текущего пользователя
+    /// Получить ID текущего пользователя
     /// </summary>
     Guid? GetCurrentUserId();
 
     /// <summary>
-    /// Получить email текущего пользователя
+    /// Получить Telegram ID текущего пользователя
     /// </summary>
-    string? GetCurrentUserEmail();
+    long? GetCurrentUserTelegramId();
 
     /// <summary>
     /// Получить роли текущего пользователя
@@ -21,27 +21,19 @@ public interface ICurrentUserService
     IEnumerable<string> GetCurrentUserRoles();
 
     /// <summary>
-    /// Проверить, аутентифицирован ли пользователь
+    /// Проверить, авторизован ли пользователь
     /// </summary>
     bool IsAuthenticated();
 
     /// <summary>
-    /// Проверить, есть ли у пользователя роль
+    /// Проверить, имеет ли пользователь указанную роль
     /// </summary>
     bool IsInRole(string role);
 
-    /// <summary>
-    /// Проверить, является ли пользователь администратором
-    /// </summary>
-    bool IsAdmin();
 
-    /// <summary>
-    /// Проверить, является ли пользователь бадди
-    /// </summary>
-    bool IsBuddy();
 
     /// <summary>
     /// Получить все claims пользователя
     /// </summary>
-    Dictionary<string, string> GetUserClaims();
+    IDictionary<string, string> GetUserClaims();
 }

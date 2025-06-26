@@ -4,6 +4,7 @@ using Lauf.Domain.Interfaces;
 using Lauf.Domain.Entities.Users;
 using Lauf.Domain.ValueObjects;
 using Lauf.Application.DTOs.Users;
+using Lauf.Shared.Constants;
 
 namespace Lauf.Application.Commands.Users;
 
@@ -19,8 +20,8 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         IUnitOfWork unitOfWork,
         ILogger<CreateUserCommandHandler> logger)
     {
-        _unitOfWork = unitOfWork;
-        _logger = logger;
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<UserDto> Handle(
@@ -28,7 +29,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         CancellationToken cancellationToken)
     {
         // Проверяем, что пользователь с таким Telegram ID не существует
-        var telegramUserId = new TelegramUserId(request.TelegramUserId);
+        var telegramUserId = request.TelegramUserId.HasValue ? new TelegramUserId(request.TelegramUserId.Value) : null!;
         var existingUser = await _unitOfWork.Users.GetByTelegramIdAsync(telegramUserId, cancellationToken);
         if (existingUser != null)
         {
@@ -40,7 +41,6 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
         {
             Id = Guid.NewGuid(),
             TelegramUserId = telegramUserId,
-            Email = request.Email,
             FirstName = request.FirstName,
             LastName = request.LastName,
             Position = request.Position,
@@ -49,6 +49,19 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
+
+        // Назначаем роль Employee по умолчанию при создании пользователя
+        var employeeRole = await _unitOfWork.Roles.GetByNameAsync(Roles.Employee, cancellationToken);
+        if (employeeRole != null)
+        {
+            user.Roles.Add(employeeRole);
+            _logger.LogInformation("Пользователю {FirstName} {LastName} назначена роль Employee по умолчанию", 
+                request.FirstName, request.LastName);
+        }
+        else
+        {
+            _logger.LogWarning("Роль Employee не найдена в системе. Пользователь создан без роли");
+        }
 
         // Сохраняем пользователя
         await _unitOfWork.Users.AddAsync(user, cancellationToken);
@@ -64,12 +77,12 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             TelegramUserId = user.TelegramUserId.Value,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Email = user.Email,
             Position = user.Position,
             Language = user.Language,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
-            LastActivityAt = user.LastActiveAt
+            LastActivityAt = user.LastActiveAt,
+            Roles = user.Roles.Select(r => r.Name).ToList()
         };
     }
 }

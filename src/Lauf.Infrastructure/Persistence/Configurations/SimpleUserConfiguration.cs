@@ -21,40 +21,38 @@ public class SimpleUserConfiguration : IEntityTypeConfiguration<User>
 
         // Основные свойства
         builder.Property(x => x.FirstName)
-            .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(100)
+            .IsRequired();
 
         builder.Property(x => x.LastName)
-            .IsRequired()
-            .HasMaxLength(100);
+            .HasMaxLength(100)
+            .IsRequired();
 
         builder.Property(x => x.TelegramUsername)
             .HasMaxLength(100);
 
-        builder.Property(x => x.Email)
-            .HasMaxLength(255);
+        // Telegram User ID как owned entity
+        builder.OwnsOne(x => x.TelegramUserId, telegramBuilder =>
+        {
+            telegramBuilder.Property(x => x.Value)
+                .HasColumnName("TelegramUserId")
+                .IsRequired();
+        });
 
+        // IsActive поле
         builder.Property(x => x.IsActive)
             .IsRequired()
             .HasDefaultValue(true);
 
-        // TelegramUserId как Value Object
-        builder.OwnsOne(x => x.TelegramUserId, telegram =>
-        {
-            telegram.Property(t => t.Value)
-                .HasColumnName("TelegramUserId")
-                .IsRequired();
-
-            telegram.HasIndex(t => t.Value)
-                .IsUnique();
-        });
-
-        // Аудит
+        // Даты создания и обновления
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 
         builder.Property(x => x.UpdatedAt)
             .IsRequired();
+
+        builder.Property(x => x.LastActiveAt)
+            .IsRequired(false);
 
         // Связь с ролями (многие ко многим)
         builder.HasMany(x => x.Roles)
@@ -76,7 +74,11 @@ public class SimpleUserConfiguration : IEntityTypeConfiguration<User>
             .OnDelete(DeleteBehavior.Cascade);
 
         // Индексы
-        builder.HasIndex(x => x.Email);
+        builder.HasIndex(x => x.TelegramUserId.Value)
+            .IsUnique()
+            .HasDatabaseName("IX_Users_TelegramUserId");
+
         builder.HasIndex(x => x.IsActive);
+        builder.HasIndex(x => x.CreatedAt);
     }
 }
