@@ -17,48 +17,71 @@ public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController(IConfiguration configuration, IUserRepository userRepository)
+    public AuthController(IConfiguration configuration, IUserRepository userRepository, ILogger<AuthController> logger)
     {
         _configuration = configuration;
         _userRepository = userRepository;
+        _logger = logger;
     }
 
     /// <summary>
     /// Dev-логин для разработки (только в Development окружении)
+    /// Имитирует Telegram Web App авторизацию без проверки подписи
     /// </summary>
     [HttpPost("dev-login")]
     public async Task<IActionResult> DevLogin([FromBody] DevLoginRequest request)
     {
+        _logger.LogInformation("Получен запрос dev-login: {@Request}", request);
+        
         // Проверяем, что мы в Development окружении
         if (!Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.Equals("Development", StringComparison.OrdinalIgnoreCase) == true)
         {
             return BadRequest("Dev login is only available in Development environment");
         }
 
-        // Ищем пользователя по Telegram ID или создаем тестового
-        var user = await _userRepository.GetByTelegramIdAsync(new TelegramUserId(request.TelegramId));
+        // В dev режиме принимаем данные пользователя как есть, без проверки подписи
+        var telegramUserId = new TelegramUserId(request.TelegramId);
+        _logger.LogInformation("Ищем пользователя с TelegramId: {TelegramId}", telegramUserId.Value);
+        
+        var user = await _userRepository.GetByTelegramIdAsync(telegramUserId);
+        _logger.LogInformation("Пользователь найден: {UserFound}", user != null);
         
         if (user == null)
         {
-            // Создаем тестового пользователя для разработки
+            // Создаем пользователя на основе переданных данных (как в prod)
             user = new Domain.Entities.Users.User
             {
                 Id = Guid.NewGuid(),
-                TelegramUserId = new TelegramUserId(request.TelegramId),
-                Email = request.Email ?? $"dev{request.TelegramId}@test.com",
-                FirstName = request.FirstName ?? "Dev",
-                LastName = request.LastName ?? "User",
-                Position = request.Position ?? "Developer",
-                Language = "ru",
+                TelegramUserId = telegramUserId,
+                Email = $"user{request.TelegramId}@telegram.local", // Telegram не предоставляет email
+                FirstName = request.FirstName ?? "Пользователь",
+                LastName = request.LastName ?? "",
+                TelegramUsername = request.Username,
+                Language = request.LanguageCode ?? "ru",
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
             
+            _logger.LogInformation("Создаем нового пользователя с TelegramId: {TelegramId}", request.TelegramId);
             await _userRepository.AddAsync(user);
+            _logger.LogInformation("Пользователь создан с Id: {UserId}", user.Id);
+        }
+        else
+        {
+            _logger.LogInformation("Обновляем существующего пользователя с Id: {UserId}", user.Id);
+            // Обновляем данные существующего пользователя (как в prod)
+            user.FirstName = request.FirstName ?? user.FirstName;
+            user.LastName = request.LastName ?? user.LastName;
+            user.TelegramUsername = request.Username ?? user.TelegramUsername;
+            user.Language = request.LanguageCode ?? user.Language;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdateLastActivity();
         }
 
+        _logger.LogInformation("Генерируем JWT токен для пользователя: {UserId}", user.Id);
         var token = GenerateJwtToken(user);
         
         return Ok(new
@@ -184,14 +207,14 @@ public class AuthController : ControllerBase
 }
 
 /// <summary>
-/// Запрос для dev-логина
+/// Запрос для dev-логина (имитирует данные Telegram Web App)
 /// </summary>
 public record DevLoginRequest(
     long TelegramId,
-    string? Email = null,
     string? FirstName = null,
     string? LastName = null,
-    string? Position = null);
+    string? Username = null,
+    string? LanguageCode = null);
 
 /// <summary>
 /// Запрос для Telegram Web App авторизации

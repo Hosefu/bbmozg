@@ -3,12 +3,20 @@ namespace Lauf.Domain.ValueObjects;
 /// <summary>
 /// Value Object для процента прогресса (0-100)
 /// </summary>
-public record ProgressPercentage
+public class ProgressPercentage
 {
     /// <summary>
     /// Значение процента (0-100)
     /// </summary>
-    public decimal Value { get; }
+    public decimal Value { get; set; }
+
+    /// <summary>
+    /// Безпараметрический конструктор для Entity Framework
+    /// </summary>
+    public ProgressPercentage()
+    {
+        Value = 0;
+    }
 
     /// <summary>
     /// Конструктор для создания процента прогресса
@@ -56,4 +64,36 @@ public record ProgressPercentage
     /// Строковое представление
     /// </summary>
     public override string ToString() => $"{Value:F1}%";
+
+    /// <summary>
+    /// Сравнение по значению
+    /// </summary>
+    public override bool Equals(object? obj)
+    {
+        return obj is ProgressPercentage other && Value == other.Value;
+    }
+
+    /// <summary>
+    /// Хэш-код по значению
+    /// </summary>
+    public override int GetHashCode()
+    {
+        return Value.GetHashCode();
+    }
+
+    /// <summary>
+    /// Оператор равенства
+    /// </summary>
+    public static bool operator ==(ProgressPercentage? left, ProgressPercentage? right)
+    {
+        return EqualityComparer<ProgressPercentage>.Default.Equals(left, right);
+    }
+
+    /// <summary>
+    /// Оператор неравенства
+    /// </summary>
+    public static bool operator !=(ProgressPercentage? left, ProgressPercentage? right)
+    {
+        return !(left == right);
+    }
 }

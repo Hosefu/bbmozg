@@ -29,7 +29,7 @@ public class SimpleUserRepository : IUserRepository
     {
         return await _context.Users
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.TelegramUserId == telegramUserId, cancellationToken);
+            .FirstOrDefaultAsync(x => x.TelegramUserId.Value == telegramUserId.Value, cancellationToken);
     }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
@@ -71,7 +71,7 @@ public class SimpleUserRepository : IUserRepository
     public async Task<bool> ExistsByTelegramIdAsync(TelegramUserId telegramUserId, CancellationToken cancellationToken = default)
     {
         return await _context.Users
-            .AnyAsync(x => x.TelegramUserId == telegramUserId, cancellationToken);
+            .AnyAsync(x => x.TelegramUserId.Value == telegramUserId.Value, cancellationToken);
     }
 
     public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)

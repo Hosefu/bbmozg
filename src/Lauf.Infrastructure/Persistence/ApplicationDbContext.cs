@@ -69,6 +69,10 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Игнорируем value objects как отдельные entities - они используются как owned entities
+        modelBuilder.Ignore<ComponentProgressData>();
+        modelBuilder.Ignore<ProgressPercentage>();
+
         // Применяем все конфигурации из текущей сборки
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }

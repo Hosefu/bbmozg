@@ -34,7 +34,7 @@ public static class ServiceCollectionExtensions
         // Entity Framework DbContext
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
         });
 
         // Interceptors
