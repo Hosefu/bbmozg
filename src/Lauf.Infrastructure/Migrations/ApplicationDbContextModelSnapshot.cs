@@ -250,6 +250,9 @@ namespace Lauf.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("EstimatedDurationMinutes")
+                        .HasColumnType("INTEGER");
+
                     b.Property<Guid>("FlowId")
                         .HasColumnType("TEXT");
 

@@ -91,7 +91,9 @@ public class CreateFlowStepCommandResult
         return new CreateFlowStepCommandResult
         {
             IsSuccess = false,
-            Message = message
+            Message = message,
+            StepId = Guid.Empty,
+            Step = null
         };
     }
 }

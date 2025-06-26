@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lauf.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCleanMigration : Migration
+    public partial class CleanInitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -36,10 +36,8 @@ namespace Lauf.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     Title = table.Column<string>(type: "TEXT", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "TEXT", maxLength: 1000, nullable: false),
-                    Category = table.Column<string>(type: "TEXT", nullable: false),
                     Tags = table.Column<string>(type: "TEXT", nullable: false),
                     Status = table.Column<string>(type: "TEXT", nullable: false, defaultValue: "Draft"),
-                    Version = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 1),
                     Priority = table.Column<int>(type: "INTEGER", nullable: false),
                     IsRequired = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreatedById = table.Column<Guid>(type: "TEXT", nullable: false),
@@ -124,8 +122,6 @@ namespace Lauf.Infrastructure.Migrations
                     AutoAssignBuddy = table.Column<bool>(type: "INTEGER", nullable: false),
                     AllowSelfPaced = table.Column<bool>(type: "INTEGER", nullable: false),
                     AllowPause = table.Column<bool>(type: "INTEGER", nullable: false),
-                    MaxAttempts = table.Column<int>(type: "INTEGER", nullable: true),
-                    MinPassingScorePercent = table.Column<int>(type: "INTEGER", nullable: true),
                     SendDeadlineReminders = table.Column<bool>(type: "INTEGER", nullable: false),
                     FirstReminderDaysBefore = table.Column<int>(type: "INTEGER", nullable: false),
                     FinalReminderDaysBefore = table.Column<int>(type: "INTEGER", nullable: false),

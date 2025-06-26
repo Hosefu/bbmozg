@@ -32,8 +32,8 @@ public class CreateFlowStepCommandHandler : IRequestHandler<CreateFlowStepComman
         {
             _logger.LogInformation("Создание шага для потока {FlowId}", request.FlowId);
 
-            // Проверяем существование потока
-            var flow = await _flowRepository.GetByIdAsync(request.FlowId, cancellationToken);
+            // Проверяем существование потока с загрузкой шагов
+            var flow = await _flowRepository.GetByIdWithStepsAsync(request.FlowId, cancellationToken);
             if (flow == null)
             {
                 _logger.LogWarning("Поток с ID {FlowId} не найден", request.FlowId);
@@ -47,22 +47,12 @@ public class CreateFlowStepCommandHandler : IRequestHandler<CreateFlowStepComman
                 return CreateFlowStepCommandResult.Failure("Нельзя добавлять шаги к опубликованному потоку");
             }
 
-            // Определяем порядковый номер
-            var order = request.Order ?? (flow.Steps.Count + 1);
-
-            // Если указан конкретный порядок, проверяем его корректность
+            // Проверяем корректность порядкового номера если указан
             if (request.Order.HasValue)
             {
                 if (request.Order.Value < 1 || request.Order.Value > flow.Steps.Count + 1)
                 {
                     return CreateFlowStepCommandResult.Failure("Некорректный порядковый номер шага");
-                }
-
-                // Если вставляем шаг не в конец, нужно сдвинуть существующие шаги
-                var stepsToUpdate = flow.Steps.Where(s => s.Order >= order).ToList();
-                foreach (var step in stepsToUpdate)
-                {
-                    step.Order++;
                 }
             }
 
@@ -71,25 +61,22 @@ public class CreateFlowStepCommandHandler : IRequestHandler<CreateFlowStepComman
                 flowId: request.FlowId,
                 title: request.Title,
                 description: request.Description,
-                order: order,
+                order: request.Order ?? (flow.Steps.Count + 1),
                 isRequired: request.IsRequired)
             {
                 Instructions = request.Instructions,
                 Notes = request.Notes
             };
 
-            // Добавляем шаг к потоку
-            flow.AddStep(flowStep);
+            // Используем специальный метод репозитория для добавления шага
+            var addedStep = await _flowRepository.AddStepAsync(request.FlowId, flowStep, cancellationToken);
 
-            // Сохраняем изменения
-            await _flowRepository.UpdateAsync(flow, cancellationToken);
-
-            _logger.LogInformation("Шаг {StepId} успешно создан для потока {FlowId}", flowStep.Id, request.FlowId);
+            _logger.LogInformation("Шаг {StepId} успешно создан для потока {FlowId}", addedStep.Id, request.FlowId);
 
             // Преобразуем в DTO
-            var stepDto = _mapper.Map<FlowStepDto>(flowStep);
+            var stepDto = _mapper.Map<FlowStepDto>(addedStep);
 
-            return CreateFlowStepCommandResult.Success(flowStep.Id, stepDto);
+            return CreateFlowStepCommandResult.Success(addedStep.Id, stepDto);
         }
         catch (Exception ex)
         {

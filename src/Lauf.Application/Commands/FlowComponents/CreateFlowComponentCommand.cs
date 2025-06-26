@@ -93,7 +93,9 @@ public class CreateFlowComponentCommandResult
         return new CreateFlowComponentCommandResult
         {
             IsSuccess = false,
-            Message = message
+            Message = message,
+            ComponentId = Guid.Empty,
+            Component = null
         };
     }
 }

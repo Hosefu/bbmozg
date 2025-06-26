@@ -42,6 +42,10 @@ public class FlowStep
     /// </summary>
     public bool IsRequired { get; set; } = true;
 
+    /// <summary>
+    /// Приблизительное время выполнения в минутах
+    /// </summary>
+    public int EstimatedDurationMinutes { get; set; } = 30;
 
     /// <summary>
     /// Статус шага
@@ -81,7 +85,8 @@ public class FlowStep
     /// <param name="description">Описание шага</param>
     /// <param name="order">Порядковый номер</param>
     /// <param name="isRequired">Обязательный ли шаг</param>
-    public FlowStep(Guid flowId, string title, string description, int order, bool isRequired = true)
+    /// <param name="estimatedDurationMinutes">Приблизительное время выполнения в минутах</param>
+    public FlowStep(Guid flowId, string title, string description, int order, bool isRequired = true, int estimatedDurationMinutes = 30)
     {
         Id = Guid.NewGuid();
         FlowId = flowId;
@@ -89,6 +94,7 @@ public class FlowStep
         Description = description ?? throw new ArgumentNullException(nameof(description));
         Order = order;
         IsRequired = isRequired;
+        EstimatedDurationMinutes = estimatedDurationMinutes;
         Status = StepStatus.Draft;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;

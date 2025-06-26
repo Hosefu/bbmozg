@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lauf.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250626135539_RemoveRedundantFields")]
-    partial class RemoveRedundantFields
+    [Migration("20250626144428_CleanInitialCreate")]
+    partial class CleanInitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -252,6 +252,9 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("EstimatedDurationMinutes")
+                        .HasColumnType("INTEGER");
 
                     b.Property<Guid>("FlowId")
                         .HasColumnType("TEXT");

@@ -96,7 +96,18 @@ public class FlowRepository : IFlowRepository
 
     public async Task<Flow> UpdateAsync(Flow flow, CancellationToken cancellationToken = default)
     {
-        _context.Flows.Update(flow);
+        // Обновляем дату изменения
+        flow.UpdatedAt = DateTime.UtcNow;
+        
+        // Проверяем состояние сущности в контексте
+        var entry = _context.Entry(flow);
+        if (entry.State == EntityState.Detached)
+        {
+            // Если сущность не отслеживается, добавляем её в контекст
+            _context.Flows.Update(flow);
+        }
+        
+        // Сохраняем изменения
         await _context.SaveChangesAsync(cancellationToken);
         return flow;
     }
@@ -158,5 +169,43 @@ public class FlowRepository : IFlowRepository
                 .ThenInclude(s => s.Components)
             .Where(f => f.Steps.Any(s => s.Id == stepId))
             .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<FlowStep> AddStepAsync(Guid flowId, FlowStep step, CancellationToken cancellationToken = default)
+    {
+        // Начинаем транзакцию
+        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            // Загружаем поток с шагами
+            var flow = await _context.Flows
+                .Include(f => f.Steps)
+                .FirstOrDefaultAsync(f => f.Id == flowId, cancellationToken);
+
+            if (flow == null)
+                throw new InvalidOperationException($"Поток с ID {flowId} не найден");
+
+            // Добавляем шаг
+            step.FlowId = flowId;
+            flow.Steps.Add(step);
+            flow.UpdatedAt = DateTime.UtcNow;
+
+            // Добавляем шаг в контекст
+            _context.FlowSteps.Add(step);
+
+            // Сохраняем изменения
+            await _context.SaveChangesAsync(cancellationToken);
+            
+            // Коммитим транзакцию
+            await transaction.CommitAsync(cancellationToken);
+
+            return step;
+        }
+        catch
+        {
+            // Откатываем транзакцию в случае ошибки
+            await transaction.RollbackAsync(cancellationToken);
+            throw;
+        }
     }
 }

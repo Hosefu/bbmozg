@@ -140,4 +140,13 @@ public interface IFlowRepository
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Поток содержащий указанный шаг</returns>
     Task<Flow?> GetFlowByStepIdAsync(Guid stepId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Добавляет шаг к потоку
+    /// </summary>
+    /// <param name="flowId">Идентификатор потока</param>
+    /// <param name="step">Шаг для добавления</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Добавленный шаг</returns>
+    Task<FlowStep> AddStepAsync(Guid flowId, FlowStep step, CancellationToken cancellationToken = default);
 }

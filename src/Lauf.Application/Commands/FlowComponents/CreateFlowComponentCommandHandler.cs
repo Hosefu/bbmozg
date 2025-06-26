@@ -85,8 +85,9 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
                 Settings = request.Content
             };
 
-            // Добавляем компонент к шагу
-            flowStep.AddComponent(flowComponent);
+            // Добавляем компонент к шагу (но НЕ используем flowStep.AddComponent чтобы избежать дублирования порядка)
+            flowComponent.FlowStepId = flowStep.Id;
+            flowStep.Components.Add(flowComponent);
 
             // Сохраняем изменения
             await _flowRepository.UpdateAsync(flow, cancellationToken);
