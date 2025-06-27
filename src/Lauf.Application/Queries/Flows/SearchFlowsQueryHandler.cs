@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Application.DTOs.Flows;
+using System.Text.Json;
 
 namespace Lauf.Application.Queries.Flows;
 
@@ -25,21 +26,21 @@ public class SearchFlowsQueryHandler : IRequestHandler<SearchFlowsQuery, SearchF
     {
         try
         {
-            _logger.LogInformation("Поиск потоков по запросу '{SearchTerm}'", request.SearchTerm);
+            _logger.LogInformation("Поиск потоков: {SearchTerm}", request.SearchTerm);
 
             // Получаем все потоки
-            var flows = await _flowRepository.GetAllAsync(cancellationToken);
-            
-            // Применяем поиск
-            var filteredFlows = flows.AsEnumerable();
+            var allFlows = await _flowRepository.GetAllAsync(cancellationToken);
+            var filteredFlows = allFlows.AsEnumerable();
+
+            // Фильтрация по активности (новая архитектура)
+            filteredFlows = filteredFlows.Where(f => f.IsActive);
             
             if (!string.IsNullOrWhiteSpace(request.SearchTerm))
             {
                 var searchTerm = request.SearchTerm.ToLowerInvariant();
                 filteredFlows = filteredFlows.Where(f => 
-                    f.Title.ToLowerInvariant().Contains(searchTerm) ||
-                    f.Description.ToLowerInvariant().Contains(searchTerm) ||
-                    (f.Tags != null && ParseTagsFromJson(f.Tags).Any(tag => tag.ToLowerInvariant().Contains(searchTerm))));
+                    f.Name.ToLowerInvariant().Contains(searchTerm) ||
+                    f.Description.ToLowerInvariant().Contains(searchTerm));
             }
 
             var totalCount = filteredFlows.Count();
@@ -48,24 +49,18 @@ public class SearchFlowsQueryHandler : IRequestHandler<SearchFlowsQuery, SearchF
                 .Take(request.Take)
                 .ToList();
 
-            // Конвертируем в DTO
+            // Конвертируем в DTO (новая архитектура)
             var flowDtos = pagedFlows.Select(flow => new FlowDto
             {
                 Id = flow.Id,
-                Title = flow.Title,
+                Name = flow.Name, // Title теперь Name
                 Description = flow.Description,
-                Status = flow.Status,
-                Tags = ParseTagsFromJson(flow.Tags),
-                Priority = flow.Priority,
-                IsRequired = flow.IsRequired,
-                CreatedAt = flow.CreatedAt,
-                UpdatedAt = flow.UpdatedAt,
-                CreatedById = flow.CreatedById,
-                TotalSteps = flow.TotalSteps
+                CreatedById = flow.CreatedBy,
+                CreatedAt = flow.CreatedAt
             }).ToList();
 
-            _logger.LogInformation("По запросу '{SearchTerm}' найдено {TotalCount} потоков, возвращено {Count}", 
-                request.SearchTerm, totalCount, flowDtos.Count);
+            _logger.LogInformation("Найдено {Count} потоков по запросу '{SearchTerm}'", 
+                totalCount, request.SearchTerm);
 
             return new SearchFlowsQueryResult
             {
@@ -76,28 +71,13 @@ public class SearchFlowsQueryHandler : IRequestHandler<SearchFlowsQuery, SearchF
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при поиске потоков по запросу '{SearchTerm}'", request.SearchTerm);
+            _logger.LogError(ex, "Ошибка при поиске потоков");
             
             return new SearchFlowsQueryResult
             {
                 Success = false,
                 ErrorMessage = ex.Message
             };
-        }
-    }
-
-    private static List<string> ParseTagsFromJson(string? tagsJson)
-    {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(tagsJson))
-                return new List<string>();
-                
-            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(tagsJson) ?? new List<string>();
-        }
-        catch
-        {
-            return new List<string>();
         }
     }
 }

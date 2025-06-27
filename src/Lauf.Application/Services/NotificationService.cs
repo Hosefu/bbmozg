@@ -175,7 +175,7 @@ public class NotificationService : INotificationService
             Title = title,
             Content = content,
             ScheduledAt = scheduledAt ?? DateTime.UtcNow,
-            Metadata = metadata
+            // Metadata убран в новой архитектуре
         };
 
         await _notificationRepository.AddAsync(notification, cancellationToken);
@@ -213,7 +213,7 @@ public class NotificationService : INotificationService
                 }
                 else
                 {
-                    notification.MarkAsFailed(result.ErrorMessage ?? "Неизвестная ошибка");
+                    notification.MarkAsFailed(); // Упрощенный метод в новой архитектуре
                 }
 
                 await _notificationRepository.UpdateAsync(notification, cancellationToken);
@@ -224,7 +224,7 @@ public class NotificationService : INotificationService
                     "Ошибка обработки уведомления {NotificationId}",
                     notification.Id);
 
-                notification.MarkAsFailed(ex.Message);
+                notification.MarkAsFailed(); // Упрощенный метод в новой архитектуре
                 await _notificationRepository.UpdateAsync(notification, cancellationToken);
             }
         }

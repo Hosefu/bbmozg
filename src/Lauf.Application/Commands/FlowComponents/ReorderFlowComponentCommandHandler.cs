@@ -35,11 +35,11 @@ public class ReorderFlowComponentCommandHandler : IRequestHandler<ReorderFlowCom
                 return ReorderFlowComponentCommandResult.Failure("Шаг с указанным компонентом не найден");
             }
 
-            // Проверяем, что поток в статусе черновика
+            // В новой архитектуре проверка Flow.IsActive вместо Status
             var flow = await _flowRepository.GetFlowByStepIdAsync(step.Id, cancellationToken);
-            if (flow?.Status != Domain.Enums.FlowStatus.Draft)
+            if (flow?.IsActive != true)
             {
-                return ReorderFlowComponentCommandResult.Failure("Нельзя изменять порядок компонентов в опубликованном потоке");
+                return ReorderFlowComponentCommandResult.Failure("Нельзя изменять порядок компонентов в неактивном потоке");
             }
 
             var component = step.Components.FirstOrDefault(c => c.Id == request.ComponentId);

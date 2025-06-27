@@ -32,8 +32,8 @@ public class DeadlineCheckJob
         {
             _logger.LogInformation("Начинается проверка дедлайнов назначений");
 
-            // Получаем все активные назначения
-            var activeAssignments = await _assignmentRepository.GetActiveAssignmentsAsync(cancellationToken);
+            // Получаем все активные назначения (новая архитектура)
+            var activeAssignments = await _assignmentRepository.GetActiveAsync(cancellationToken);
 
             var now = DateTime.UtcNow;
             var overdueCount = 0;

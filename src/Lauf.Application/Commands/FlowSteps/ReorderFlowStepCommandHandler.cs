@@ -35,10 +35,10 @@ public class ReorderFlowStepCommandHandler : IRequestHandler<ReorderFlowStepComm
                 return ReorderFlowStepCommandResult.Failure("Поток с указанным шагом не найден");
             }
 
-            // Проверяем, что поток в статусе черновика
-            if (flow.Status != Domain.Enums.FlowStatus.Draft)
+            // В новой архитектуре проверка Flow.IsActive вместо Status
+            if (!flow.IsActive)
             {
-                return ReorderFlowStepCommandResult.Failure("Нельзя изменять порядок шагов в опубликованном потоке");
+                return ReorderFlowStepCommandResult.Failure("Нельзя изменять порядок шагов в неактивном потоке");
             }
 
             var step = flow.Steps.FirstOrDefault(s => s.Id == request.StepId);

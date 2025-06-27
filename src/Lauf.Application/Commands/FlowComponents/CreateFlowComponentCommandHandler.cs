@@ -114,8 +114,7 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
             description: request.Description,
             content: contentData.Content,
             order: order,
-            isRequired: request.IsRequired,
-            readingTimeMinutes: contentData.ReadingTimeMinutes);
+            isRequired: request.IsRequired); // readingTimeMinutes убран из новой архитектуры
 
         return await _componentRepository.AddArticleComponentAsync(articleComponent, cancellationToken);
     }
@@ -132,10 +131,9 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
             flowStepId: request.FlowStepId,
             title: request.Title,
             description: request.Description,
-            questionText: contentData.QuestionText,
+            content: contentData.QuestionText, // questionText теперь content
             order: order,
-            isRequired: request.IsRequired,
-            estimatedDurationMinutes: contentData.EstimatedDurationMinutes);
+            isRequired: request.IsRequired);
 
         // Добавляем варианты ответов
         foreach (var option in contentData.Options)
@@ -143,10 +141,10 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
             var questionOption = new QuestionOption(
                 text: option.Text,
                 isCorrect: option.IsCorrect,
-                message: option.IsCorrect ? "Правильно!" : "Неправильно, попробуйте еще раз.",
-                points: option.IsCorrect ? 1 : 0);
+                explanation: option.IsCorrect ? "Правильно!" : "Неправильно, попробуйте еще раз.",
+                score: option.IsCorrect ? 1 : 0); // points теперь score
             
-            quizComponent.AddOption(questionOption);
+            quizComponent.Questions.First().Options.Add(questionOption); // Новая архитектура
         }
 
         return await _componentRepository.AddQuizComponentAsync(quizComponent, cancellationToken);
@@ -164,12 +162,11 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
             flowStepId: request.FlowStepId,
             title: request.Title,
             description: request.Description,
-            instruction: contentData.Instruction,
+            content: contentData.Instruction, // instruction теперь content
             codeWord: contentData.CodeWord,
             hint: contentData.Hint,
             order: order,
-            isRequired: request.IsRequired,
-            estimatedDurationMinutes: contentData.EstimatedDurationMinutes);
+            isRequired: request.IsRequired);
 
         return await _componentRepository.AddTaskComponentAsync(taskComponent, cancellationToken);
     }
