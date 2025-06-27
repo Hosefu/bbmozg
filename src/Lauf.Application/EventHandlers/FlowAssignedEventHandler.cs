@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Lauf.Domain.Events;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Domain.Interfaces.Services;
-using Lauf.Domain.Services;
 using Lauf.Application.EventHandlers.Events;
 
 namespace Lauf.Application.EventHandlers;
@@ -18,22 +17,18 @@ public class FlowAssignedEventHandler : INotificationHandler<FlowAssignedNotific
     private readonly INotificationService _notificationService;
     private readonly IFlowRepository _flowRepository;
     private readonly IFlowAssignmentRepository _assignmentRepository;
-    private readonly ProgressCalculationService _progressCalculationService;
-
     public FlowAssignedEventHandler(
         ILogger<FlowAssignedEventHandler> logger,
         IUserProgressRepository progressRepository,
         INotificationService notificationService,
         IFlowRepository flowRepository,
-        IFlowAssignmentRepository assignmentRepository,
-        ProgressCalculationService progressCalculationService)
+        IFlowAssignmentRepository assignmentRepository)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _progressRepository = progressRepository ?? throw new ArgumentNullException(nameof(progressRepository));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
         _flowRepository = flowRepository ?? throw new ArgumentNullException(nameof(flowRepository));
         _assignmentRepository = assignmentRepository ?? throw new ArgumentNullException(nameof(assignmentRepository));
-        _progressCalculationService = progressCalculationService ?? throw new ArgumentNullException(nameof(progressCalculationService));
     }
 
     /// <summary>
@@ -90,12 +85,10 @@ public class FlowAssignedEventHandler : INotificationHandler<FlowAssignedNotific
                 return;
             }
 
-            // Создаем начальный прогресс через ProgressCalculationService
-            var flowProgress = await _progressCalculationService.CreateInitialProgressAsync(assignment, cancellationToken);
-
+            // Новая архитектура - FlowAssignmentProgress создается при создании назначения
             _logger.LogInformation(
-                "Начальный прогресс создан для назначения {AssignmentId}. FlowProgressId: {FlowProgressId}",
-                @event.AssignmentId, flowProgress.Id);
+                "Начальный прогресс для назначения {AssignmentId} будет создан автоматически",
+                @event.AssignmentId);
         }
         catch (Exception ex)
         {
@@ -124,14 +117,14 @@ public class FlowAssignedEventHandler : INotificationHandler<FlowAssignedNotific
             // Отправляем уведомление о назначении потока
             await _notificationService.NotifyFlowAssignedAsync(
                 @event.UserId,
-                flow.Title,
+                flow.Name,
                 @event.DeadlineDate,
                 @event.AssignmentId,
                 cancellationToken);
 
             _logger.LogInformation(
                 "Уведомление о назначении потока '{FlowTitle}' отправлено пользователю {UserId}",
-                flow.Title, @event.UserId);
+                flow.Name, @event.UserId);
         }
         catch (Exception ex)
         {
@@ -161,7 +154,7 @@ public class FlowAssignedEventHandler : INotificationHandler<FlowAssignedNotific
             await _notificationService.NotifyBuddyAssignedAsync(
                 @event.BuddyId!.Value,
                 @event.UserId,
-                flow.Title,
+                flow.Name,
                 @event.AssignmentId,
                 cancellationToken);
 

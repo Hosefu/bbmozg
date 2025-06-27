@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Lauf.Domain.Events;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Domain.Interfaces.Services;
-using Lauf.Domain.Services;
 using Lauf.Application.EventHandlers.Events;
 using Lauf.Application.Services;
 
@@ -18,7 +17,6 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
     private readonly IUserProgressRepository _progressRepository;
     private readonly IFlowAssignmentRepository _assignmentRepository;
     private readonly INotificationService _notificationService;
-    private readonly ProgressCalculationService _progressCalculationService;
     private readonly AchievementCalculationService _achievementCalculationService;
     private readonly IUserAchievementRepository _userAchievementRepository;
     private readonly IMediator _mediator;
@@ -28,7 +26,6 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
         IUserProgressRepository progressRepository,
         IFlowAssignmentRepository assignmentRepository,
         INotificationService notificationService,
-        ProgressCalculationService progressCalculationService,
         AchievementCalculationService achievementCalculationService,
         IUserAchievementRepository userAchievementRepository,
         IMediator mediator)
@@ -37,7 +34,6 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
         _progressRepository = progressRepository ?? throw new ArgumentNullException(nameof(progressRepository));
         _assignmentRepository = assignmentRepository ?? throw new ArgumentNullException(nameof(assignmentRepository));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));
-        _progressCalculationService = progressCalculationService ?? throw new ArgumentNullException(nameof(progressCalculationService));
         _achievementCalculationService = achievementCalculationService ?? throw new ArgumentNullException(nameof(achievementCalculationService));
         _userAchievementRepository = userAchievementRepository ?? throw new ArgumentNullException(nameof(userAchievementRepository));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
@@ -107,36 +103,13 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
                 @event.UserId,
                 @event.ComponentSnapshotId);
 
-            // Завершаем компонент и пересчитываем связанный прогресс
-            var result = await _progressCalculationService.CompleteComponentAsync(
+            // Новая архитектура - упрощенное обновление прогресса
+            // TODO: Реализовать обновление FlowAssignmentProgress
+            _logger.LogInformation(
+                "Компонент завершен. ComponentId: {ComponentId}, UserId: {UserId}, TimeSpent: {TimeSpent} минут",
                 @event.ComponentSnapshotId,
                 @event.UserId,
-                @event.TimeSpentMinutes,
-                cancellationToken);
-
-            _logger.LogInformation(
-                "Прогресс обновлен. Компонент завершен: {ComponentCompleted}, Шаг завершен: {StepCompleted}, Поток завершен: {FlowCompleted}",
-                result.ComponentCompleted,
-                result.StepCompleted,
-                result.FlowCompleted);
-
-            // Если шаг завершен, отправляем уведомление
-            if (result.StepCompleted && result.StepId.HasValue)
-            {
-                await NotifyStepCompletedAsync(@event.UserId, result.StepId.Value, cancellationToken);
-            }
-
-            // Если разблокирован следующий шаг, отправляем уведомление
-            if (result.NextStepUnlocked && result.NextStepId.HasValue)
-            {
-                await NotifyStepUnlockedAsync(@event.UserId, result.NextStepId.Value, cancellationToken);
-            }
-
-            // Если поток завершен, отправляем уведомление
-            if (result.FlowCompleted && result.FlowId.HasValue)
-            {
-                await NotifyFlowCompletedAsync(@event.UserId, @event.AssignmentId, result.FlowId.Value, cancellationToken);
-            }
+                @event.TimeSpentMinutes);
         }
         catch (Exception ex)
         {

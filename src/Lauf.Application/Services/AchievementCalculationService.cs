@@ -1,6 +1,5 @@
 using Lauf.Domain.Entities.Users;
 using Lauf.Domain.Interfaces.Repositories;
-using Lauf.Domain.Services;
 
 namespace Lauf.Application.Services;
 
@@ -11,16 +10,12 @@ public class AchievementCalculationService
 {
     private readonly IUserProgressRepository _progressRepository;
     private readonly IFlowAssignmentRepository _assignmentRepository;
-    private readonly ProgressCalculationService _progressCalculationService;
-
     public AchievementCalculationService(
         IUserProgressRepository progressRepository,
-        IFlowAssignmentRepository assignmentRepository,
-        ProgressCalculationService progressCalculationService)
+        IFlowAssignmentRepository assignmentRepository)
     {
         _progressRepository = progressRepository;
         _assignmentRepository = assignmentRepository;
-        _progressCalculationService = progressCalculationService;
     }
 
     /// <summary>
@@ -56,24 +51,19 @@ public class AchievementCalculationService
     /// <returns>Список новых достижений</returns>
     public async Task<List<Achievement>> CheckNewAchievementsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var userStats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
+        // Новая архитектура - упрощенные критерии достижений
+        var completedAssignments = await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken);
         var newAchievements = new List<Achievement>();
 
-        // Проверяем различные критерии достижений
-        if (userStats.CompletedFlowsCount >= 1)
+        // Проверяем базовые критерии достижений
+        if (completedAssignments.Count >= 1)
             newAchievements.Add(CreateAchievement("Первые шаги", "Завершил первый поток обучения"));
 
-        if (userStats.CompletedFlowsCount >= 3 && userStats.DaysActive <= 7)
-            newAchievements.Add(CreateAchievement("Быстрый старт", "Завершил 3 потока за неделю"));
+        if (completedAssignments.Count >= 3)
+            newAchievements.Add(CreateAchievement("Быстрый старт", "Завершил 3 потока"));
 
-        if (userStats.DaysActive >= 30)
-            newAchievements.Add(CreateAchievement("Настойчивость", "Учился 30 дней подряд"));
-
-        if (userStats.TotalLearningHours >= 100)
-            newAchievements.Add(CreateAchievement("Марафонец", "Потратил 100+ часов на обучение"));
-
-        if (userStats.OverallProgress >= 95)
-            newAchievements.Add(CreateAchievement("Идеальный ученик", "Достиг 95%+ прогресса"));
+        if (completedAssignments.Count >= 10)
+            newAchievements.Add(CreateAchievement("Эксперт", "Завершил 10 потоков"));
 
         return newAchievements;
     }
@@ -82,37 +72,40 @@ public class AchievementCalculationService
 
     private async Task<decimal> CalculateFirstStepsProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var stats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
-        return Math.Min(100, stats.CompletedFlowsCount * 100);
+        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        return Math.Min(100, completedCount * 100);
     }
 
     private async Task<decimal> CalculateFastStartProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var stats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
-        if (stats.DaysActive > 7) return 0; // Время истекло
-        
-        var progress = (decimal)stats.CompletedFlowsCount / 3 * 100;
+        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        var progress = (decimal)completedCount / 3 * 100;
         return Math.Min(100, progress);
     }
 
     private async Task<decimal> CalculatePersistenceProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var stats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
-        var progress = (decimal)stats.DaysActive / 30 * 100;
+        // Упрощенная логика - базируется на количестве назначений
+        var totalCount = (await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken)).Count;
+        var progress = (decimal)totalCount / 10 * 100;
         return Math.Min(100, progress);
     }
 
     private async Task<decimal> CalculateMarathonProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var stats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
-        var progress = (decimal)stats.TotalLearningHours / 100 * 100;
+        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        var progress = (decimal)completedCount / 20 * 100;
         return Math.Min(100, progress);
     }
 
     private async Task<decimal> CalculatePerfectStudentProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var stats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
-        return (decimal)stats.OverallProgress;
+        // Упрощенная логика - базируется на процентном соотношении завершенных потоков
+        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var completedAssignments = await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken);
+        
+        if (allAssignments.Count == 0) return 0;
+        return (decimal)completedAssignments.Count / allAssignments.Count * 100;
     }
 
     private async Task<decimal> CalculateTeamPlayerProgressAsync(Guid userId, CancellationToken cancellationToken)
@@ -124,8 +117,8 @@ public class AchievementCalculationService
 
     private async Task<decimal> CalculateExpertProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var stats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
-        var progress = (decimal)stats.CompletedFlowsCount / 10 * 100;
+        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        var progress = (decimal)completedCount / 10 * 100;
         return Math.Min(100, progress);
     }
 
@@ -138,8 +131,8 @@ public class AchievementCalculationService
 
     private async Task<decimal> CalculateExplorerProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var stats = await _progressCalculationService.GetUserProgressStatisticsAsync(userId, cancellationToken);
-        var progress = (decimal)stats.AssignedFlowsCount / 20 * 100;
+        var assignedCount = (await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken)).Count;
+        var progress = (decimal)assignedCount / 20 * 100;
         return Math.Min(100, progress);
     }
 

@@ -1,104 +1,68 @@
-using Microsoft.Extensions.Logging;
 using Lauf.Domain.Interfaces.Repositories;
-using Lauf.Domain.Enums;
+using Lauf.Domain.Interfaces.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Lauf.Application.BackgroundJobs;
 
 /// <summary>
-/// Фоновая задача для проверки дедлайнов
+/// Фоновая задача для проверки дедлайнов назначений
 /// </summary>
 public class DeadlineCheckJob
 {
-    private readonly ILogger<DeadlineCheckJob> _logger;
     private readonly IFlowAssignmentRepository _assignmentRepository;
-    private readonly IUserRepository _userRepository;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<DeadlineCheckJob> _logger;
 
     public DeadlineCheckJob(
-        ILogger<DeadlineCheckJob> logger,
         IFlowAssignmentRepository assignmentRepository,
-        IUserRepository userRepository)
+        INotificationService notificationService,
+        ILogger<DeadlineCheckJob> logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _assignmentRepository = assignmentRepository ?? throw new ArgumentNullException(nameof(assignmentRepository));
-        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _assignmentRepository = assignmentRepository;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
     /// <summary>
     /// Выполнение проверки дедлайнов
     /// </summary>
-    public async Task ExecuteAsync(CancellationToken cancellationToken = default)
+    public async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Начало выполнения задачи проверки дедлайнов");
-
         try
         {
-            // Проверяем просроченные назначения
-            await CheckOverdueAssignmentsAsync(cancellationToken);
+            _logger.LogInformation("Начинается проверка дедлайнов назначений");
 
-            // Проверяем приближающиеся дедлайны
-            await CheckApproachingDeadlinesAsync(cancellationToken);
+            // Получаем все активные назначения
+            var activeAssignments = await _assignmentRepository.GetActiveAssignmentsAsync(cancellationToken);
 
-            _logger.LogInformation("Задача проверки дедлайнов успешно завершена");
+            var now = DateTime.UtcNow;
+            var overdueCount = 0;
+            var approachingCount = 0;
+
+            foreach (var assignment in activeAssignments)
+            {
+                // Проверяем просроченные задания
+                if (assignment.Deadline < now)
+                {
+                    await ProcessOverdueAssignmentAsync(assignment, cancellationToken);
+                    overdueCount++;
+                }
+                // Проверяем приближающиеся дедлайны (за 1 день)
+                else if (assignment.Deadline <= now.AddDays(1))
+                {
+                    await ProcessApproachingDeadlineAsync(assignment, cancellationToken);
+                    approachingCount++;
+                }
+            }
+
+            _logger.LogInformation(
+                "Проверка дедлайнов завершена. Всего назначений: {TotalAssignments}, Просрочено: {OverdueCount}, Приближаются: {ApproachingCount}",
+                activeAssignments.Count, overdueCount, approachingCount);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при выполнении задачи проверки дедлайнов");
+            _logger.LogError(ex, "Ошибка при проверке дедлайнов назначений");
             throw;
-        }
-    }
-
-    /// <summary>
-    /// Проверка просроченных назначений
-    /// </summary>
-    private async Task CheckOverdueAssignmentsAsync(CancellationToken cancellationToken)
-    {
-        var overdueAssignments = await _assignmentRepository.GetOverdueAsync(cancellationToken);
-        var overdueList = overdueAssignments.ToList();
-
-        _logger.LogInformation(
-            "Найдено {Count} просроченных назначений",
-            overdueList.Count);
-
-        foreach (var assignment in overdueList)
-        {
-            try
-            {
-                await ProcessOverdueAssignmentAsync(assignment, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "Ошибка при обработке просроченного назначения {AssignmentId}",
-                    assignment.Id);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Проверка приближающихся дедлайнов
-    /// </summary>
-    private async Task CheckApproachingDeadlinesAsync(CancellationToken cancellationToken)
-    {
-        // Проверяем дедлайны, которые наступят в течение 3 дней
-        var approachingAssignments = await _assignmentRepository.GetWithApproachingDeadlineAsync(3, cancellationToken);
-        var approachingList = approachingAssignments.ToList();
-
-        _logger.LogInformation(
-            "Найдено {Count} назначений с приближающимся дедлайном",
-            approachingList.Count);
-
-        foreach (var assignment in approachingList)
-        {
-            try
-            {
-                await ProcessApproachingDeadlineAsync(assignment, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "Ошибка при обработке приближающегося дедлайна для назначения {AssignmentId}",
-                    assignment.Id);
-            }
         }
     }
 
@@ -110,23 +74,21 @@ public class DeadlineCheckJob
         CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Обработка просроченного назначения {AssignmentId}, дедлайн: {DueDate}",
+            "Обработка просроченного назначения {AssignmentId}, дедлайн: {Deadline}",
             assignment.Id,
-            assignment.DueDate);
+            assignment.Deadline);
 
         // Уведомляем пользователя
         await NotifyUserAboutOverdueAsync(assignment, cancellationToken);
 
-        // Уведомляем бадди
-        if (assignment.BuddyId.HasValue)
+        // Уведомляем бадди если есть
+        if (assignment.Buddy != null)
         {
             await NotifyBuddyAboutOverdueAsync(assignment, cancellationToken);
         }
 
         // Уведомляем администратора/HR
         await NotifyAdminAboutOverdueAsync(assignment, cancellationToken);
-
-        // Автоматическое управление просрочками будет реализовано позже
     }
 
     /// <summary>
@@ -136,26 +98,23 @@ public class DeadlineCheckJob
         Lauf.Domain.Entities.Flows.FlowAssignment assignment,
         CancellationToken cancellationToken)
     {
-        if (!assignment.DueDate.HasValue)
-        {
-            return;
-        }
-
-        var daysUntilDeadline = (assignment.DueDate.Value - DateTime.UtcNow).TotalDays;
-
         _logger.LogInformation(
-            "Обработка приближающегося дедлайна для назначения {AssignmentId}, осталось дней: {DaysLeft}",
+            "Обработка приближающегося дедлайна {AssignmentId}, дедлайн: {Deadline}",
             assignment.Id,
-            Math.Round(daysUntilDeadline, 1));
+            assignment.Deadline);
 
-        // Определяем тип уведомления в зависимости от оставшегося времени
-        if (daysUntilDeadline <= 1)
+        // Уведомляем пользователя о приближающемся дедлайне
+        await NotifyUserAboutApproachingDeadlineAsync(assignment, cancellationToken);
+
+        // Уведомляем бадди если есть
+        if (assignment.Buddy != null)
         {
-            await NotifyUrgentDeadlineAsync(assignment, cancellationToken);
-        }
-        else if (daysUntilDeadline <= 3)
-        {
-            await NotifyApproachingDeadlineAsync(assignment, cancellationToken);
+            await NotifyBuddyAboutApproachingDeadlineAsync(
+                assignment.UserId,
+                assignment.FlowId,
+                assignment.Buddy.Id,
+                assignment.Deadline,
+                cancellationToken);
         }
     }
 
@@ -166,18 +125,54 @@ public class DeadlineCheckJob
         Lauf.Domain.Entities.Flows.FlowAssignment assignment,
         CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(assignment.UserId, cancellationToken);
-        if (user == null)
+        try
         {
-            return;
+            // Создаем уведомление о просрочке
+            await _notificationService.NotifyDeadlineOverdueAsync(
+                assignment.UserId,
+                assignment.FlowId,
+                assignment.Deadline,
+                assignment.Id,
+                cancellationToken);
+
+            _logger.LogInformation(
+                "Уведомление о просрочке отправлено пользователю {UserId} для назначения {AssignmentId}",
+                assignment.UserId, assignment.Id);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка отправки уведомления о просрочке пользователю {UserId}",
+                assignment.UserId);
+        }
+    }
 
-        _logger.LogInformation(
-                            "Отправка уведомления о просрочке пользователю {UserId}",
-                user.Id);
+    /// <summary>
+    /// Уведомление пользователя о приближающемся дедлайне
+    /// </summary>
+    private async Task NotifyUserAboutApproachingDeadlineAsync(
+        Lauf.Domain.Entities.Flows.FlowAssignment assignment,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _notificationService.NotifyDeadlineApproachingAsync(
+                assignment.UserId,
+                assignment.FlowId,
+                assignment.Deadline,
+                assignment.Id,
+                cancellationToken);
 
-        // Отправка уведомлений будет реализована через NotificationService
-        await Task.CompletedTask;
+            _logger.LogInformation(
+                "Уведомление о приближающемся дедлайне отправлено пользователю {UserId}",
+                assignment.UserId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка отправки уведомления о приближающемся дедлайне пользователю {UserId}",
+                assignment.UserId);
+        }
     }
 
     /// <summary>
@@ -187,23 +182,53 @@ public class DeadlineCheckJob
         Lauf.Domain.Entities.Flows.FlowAssignment assignment,
         CancellationToken cancellationToken)
     {
-        if (!assignment.BuddyId.HasValue)
+        try
         {
-            return;
-        }
+            await _notificationService.NotifyBuddyAboutOverdueAsync(
+                assignment.Buddy!.Id,
+                assignment.UserId,
+                assignment.FlowId,
+                assignment.Deadline,
+                assignment.Id,
+                cancellationToken);
 
-        var buddy = await _userRepository.GetByIdAsync(assignment.BuddyId.Value, cancellationToken);
-        if (buddy == null)
+            _logger.LogInformation(
+                "Уведомление о просрочке подопечного отправлено бадди {BuddyId}",
+                assignment.Buddy.Id);
+        }
+        catch (Exception ex)
         {
-            return;
+            _logger.LogError(ex,
+                "Ошибка отправки уведомления бадди {BuddyId} о просрочке",
+                assignment.Buddy?.Id);
         }
+    }
 
-        _logger.LogInformation(
-                            "Отправка уведомления бадди {UserId} о просрочке подопечного",
-                buddy.Id);
+    /// <summary>
+    /// Уведомление бадди о приближающемся дедлайне подопечного
+    /// </summary>
+    private async Task NotifyBuddyAboutApproachingDeadlineAsync(
+        Guid userId,
+        Guid flowId,
+        Guid buddyId,
+        DateTime deadline,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _notificationService.NotifyBuddyAboutApproachingDeadlineAsync(
+                buddyId, userId, flowId, deadline, cancellationToken);
 
-        // Отправка уведомлений будет реализована через NotificationService
-        await Task.CompletedTask;
+            _logger.LogInformation(
+                "Уведомление о приближающемся дедлайне подопечного отправлено бадди {BuddyId}",
+                buddyId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка отправки уведомления бадди {BuddyId} о приближающемся дедлайне",
+                buddyId);
+        }
     }
 
     /// <summary>
@@ -213,41 +238,20 @@ public class DeadlineCheckJob
         Lauf.Domain.Entities.Flows.FlowAssignment assignment,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Отправка уведомления администратору о просрочке назначения {AssignmentId}",
-            assignment.Id);
+        try
+        {
+            // Логика уведомления администраторов будет реализована позже
+            _logger.LogInformation(
+                "Требуется уведомить администратора о просрочке назначения {AssignmentId}",
+                assignment.Id);
 
-        // Отправка уведомлений будет реализована через NotificationService администратору
-        await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Уведомление о срочном дедлайне
-    /// </summary>
-    private async Task NotifyUrgentDeadlineAsync(
-        Lauf.Domain.Entities.Flows.FlowAssignment assignment,
-        CancellationToken cancellationToken)
-    {
-        _logger.LogInformation(
-            "Отправка срочного уведомления о дедлайне для назначения {AssignmentId}",
-            assignment.Id);
-
-        // Отправка срочных уведомлений будет реализована через NotificationService
-        await Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Уведомление о приближающемся дедлайне
-    /// </summary>
-    private async Task NotifyApproachingDeadlineAsync(
-        Lauf.Domain.Entities.Flows.FlowAssignment assignment,
-        CancellationToken cancellationToken)
-    {
-        _logger.LogInformation(
-            "Отправка уведомления о приближающемся дедлайне для назначения {AssignmentId}",
-            assignment.Id);
-
-        // Отправка уведомлений будет реализована через NotificationService
-        await Task.CompletedTask;
+            await Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Ошибка отправки уведомления администратору о просрочке назначения {AssignmentId}",
+                assignment.Id);
+        }
     }
 }

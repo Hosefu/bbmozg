@@ -42,47 +42,15 @@ public class UpdateFlowCommandHandler : IRequestHandler<UpdateFlowCommand, Updat
                 };
             }
 
-            // Обновляем свойства
+            // Обновляем свойства (новая архитектура - только базовые координаторные свойства)
             if (!string.IsNullOrWhiteSpace(request.Title))
             {
-                // Прямое обновление свойства
-                var titleProperty = typeof(Domain.Entities.Flows.Flow).GetProperty("Title");
-                titleProperty?.SetValue(flow, request.Title);
+                flow.Name = request.Title;
             }
 
             if (!string.IsNullOrWhiteSpace(request.Description))
             {
-                // Прямое обновление свойства
-                var descProperty = typeof(Domain.Entities.Flows.Flow).GetProperty("Description");
-                descProperty?.SetValue(flow, request.Description);
-            }
-
-            if (request.Status.HasValue)
-            {
-                // Для обновления статуса можно добавить метод в доменную модель
-                // flow.UpdateStatus(request.Status.Value);
-                // Пока обновляем напрямую
-                var statusProperty = typeof(Domain.Entities.Flows.Flow).GetProperty("Status");
-                statusProperty?.SetValue(flow, request.Status.Value);
-            }
-
-
-            if (!string.IsNullOrWhiteSpace(request.Tags))
-            {
-                // Преобразуем в JSON строку для хранения в базе
-                var tagsList = request.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(t => t.Trim()).ToList();
-                flow.Tags = System.Text.Json.JsonSerializer.Serialize(tagsList);
-            }
-
-            if (request.Priority.HasValue)
-            {
-                flow.Priority = request.Priority.Value;
-            }
-
-            if (request.IsRequired.HasValue)
-            {
-                flow.IsRequired = request.IsRequired.Value;
+                flow.Description = request.Description;
             }
 
             // Сохраняем изменения
@@ -91,52 +59,30 @@ public class UpdateFlowCommandHandler : IRequestHandler<UpdateFlowCommand, Updat
 
             _logger.LogInformation("Поток {FlowId} успешно обновлен", request.FlowId);
 
-            // Создаем DTO для ответа
-            var flowDto = new FlowDto
-            {
-                Id = flow.Id,
-                Title = flow.Title,
-                Description = flow.Description,
-                Status = flow.Status,
-                Tags = ParseTags(flow.Tags),
-                Priority = flow.Priority,
-                IsRequired = flow.IsRequired,
-                CreatedAt = flow.CreatedAt,
-                UpdatedAt = flow.UpdatedAt,
-                CreatedById = flow.CreatedById,
-                TotalSteps = flow.TotalSteps
-            };
-
             return new UpdateFlowCommandResult
             {
-                Flow = flowDto,
-                Success = true
+                FlowId = flow.Id,
+                Success = true,
+                Message = $"Поток '{flow.Name}' успешно обновлен",
+                Flow = new FlowDto
+                {
+                    Id = flow.Id,
+                    Name = flow.Name,
+                    Description = flow.Description,
+                    CreatedById = flow.CreatedBy,
+                    CreatedAt = flow.CreatedAt
+                }
             };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при обновлении потока {FlowId}", request.FlowId);
-
+            
             return new UpdateFlowCommandResult
             {
                 Success = false,
                 ErrorMessage = ex.Message
             };
-        }
-    }
-
-    private static List<string> ParseTags(string? tagsJson)
-    {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(tagsJson))
-                return new List<string>();
-                
-            return System.Text.Json.JsonSerializer.Deserialize<List<string>>(tagsJson) ?? new List<string>();
-        }
-        catch
-        {
-            return new List<string>();
         }
     }
 }

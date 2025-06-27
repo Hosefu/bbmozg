@@ -36,11 +36,6 @@ public record AssignFlowCommand : IRequest<AssignFlowCommandResult>
     /// Дополнительные заметки к назначению
     /// </summary>
     public string? Notes { get; init; }
-
-    /// <summary>
-    /// Приоритет назначения (1 - низкий, 10 - высокий)
-    /// </summary>
-    public int Priority { get; init; } = 5;
 }
 
 /// <summary>
@@ -54,9 +49,9 @@ public class AssignFlowCommandResult
     public Guid AssignmentId { get; set; }
 
     /// <summary>
-    /// Идентификатор версии потока, назначенной пользователю
+    /// Идентификатор содержимого потока, назначенного пользователю
     /// </summary>
-    public Guid FlowVersionId { get; set; }
+    public Guid FlowContentId { get; set; }
 
     /// <summary>
     /// Успешно ли выполнено назначение

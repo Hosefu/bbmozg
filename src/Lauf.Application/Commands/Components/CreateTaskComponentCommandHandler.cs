@@ -55,12 +55,12 @@ public class CreateTaskComponentCommandHandler : IRequestHandler<CreateTaskCompo
             // Генерируем порядок для нового компонента
             var order = GenerateNextOrder(flowStep.Components);
 
-            // Создание компонента задания с привязкой к шагу
+            // Создание компонента задания с привязкой к шагу (новая архитектура)
             var taskComponent = new TaskComponent(
                 flowStepId: request.FlowStepId,
                 title: request.Title,
                 description: request.Description,
-                instruction: request.Instruction,
+                content: request.Instruction ?? "", // instruction теперь в content
                 codeWord: request.CodeWord,
                 hint: request.Hint,
                 order: order,

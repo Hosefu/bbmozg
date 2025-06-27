@@ -20,27 +20,24 @@ namespace Lauf.Application.Commands.FlowAssignment;
 public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, AssignFlowCommandResult>
 {
     private readonly IFlowRepository _flowRepository;
-    private readonly IFlowVersionRepository _flowVersionRepository;
+    private readonly IFlowContentRepository _flowContentRepository;
     private readonly IUserRepository _userRepository;
     private readonly IFlowAssignmentRepository _assignmentRepository;
-    private readonly IVersioningService _versioningService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<AssignFlowCommandHandler> _logger;
 
     public AssignFlowCommandHandler(
         IFlowRepository flowRepository,
-        IFlowVersionRepository flowVersionRepository,
+        IFlowContentRepository flowContentRepository,
         IUserRepository userRepository,
         IFlowAssignmentRepository assignmentRepository,
-        IVersioningService versioningService,
         IUnitOfWork unitOfWork,
         ILogger<AssignFlowCommandHandler> logger)
     {
         _flowRepository = flowRepository ?? throw new ArgumentNullException(nameof(flowRepository));
-        _flowVersionRepository = flowVersionRepository ?? throw new ArgumentNullException(nameof(flowVersionRepository));
+        _flowContentRepository = flowContentRepository ?? throw new ArgumentNullException(nameof(flowContentRepository));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _assignmentRepository = assignmentRepository ?? throw new ArgumentNullException(nameof(assignmentRepository));
-        _versioningService = versioningService ?? throw new ArgumentNullException(nameof(versioningService));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
@@ -59,24 +56,24 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
                 throw new UserNotFoundException(request.UserId);
             }
 
-            // Получаем активную версию потока
-            var activeFlowVersion = await _versioningService.GetActiveFlowVersionAsync(request.FlowId, cancellationToken);
-            if (activeFlowVersion == null)
+            // Получаем поток с активным содержимым (новая архитектура)
+            var flow = await _flowRepository.GetByIdAsync(request.FlowId, cancellationToken);
+            if (flow == null)
             {
                 throw new FlowNotFoundException(request.FlowId);
             }
 
-            // Загружаем полную версию потока с деталями
-            var flowVersionWithDetails = await _flowVersionRepository.GetByIdWithDetailsAsync(activeFlowVersion.Id, cancellationToken);
-            if (flowVersionWithDetails == null)
+            // Проверяем, что поток активен
+            if (!flow.IsActive)
             {
-                throw new InvalidOperationException($"Не удалось загрузить детали активной версии потока {request.FlowId}");
+                throw new InvalidOperationException($"Поток {flow.Name} неактивен и не может быть назначен");
             }
 
-            // Проверяем, что поток опубликован
-            if (flowVersionWithDetails.Status != FlowStatus.Published)
+            // Получаем активное содержимое потока
+            var activeContent = await _flowContentRepository.GetActiveByFlowIdAsync(request.FlowId, cancellationToken);
+            if (activeContent == null)
             {
-                throw new InvalidOperationException($"Поток {flowVersionWithDetails.Title} не опубликован и не может быть назначен");
+                throw new InvalidOperationException($"У потока {flow.Name} нет активного содержимого");
             }
 
             // Проверяем buddy если указан
@@ -96,20 +93,22 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
                 throw new InvalidOperationException($"У пользователя уже есть активное назначение для этого потока");
             }
 
-            // Рассчитываем дедлайн если не указан
-            var deadline = request.Deadline ?? CalculateDefaultDeadline(flowVersionWithDetails);
+            // Рассчитываем дедлайн если не указан (упрощено в новой архитектуре)
+            var deadline = request.Deadline ?? CalculateDefaultDeadline(flow, activeContent);
 
-            // Создаем назначение, используя FlowVersionId вместо SnapshotId
+            // Создаем назначение (новая архитектура - без FlowVersionId)
             var assignment = new Domain.Entities.Flows.FlowAssignment(
                 request.UserId,
-                flowVersionWithDetails.OriginalId, // Сохраняем ссылку на оригинальный поток
-                flowVersionWithDetails.OriginalId, // OriginalFlowId
-                flowVersionWithDetails.Id, // Ссылаемся на конкретную версию
+                request.FlowId,
                 deadline,
                 request.BuddyId,
                 request.CreatedById,
-                request.Notes,
-                request.Priority);
+                request.Notes);
+
+            // Создаем начальный прогресс
+            var progress = new Domain.Entities.Flows.FlowAssignmentProgress(
+                assignment.Id,
+                activeContent.Steps.Count);
 
             await _assignmentRepository.AddAsync(assignment, cancellationToken);
 
@@ -125,9 +124,9 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
             return new AssignFlowCommandResult
             {
                 AssignmentId = assignment.Id,
-                FlowVersionId = flowVersionWithDetails.Id,
+                FlowContentId = activeContent.Id,
                 IsSuccess = true,
-                Message = $"Поток \"{flowVersionWithDetails.Title}\" (версия {flowVersionWithDetails.Version}) успешно назначен",
+                Message = $"Поток \"{flow.Name}\" (версия {activeContent.Version}) успешно назначен",
                 EstimatedCompletionDate = deadline
             };
         }
@@ -144,12 +143,12 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
         }
     }
 
-    private static DateTime CalculateDefaultDeadline(Domain.Entities.Versions.FlowVersion flowVersion)
+    private static DateTime CalculateDefaultDeadline(Flow flow, FlowContent content)
     {
-        // Простой расчет: добавляем к текущей дате количество дней на основе количества этапов
-        // Примерно 1 день на каждые 2 этапа, минимум 7 дней
-        var estimatedDays = Math.Max(7, Math.Ceiling(flowVersion.StepVersions.Count / 2.0));
+        // Простой расчет в новой архитектуре: используем настройки потока или дефолт
+        var daysPerStep = flow.Settings?.DaysPerStep ?? 7;
+        var totalDays = content.Steps.Count * daysPerStep;
         
-        return DateTime.UtcNow.AddDays(estimatedDays);
+        return DateTime.UtcNow.AddDays(Math.Max(7, totalDays));
     }
 }

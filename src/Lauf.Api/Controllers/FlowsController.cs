@@ -126,7 +126,7 @@ public class FlowsController : ControllerBase
         {
             var command = new CreateFlowCommand
             {
-                Title = request.Title,
+                Name = request.Title,
                 Description = request.Description,
                 Category = request.Category ?? "Общее",
                 Tags = request.Tags ?? "",
