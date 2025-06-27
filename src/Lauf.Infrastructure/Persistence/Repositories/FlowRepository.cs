@@ -22,8 +22,9 @@ public class FlowRepository : IFlowRepository
     {
         return await _context.Flows
             .Include(x => x.Settings)
-            .Include(x => x.Steps)
-                .ThenInclude(s => s.Components)
+            .Include(x => x.ActiveContent)
+                .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
+                    .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -40,11 +41,11 @@ public class FlowRepository : IFlowRepository
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public async Task<Flow?> GetByTitleAsync(string title, CancellationToken cancellationToken = default)
+    public async Task<Flow?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         return await _context.Flows
             .Include(x => x.Settings)
-            .FirstOrDefaultAsync(x => x.Title == title, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Name == name, cancellationToken);
     }
 
     public async Task<IReadOnlyList<Flow>> GetByStatusAsync(FlowStatus status, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
@@ -52,7 +53,7 @@ public class FlowRepository : IFlowRepository
         return await _context.Flows
             .Include(x => x.Settings)
             .Where(x => x.Status == status)
-            .OrderBy(x => x.Title)
+            .OrderBy(x => x.Name)
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);
@@ -63,7 +64,7 @@ public class FlowRepository : IFlowRepository
         return await _context.Flows
             .Include(x => x.Settings)
             .Where(x => x.Status == FlowStatus.Published)
-            .OrderBy(x => x.Title)
+            .OrderBy(x => x.Name)
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);
@@ -136,16 +137,16 @@ public class FlowRepository : IFlowRepository
     {
         return await _context.Flows
             .Include(x => x.Settings)
-            .Where(x => x.Title.Contains(searchTerm) || x.Description.Contains(searchTerm))
-            .OrderBy(x => x.Title)
+            .Where(x => x.Name.Contains(searchTerm) || x.Description.Contains(searchTerm))
+            .OrderBy(x => x.Name)
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistsByTitleAsync(string title, Guid? excludeId = null, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Flows.Where(x => x.Title == title);
+        var query = _context.Flows.Where(x => x.Name == name);
         
         if (excludeId.HasValue)
         {

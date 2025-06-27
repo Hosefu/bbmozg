@@ -5,7 +5,6 @@ using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Entities.Progress;
 using Lauf.Domain.Entities.Notifications;
 using Lauf.Domain.Entities.Components;
-using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.ValueObjects;
 using Lauf.Infrastructure.Persistence.Configurations;
 using Lauf.Infrastructure.Persistence.Interceptors;
@@ -47,9 +46,11 @@ public class ApplicationDbContext : DbContext
 
     // Flows
     public DbSet<Flow> Flows { get; set; } = null!;
+    public DbSet<FlowContent> FlowContents { get; set; } = null!;
     public DbSet<FlowStep> FlowSteps { get; set; } = null!;
     public DbSet<FlowSettings> FlowSettings { get; set; } = null!;
     public DbSet<FlowAssignment> FlowAssignments { get; set; } = null!;
+    public DbSet<FlowAssignmentProgress> FlowAssignmentProgress { get; set; } = null!;
 
 
     // Progress
@@ -63,16 +64,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<ArticleComponent> ArticleComponents { get; set; } = null!;
     public DbSet<QuizComponent> QuizComponents { get; set; } = null!;
     public DbSet<TaskComponent> TaskComponents { get; set; } = null!;
+    public DbSet<QuizQuestion> QuizQuestions { get; set; } = null!;
     public DbSet<QuestionOption> QuestionOptions { get; set; } = null!;
-
-    // Versions
-    public DbSet<FlowVersion> FlowVersions { get; set; } = null!;
-    public DbSet<FlowStepVersion> FlowStepVersions { get; set; } = null!;
-    public DbSet<ComponentVersion> ComponentVersions { get; set; } = null!;
-    public DbSet<ArticleComponentVersion> ArticleComponentVersions { get; set; } = null!;
-    public DbSet<QuizComponentVersion> QuizComponentVersions { get; set; } = null!;
-    public DbSet<QuizOptionVersion> QuizOptionVersions { get; set; } = null!;
-    public DbSet<TaskComponentVersion> TaskComponentVersions { get; set; } = null!;
 
     /// <summary>
     /// Настройка модели базы данных
@@ -82,7 +75,6 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         // Игнорируем value objects как отдельные entities - они используются как owned entities
-        modelBuilder.Ignore<ComponentProgressData>();
         modelBuilder.Ignore<ProgressPercentage>();
 
         // Применяем все конфигурации из текущей сборки

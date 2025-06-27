@@ -65,6 +65,12 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
             .HasForeignKey(x => x.BuddyId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        // Связь с прогрессом (один к одному)
+        builder.HasOne(x => x.Progress)
+            .WithOne()
+            .HasForeignKey<FlowAssignmentProgress>(x => x.FlowAssignmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Дополнительные свойства
         builder.Property(x => x.AssignedById)
             .IsRequired();

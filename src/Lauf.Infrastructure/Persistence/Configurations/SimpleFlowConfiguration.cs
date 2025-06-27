@@ -21,17 +21,22 @@ public class SimpleFlowConfiguration : IEntityTypeConfiguration<Flow>
             .ValueGeneratedOnAdd();
 
         // Основные свойства
-        builder.Property(x => x.Title)
+        builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(200);
 
         builder.Property(x => x.Description)
             .HasMaxLength(1000);
 
-        builder.Property(x => x.Status)
+        builder.Property(x => x.IsActive)
             .IsRequired()
-            .HasConversion<string>()
-            .HasDefaultValue(FlowStatus.Draft);
+            .HasDefaultValue(true);
+
+        builder.Property(x => x.CreatedBy)
+            .IsRequired();
+
+        builder.Property(x => x.ActiveContentId)
+            .IsRequired(false);
 
 
         // Аудит
@@ -47,15 +52,22 @@ public class SimpleFlowConfiguration : IEntityTypeConfiguration<Flow>
             .HasForeignKey<FlowSettings>(x => x.FlowId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Связь с шагами (один ко многим)
-        builder.HasMany(x => x.Steps)
-            .WithOne(x => x.Flow)
-            .HasForeignKey(x => x.FlowId)
+        // Связь с активным содержимым (один к одному)
+        builder.HasOne(x => x.ActiveContent)
+            .WithOne()
+            .HasForeignKey<Flow>(x => x.ActiveContentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Связь со всеми версиями содержимого (один ко многим)
+        builder.HasMany(x => x.Contents)
+            .WithOne()
+            .HasForeignKey(fc => fc.FlowId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Индексы
-        builder.HasIndex(x => x.Status);
+        builder.HasIndex(x => x.IsActive);
         builder.HasIndex(x => x.CreatedAt);
-        builder.HasIndex(x => x.Title);
+        builder.HasIndex(x => x.Name);
+        builder.HasIndex(x => x.CreatedBy);
     }
 }

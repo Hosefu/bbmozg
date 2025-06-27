@@ -48,8 +48,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, SimpleUserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IFlowRepository, FlowRepository>();
+        services.AddScoped<IFlowContentRepository, FlowContentRepository>();
         services.AddScoped<IFlowAssignmentRepository, FlowAssignmentRepository>();
-        services.AddScoped<IFlowVersionRepository, FlowVersionRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IAchievementRepository, AchievementRepository>();
         services.AddScoped<IComponentRepository, ComponentRepository>();
@@ -57,7 +57,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserProgressRepository, UserProgressRepository>();
 
         // Domain services
-        services.AddScoped<IVersioningService, VersioningService>();
         services.AddScoped<ProgressCalculationService>();
 
         // Infrastructure services
