@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Application.DTOs.Flows;
+using Lauf.Shared.Helpers;
 
 namespace Lauf.Application.Commands.FlowSteps;
 
@@ -57,11 +58,13 @@ public class CreateFlowStepCommandHandler : IRequestHandler<CreateFlowStepComman
             }
 
             // Создаем новый шаг
+            var order = request.Order?.ToString() ?? GenerateNextStepOrder(flow.Steps);
+            
             var flowStep = new FlowStep(
                 flowId: request.FlowId,
                 title: request.Title,
                 description: request.Description,
-                order: request.Order ?? (flow.Steps.Count + 1),
+                order: order,
                 isRequired: request.IsRequired)
             {
                 Instructions = request.Instructions,
@@ -83,5 +86,19 @@ public class CreateFlowStepCommandHandler : IRequestHandler<CreateFlowStepComman
             _logger.LogError(ex, "Ошибка при создании шага для потока {FlowId}", request.FlowId);
             return CreateFlowStepCommandResult.Failure("Произошла ошибка при создании шага");
         }
+    }
+
+    /// <summary>
+    /// Генерирует следующий LexoRank для шага
+    /// </summary>
+    private static string GenerateNextStepOrder(ICollection<FlowStep> existingSteps)
+    {
+        if (!existingSteps.Any())
+            return LexoRankHelper.Middle();
+            
+        var lastStep = existingSteps.OrderBy(s => s.Order).LastOrDefault();
+        return lastStep != null ? 
+            LexoRankHelper.Next(lastStep.Order) : 
+            LexoRankHelper.Middle();
     }
 }

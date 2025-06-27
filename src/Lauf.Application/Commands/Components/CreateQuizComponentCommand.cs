@@ -33,10 +33,7 @@ public class CreateQuizComponentCommand : IRequest<CreateQuizComponentResult>
     /// </summary>
     public List<CreateQuestionOptionDto> Options { get; set; } = new();
 
-    /// <summary>
-    /// Порядковый номер компонента в шаге
-    /// </summary>
-    public int? Order { get; set; }
+
 
     /// <summary>
     /// Обязательный ли компонент
@@ -180,10 +177,6 @@ public class CreateQuizComponentResult
     /// </summary>
     public Guid ComponentId { get; private set; }
 
-    /// <summary>
-    /// Идентификатор связи компонента с шагом
-    /// </summary>
-    public Guid LinkId { get; private set; }
 
     /// <summary>
     /// DTO созданного компонента
@@ -194,15 +187,13 @@ public class CreateQuizComponentResult
     /// Конструктор для успешного результата
     /// </summary>
     /// <param name="componentId">Идентификатор компонента</param>
-    /// <param name="linkId">Идентификатор связи</param>
     /// <param name="component">DTO компонента</param>
     /// <param name="message">Сообщение об успехе</param>
-    private CreateQuizComponentResult(Guid componentId, Guid linkId, QuizComponentDto component, string message = "Компонент квиза успешно создан")
+    private CreateQuizComponentResult(Guid componentId, QuizComponentDto component, string message = "Компонент квиза успешно создан")
     {
         IsSuccess = true;
         Message = message;
         ComponentId = componentId;
-        LinkId = linkId;
         Component = component;
     }
 
@@ -215,7 +206,6 @@ public class CreateQuizComponentResult
         IsSuccess = false;
         Message = message;
         ComponentId = Guid.Empty;
-        LinkId = Guid.Empty;
         Component = null;
     }
 
@@ -223,13 +213,12 @@ public class CreateQuizComponentResult
     /// Создает успешный результат
     /// </summary>
     /// <param name="componentId">Идентификатор компонента</param>
-    /// <param name="linkId">Идентификатор связи</param>
     /// <param name="component">DTO компонента</param>
     /// <param name="message">Сообщение об успехе</param>
     /// <returns>Успешный результат</returns>
-    public static CreateQuizComponentResult Success(Guid componentId, Guid linkId, QuizComponentDto component, string? message = null)
+    public static CreateQuizComponentResult Success(Guid componentId, QuizComponentDto component, string? message = null)
     {
-        return new CreateQuizComponentResult(componentId, linkId, component, message ?? "Компонент квиза успешно создан");
+        return new CreateQuizComponentResult(componentId, component, message ?? "Компонент квиза успешно создан");
     }
 
     /// <summary>

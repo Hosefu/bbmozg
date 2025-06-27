@@ -1,3 +1,4 @@
+using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Flows;

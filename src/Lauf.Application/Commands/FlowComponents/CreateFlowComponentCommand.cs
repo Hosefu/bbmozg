@@ -35,9 +35,9 @@ public class CreateFlowComponentCommand : IRequest<CreateFlowComponentCommandRes
     public string Content { get; set; } = "{}";
 
     /// <summary>
-    /// Порядковый номер компонента (если не указан, добавится в конец)
+    /// LexoRank позиция компонента (если не указана, добавится в конец)
     /// </summary>
-    public int? Order { get; set; }
+    public string? Order { get; set; }
 
     /// <summary>
     /// Обязательный ли компонент

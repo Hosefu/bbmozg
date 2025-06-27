@@ -28,7 +28,7 @@ public class FlowStepDto
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Порядковый номер шага
+    /// Порядковый номер шага (для фронтенда, начиная с 0)
     /// </summary>
     public int Order { get; set; }
 
@@ -119,7 +119,7 @@ public class FlowStepComponentDto
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Порядковый номер компонента
+    /// Порядковый номер компонента (для фронтенда, начиная с 0)
     /// </summary>
     public int Order { get; set; }
 
@@ -167,4 +167,9 @@ public class FlowStepComponentDto
     /// Дата последнего обновления
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Данные компонента (статья, квиз или задание)
+    /// </summary>
+    public object? Component { get; set; }
 }

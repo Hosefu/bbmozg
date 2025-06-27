@@ -1,5 +1,5 @@
 using Lauf.Domain.Entities.Flows;
-using Lauf.Domain.Entities.Snapshots;
+using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.Entities.Users;
 using Lauf.Domain.ValueObjects;
 
@@ -36,14 +36,14 @@ public class FlowProgress
     public FlowAssignment FlowAssignment { get; private set; } = null!;
 
     /// <summary>
-    /// Идентификатор снапшота потока
+    /// Идентификатор версии потока
     /// </summary>
-    public Guid FlowSnapshotId { get; private set; }
+    public Guid FlowVersionId { get; private set; }
 
     /// <summary>
-    /// Снапшот потока
+    /// Версия потока
     /// </summary>
-    public FlowSnapshot FlowSnapshot { get; private set; } = null!;
+    public FlowVersion FlowVersion { get; private set; } = null!;
 
     /// <summary>
     /// Общий процент прогресса по потоку
@@ -110,20 +110,20 @@ public class FlowProgress
     /// </summary>
     /// <param name="userId">ID пользователя</param>
     /// <param name="flowAssignmentId">ID назначения потока</param>
-    /// <param name="flowSnapshotId">ID снапшота потока</param>
+    /// <param name="flowVersionId">ID версии потока</param>
     /// <param name="totalStepsCount">Общее количество шагов</param>
     /// <param name="totalComponentsCount">Общее количество компонентов</param>
     public FlowProgress(
         Guid userId,
         Guid flowAssignmentId,
-        Guid flowSnapshotId,
+        Guid flowVersionId,
         int totalStepsCount,
         int totalComponentsCount)
     {
         Id = Guid.NewGuid();
         UserId = userId;
         FlowAssignmentId = flowAssignmentId;
-        FlowSnapshotId = flowSnapshotId;
+        FlowVersionId = flowVersionId;
         Progress = new ProgressPercentage(0);
         CompletedStepsCount = 0;
         TotalStepsCount = totalStepsCount > 0 ? totalStepsCount : throw new ArgumentException("Количество шагов должно быть положительным");
@@ -214,7 +214,7 @@ public class FlowProgress
             .OrderBy(sp => sp.Order)
             .FirstOrDefault();
 
-        return incompleteStep?.StepSnapshotId;
+        return incompleteStep?.StepVersionId;
     }
 
     /// <summary>

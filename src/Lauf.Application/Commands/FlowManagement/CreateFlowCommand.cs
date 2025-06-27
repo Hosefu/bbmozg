@@ -105,6 +105,16 @@ public class CreateFlowCommandResult
     public Guid FlowId { get; set; }
 
     /// <summary>
+    /// Идентификатор созданной версии потока
+    /// </summary>
+    public Guid FlowVersionId { get; set; }
+
+    /// <summary>
+    /// Номер созданной версии
+    /// </summary>
+    public int Version { get; set; }
+
+    /// <summary>
     /// Успешно ли создан поток
     /// </summary>
     public bool IsSuccess { get; set; }

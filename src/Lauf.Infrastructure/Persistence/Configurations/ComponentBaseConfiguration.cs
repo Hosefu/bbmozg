@@ -1,3 +1,4 @@
+using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Components;
@@ -46,6 +47,24 @@ public class ComponentBaseConfiguration : IEntityTypeConfiguration<ComponentBase
         builder.Property(x => x.Instructions)
             .HasMaxLength(2000);
 
+        // Новые поля для упрощенной архитектуры
+        builder.Property(x => x.FlowStepId)
+            .IsRequired();
+
+        builder.Property(x => x.Order)
+            .IsRequired()
+            .HasMaxLength(50);
+
+        builder.Property(x => x.IsRequired)
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        // Связь с FlowStep
+        builder.HasOne<Lauf.Domain.Entities.Flows.FlowStep>()
+            .WithMany(f => f.Components)
+            .HasForeignKey(x => x.FlowStepId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Аудит
         builder.Property(x => x.CreatedAt)
             .IsRequired();
@@ -57,5 +76,7 @@ public class ComponentBaseConfiguration : IEntityTypeConfiguration<ComponentBase
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.CreatedAt);
         builder.HasIndex(x => x.Title);
+        builder.HasIndex(x => x.FlowStepId);
+        builder.HasIndex(x => x.Order);
     }
 }

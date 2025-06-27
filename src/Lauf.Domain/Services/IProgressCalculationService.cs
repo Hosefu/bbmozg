@@ -1,5 +1,5 @@
 using Lauf.Domain.Entities.Progress;
-using Lauf.Domain.Entities.Snapshots;
+using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.ValueObjects;
 
 namespace Lauf.Domain.Services;
@@ -14,13 +14,13 @@ public interface IProgressCalculationService
     /// </summary>
     /// <param name="userId">ID пользователя</param>
     /// <param name="assignmentId">ID назначения потока</param>
-    /// <param name="flowSnapshot">Снапшот потока</param>
+    /// <param name="flowVersion">Версия потока</param>
     /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns>Созданный прогресс потока</returns>
     Task<FlowProgress> InitializeFlowProgressAsync(
         Guid userId,
         Guid assignmentId,
-        FlowSnapshot flowSnapshot,
+        FlowVersion flowVersion,
         CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -107,6 +107,11 @@ public class Startup
             .AddType<Lauf.Api.GraphQL.Types.UserFlowProgressType>()
             .AddType<Lauf.Api.GraphQL.Types.ComponentProgressType>()
             .AddType<Lauf.Api.GraphQL.Types.AssignFlowResultType>()
+            .AddType<Lauf.Api.GraphQL.Types.Components.ComponentUnionType>()
+            .AddType<Lauf.Api.GraphQL.Types.Components.ArticleComponentType>()
+            .AddType<Lauf.Api.GraphQL.Types.Components.QuizComponentType>()
+            .AddType<Lauf.Api.GraphQL.Types.Components.TaskComponentType>()
+            .AddType<Lauf.Api.GraphQL.Types.Components.QuestionOptionType>()
             .AddProjections()
             .AddFiltering()
             .AddSorting();

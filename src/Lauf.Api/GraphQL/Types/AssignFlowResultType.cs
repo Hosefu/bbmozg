@@ -15,8 +15,8 @@ public class AssignFlowResultType : ObjectType<AssignFlowCommandResult>
         descriptor.Field(f => f.AssignmentId)
             .Description("Идентификатор созданного назначения");
 
-        descriptor.Field(f => f.SnapshotId)
-            .Description("Идентификатор созданного снапшота потока");
+        descriptor.Field(f => f.FlowVersionId)
+            .Description("Идентификатор версии потока");
 
         descriptor.Field(f => f.IsSuccess)
             .Description("Успешно ли выполнено назначение");

@@ -1,4 +1,5 @@
 using Lauf.Application.DTOs.Flows;
+using Lauf.Api.GraphQL.Types.Components;
 
 namespace Lauf.Api.GraphQL.Types;
 
@@ -59,5 +60,10 @@ public class FlowStepComponentType : ObjectType<FlowStepComponentDto>
 
         descriptor.Field(f => f.UpdatedAt)
             .Description("Дата последнего обновления");
+
+        // Поле компонента с данными
+        descriptor.Field(f => f.Component)
+            .Type<ComponentUnionType>()
+            .Description("Данные компонента (статья, квиз или задание)");
     }
 }

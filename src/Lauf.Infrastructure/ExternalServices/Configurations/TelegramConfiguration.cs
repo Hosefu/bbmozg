@@ -1,3 +1,4 @@
+using Lauf.Domain.Enums;
 namespace Lauf.Infrastructure.ExternalServices.Configurations;
 
 /// <summary>

@@ -2,10 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Lauf.Domain.Entities.Users;
 using Lauf.Domain.Entities.Flows;
-using Lauf.Domain.Entities.Snapshots;
 using Lauf.Domain.Entities.Progress;
 using Lauf.Domain.Entities.Notifications;
 using Lauf.Domain.Entities.Components;
+using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.ValueObjects;
 using Lauf.Infrastructure.Persistence.Configurations;
 using Lauf.Infrastructure.Persistence.Interceptors;
@@ -48,14 +48,9 @@ public class ApplicationDbContext : DbContext
     // Flows
     public DbSet<Flow> Flows { get; set; } = null!;
     public DbSet<FlowStep> FlowSteps { get; set; } = null!;
-    public DbSet<FlowStepComponent> FlowStepComponents { get; set; } = null!;
     public DbSet<FlowSettings> FlowSettings { get; set; } = null!;
     public DbSet<FlowAssignment> FlowAssignments { get; set; } = null!;
 
-    // Snapshots
-    public DbSet<FlowSnapshot> FlowSnapshots { get; set; } = null!;
-    public DbSet<FlowStepSnapshot> FlowStepSnapshots { get; set; } = null!;
-    public DbSet<ComponentSnapshot> ComponentSnapshots { get; set; } = null!;
 
     // Progress
     public DbSet<UserProgress> UserProgress { get; set; } = null!;
@@ -69,9 +64,15 @@ public class ApplicationDbContext : DbContext
     public DbSet<QuizComponent> QuizComponents { get; set; } = null!;
     public DbSet<TaskComponent> TaskComponents { get; set; } = null!;
     public DbSet<QuestionOption> QuestionOptions { get; set; } = null!;
-    
-    // Component Links
-    public DbSet<FlowStepComponentLink> FlowStepComponentLinks { get; set; } = null!;
+
+    // Versions
+    public DbSet<FlowVersion> FlowVersions { get; set; } = null!;
+    public DbSet<FlowStepVersion> FlowStepVersions { get; set; } = null!;
+    public DbSet<ComponentVersion> ComponentVersions { get; set; } = null!;
+    public DbSet<ArticleComponentVersion> ArticleComponentVersions { get; set; } = null!;
+    public DbSet<QuizComponentVersion> QuizComponentVersions { get; set; } = null!;
+    public DbSet<QuizOptionVersion> QuizOptionVersions { get; set; } = null!;
+    public DbSet<TaskComponentVersion> TaskComponentVersions { get; set; } = null!;
 
     /// <summary>
     /// Настройка модели базы данных

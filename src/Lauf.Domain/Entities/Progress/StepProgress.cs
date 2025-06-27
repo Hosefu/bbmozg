@@ -1,5 +1,8 @@
-using Lauf.Domain.Entities.Snapshots;
+using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.ValueObjects;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Lauf.Domain.Entities.Progress;
 
@@ -24,14 +27,14 @@ public class StepProgress
     public FlowProgress FlowProgress { get; private set; } = null!;
 
     /// <summary>
-    /// Идентификатор снапшота шага
+    /// Идентификатор версии шага
     /// </summary>
-    public Guid StepSnapshotId { get; private set; }
+    public Guid StepVersionId { get; private set; }
 
     /// <summary>
-    /// Снапшот шага
+    /// Версия шага
     /// </summary>
-    public FlowStepSnapshot StepSnapshot { get; private set; } = null!;
+    public FlowStepVersion StepVersion { get; private set; } = null!;
 
     /// <summary>
     /// Порядковый номер шага
@@ -92,20 +95,20 @@ public class StepProgress
     /// Конструктор для создания записи прогресса по шагу
     /// </summary>
     /// <param name="flowProgressId">ID прогресса потока</param>
-    /// <param name="stepSnapshotId">ID снапшота шага</param>
+    /// <param name="stepVersionId">ID версии шага</param>
     /// <param name="order">Порядковый номер шага</param>
     /// <param name="totalComponentsCount">Общее количество компонентов</param>
     /// <param name="isUnlocked">Разблокирован ли шаг изначально</param>
     public StepProgress(
         Guid flowProgressId,
-        Guid stepSnapshotId,
+        Guid stepVersionId,
         int order,
         int totalComponentsCount,
         bool isUnlocked = false)
     {
         Id = Guid.NewGuid();
         FlowProgressId = flowProgressId;
-        StepSnapshotId = stepSnapshotId;
+        StepVersionId = stepVersionId;
         Order = order;
         Progress = new ProgressPercentage(0);
         CompletedComponentsCount = 0;
@@ -207,7 +210,7 @@ public class StepProgress
             .OrderBy(cp => cp.Order)
             .FirstOrDefault();
 
-        return incompleteComponent?.ComponentSnapshotId;
+        return incompleteComponent?.ComponentVersionId;
     }
 
     /// <summary>

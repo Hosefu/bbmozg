@@ -1,9 +1,14 @@
 using Lauf.Domain.Entities.Flows;
+using Lauf.Domain.Entities.Versions;
+using Lauf.Domain.Enums;
 using Lauf.Domain.Exceptions;
 using Lauf.Domain.Interfaces;
 using Lauf.Domain.Interfaces.Repositories;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Lauf.Application.Commands.FlowManagement;
 
@@ -13,20 +18,23 @@ namespace Lauf.Application.Commands.FlowManagement;
 public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, CreateFlowCommandResult>
 {
     private readonly IFlowRepository _flowRepository;
+    private readonly IFlowVersionRepository _flowVersionRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFlowCommandHandler> _logger;
 
     public CreateFlowCommandHandler(
         IFlowRepository flowRepository,
+        IFlowVersionRepository flowVersionRepository,
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
         ILogger<CreateFlowCommandHandler> logger)
     {
-        _flowRepository = flowRepository;
-        _userRepository = userRepository;
-        _unitOfWork = unitOfWork;
-        _logger = logger;
+        _flowRepository = flowRepository ?? throw new ArgumentNullException(nameof(flowRepository));
+        _flowVersionRepository = flowVersionRepository ?? throw new ArgumentNullException(nameof(flowVersionRepository));
+        _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public async Task<CreateFlowCommandResult> Handle(CreateFlowCommand request, CancellationToken cancellationToken)
@@ -46,7 +54,7 @@ public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, Creat
                 }
             }
 
-            // Создаем поток
+            // Создаем оригинальный поток (как ссылочную сущность)
             var flow = new Flow(request.Title, request.Description);
             
             // Заполняем дополнительные свойства
@@ -55,23 +63,40 @@ public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, Creat
             flow.IsRequired = request.IsRequired;
             flow.CreatedById = request.CreatedById;
 
-            // Создание настроек потока будет добавлено в следующих итерациях
-            // Пока что не создаем настройки - они будут добавлены позже
-
-            // Сохраняем поток
+            // Сохраняем оригинальный поток
             await _flowRepository.AddAsync(flow, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Поток \"{Title}\" успешно создан с ID {FlowId}", 
-                request.Title, flow.Id);
+            // Создаем первую версию потока (версия 1, активная)
+            var firstFlowVersion = new FlowVersion(
+                flow.Id, // OriginalId
+                1, // Version = 1 для первой версии
+                request.Title,
+                request.Description,
+                request.Tags,
+                FlowStatus.Draft, // Начинаем с черновика
+                request.Priority,
+                request.IsRequired,
+                request.CreatedById,
+                true // IsActive = true для первой версии
+            );
+
+            // Сохраняем первую версию
+            await _flowVersionRepository.AddAsync(firstFlowVersion, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Поток \"{Title}\" успешно создан с ID {FlowId}, создана первая версия {FlowVersionId}", 
+                request.Title, flow.Id, firstFlowVersion.Id);
 
             return new CreateFlowCommandResult
             {
                 FlowId = flow.Id,
+                FlowVersionId = firstFlowVersion.Id,
+                Version = firstFlowVersion.Version,
                 IsSuccess = true,
-                Message = $"Поток \"{request.Title}\" успешно создан",
+                Message = $"Поток \"{request.Title}\" успешно создан с версией {firstFlowVersion.Version}",
                 Title = flow.Title,
-                Status = flow.Status.ToString()
+                Status = firstFlowVersion.Status.ToString()
             };
         }
         catch (Exception ex)

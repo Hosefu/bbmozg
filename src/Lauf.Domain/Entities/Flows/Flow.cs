@@ -1,4 +1,5 @@
 using Lauf.Domain.Enums;
+using Lauf.Shared.Helpers;
 
 namespace Lauf.Domain.Entities.Flows;
 
@@ -157,7 +158,15 @@ public class Flow
     /// <param name="step">Шаг для добавления</param>
     public void AddStep(FlowStep step)
     {
-        step.Order = Steps.Count + 1;
+        // Генерируем LexoRank для нового шага
+        if (string.IsNullOrEmpty(step.Order))
+        {
+            var lastStep = Steps.OrderBy(s => s.Order).LastOrDefault();
+            step.Order = lastStep != null ? 
+                LexoRankHelper.Next(lastStep.Order) : 
+                LexoRankHelper.Middle();
+        }
+        
         step.FlowId = Id;
         Steps.Add(step);
         UpdatedAt = DateTime.UtcNow;
@@ -179,14 +188,11 @@ public class Flow
     }
 
     /// <summary>
-    /// Переупорядочивает шаги после удаления
+    /// Переупорядочивает шаги после удаления (для LexoRank это не требуется)
     /// </summary>
     private void ReorderSteps()
     {
-        var orderedSteps = Steps.OrderBy(s => s.Order).ToList();
-        for (int i = 0; i < orderedSteps.Count; i++)
-        {
-            orderedSteps[i].Order = i + 1;
-        }
+        // LexoRank не требует переупорядочивания после удаления
+        // Каждый элемент уже имеет свою уникальную позицию
     }
 }

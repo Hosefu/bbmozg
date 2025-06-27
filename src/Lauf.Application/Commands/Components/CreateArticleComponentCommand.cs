@@ -33,10 +33,7 @@ public class CreateArticleComponentCommand : IRequest<CreateArticleComponentResu
     /// </summary>
     public int ReadingTimeMinutes { get; set; } = 15;
 
-    /// <summary>
-    /// Порядковый номер компонента в шаге
-    /// </summary>
-    public int? Order { get; set; }
+
 
     /// <summary>
     /// Обязательный ли компонент
@@ -64,10 +61,6 @@ public class CreateArticleComponentResult
     /// </summary>
     public Guid ComponentId { get; private set; }
 
-    /// <summary>
-    /// Идентификатор связи компонента с шагом
-    /// </summary>
-    public Guid LinkId { get; private set; }
 
     /// <summary>
     /// DTO созданного компонента
@@ -78,15 +71,13 @@ public class CreateArticleComponentResult
     /// Конструктор для успешного результата
     /// </summary>
     /// <param name="componentId">Идентификатор компонента</param>
-    /// <param name="linkId">Идентификатор связи</param>
     /// <param name="component">DTO компонента</param>
     /// <param name="message">Сообщение об успехе</param>
-    private CreateArticleComponentResult(Guid componentId, Guid linkId, ArticleComponentDto component, string message = "Компонент статьи успешно создан")
+    private CreateArticleComponentResult(Guid componentId, ArticleComponentDto component, string message = "Компонент статьи успешно создан")
     {
         IsSuccess = true;
         Message = message;
         ComponentId = componentId;
-        LinkId = linkId;
         Component = component;
     }
 
@@ -99,7 +90,6 @@ public class CreateArticleComponentResult
         IsSuccess = false;
         Message = message;
         ComponentId = Guid.Empty;
-        LinkId = Guid.Empty;
         Component = null;
     }
 
@@ -107,13 +97,12 @@ public class CreateArticleComponentResult
     /// Создает успешный результат
     /// </summary>
     /// <param name="componentId">Идентификатор компонента</param>
-    /// <param name="linkId">Идентификатор связи</param>
     /// <param name="component">DTO компонента</param>
     /// <param name="message">Сообщение об успехе</param>
     /// <returns>Успешный результат</returns>
-    public static CreateArticleComponentResult Success(Guid componentId, Guid linkId, ArticleComponentDto component, string? message = null)
+    public static CreateArticleComponentResult Success(Guid componentId, ArticleComponentDto component, string? message = null)
     {
-        return new CreateArticleComponentResult(componentId, linkId, component, message ?? "Компонент статьи успешно создан");
+        return new CreateArticleComponentResult(componentId, component, message ?? "Компонент статьи успешно создан");
     }
 
     /// <summary>

@@ -358,18 +358,19 @@ public class GetFlowDetailsQueryHandler : IRequestHandler<GetFlowDetailsQuery, F
 
         foreach (var step in flowDetails.Steps.OrderBy(s => s.Order))
         {
-            step.IsCompleted = completedSteps.Contains(step.Order);
+            var stepNumber = Array.IndexOf(flowDetails.Steps.OrderBy(s => s.Order).ToArray(), step) + 1;
+            step.IsCompleted = completedSteps.Contains(stepNumber);
             
             if (isSequential)
             {
                 // Последовательное прохождение: доступен только следующий незавершенный шаг
-                if (step.Order == 1)
+                if (stepNumber == 1)
                 {
                     step.IsAccessible = true;
                 }
                 else
                 {
-                    var previousStepCompleted = completedSteps.Contains(step.Order - 1);
+                    var previousStepCompleted = completedSteps.Contains(stepNumber - 1);
                     step.IsAccessible = previousStepCompleted;
                 }
             }

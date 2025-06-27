@@ -63,16 +63,37 @@ public abstract class ComponentBase
     public DateTime UpdatedAt { get; protected set; } = DateTime.UtcNow;
 
     /// <summary>
+    /// Идентификатор шага потока, к которому принадлежит компонент
+    /// </summary>
+    public Guid FlowStepId { get; protected set; }
+
+    /// <summary>
+    /// Порядковый номер компонента в шаге (LexoRank для динамической сортировки)
+    /// </summary>
+    public string Order { get; protected set; } = string.Empty;
+
+    /// <summary>
+    /// Обязательный ли компонент для завершения шага
+    /// </summary>
+    public bool IsRequired { get; protected set; } = true;
+
+    /// <summary>
     /// Конструктор для создания нового компонента
     /// </summary>
+    /// <param name="flowStepId">Идентификатор шага потока</param>
     /// <param name="title">Название компонента</param>
     /// <param name="description">Описание компонента</param>
+    /// <param name="order">Порядковый номер компонента</param>
+    /// <param name="isRequired">Обязательный ли компонент</param>
     /// <param name="estimatedDurationMinutes">Приблизительное время выполнения в минутах</param>
-    protected ComponentBase(string title, string description, int estimatedDurationMinutes = 15)
+    protected ComponentBase(Guid flowStepId, string title, string description, string order, bool isRequired = true, int estimatedDurationMinutes = 15)
     {
         Id = Guid.NewGuid();
+        FlowStepId = flowStepId;
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Description = description ?? throw new ArgumentNullException(nameof(description));
+        Order = order ?? throw new ArgumentNullException(nameof(order));
+        IsRequired = isRequired;
         EstimatedDurationMinutes = estimatedDurationMinutes;
         Status = ComponentStatus.Draft;
         CreatedAt = DateTime.UtcNow;

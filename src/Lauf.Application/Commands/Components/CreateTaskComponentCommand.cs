@@ -38,10 +38,7 @@ public class CreateTaskComponentCommand : IRequest<CreateTaskComponentResult>
     /// </summary>
     public string Hint { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Порядковый номер компонента в шаге
-    /// </summary>
-    public int? Order { get; set; }
+
 
     /// <summary>
     /// Обязательный ли компонент
@@ -74,10 +71,6 @@ public class CreateTaskComponentResult
     /// </summary>
     public Guid ComponentId { get; private set; }
 
-    /// <summary>
-    /// Идентификатор связи компонента с шагом
-    /// </summary>
-    public Guid LinkId { get; private set; }
 
     /// <summary>
     /// DTO созданного компонента
@@ -88,15 +81,13 @@ public class CreateTaskComponentResult
     /// Конструктор для успешного результата
     /// </summary>
     /// <param name="componentId">Идентификатор компонента</param>
-    /// <param name="linkId">Идентификатор связи</param>
     /// <param name="component">DTO компонента</param>
     /// <param name="message">Сообщение об успехе</param>
-    private CreateTaskComponentResult(Guid componentId, Guid linkId, TaskComponentDto component, string message = "Компонент задания успешно создан")
+    private CreateTaskComponentResult(Guid componentId, TaskComponentDto component, string message = "Компонент задания успешно создан")
     {
         IsSuccess = true;
         Message = message;
         ComponentId = componentId;
-        LinkId = linkId;
         Component = component;
     }
 
@@ -109,7 +100,6 @@ public class CreateTaskComponentResult
         IsSuccess = false;
         Message = message;
         ComponentId = Guid.Empty;
-        LinkId = Guid.Empty;
         Component = null;
     }
 
@@ -117,13 +107,12 @@ public class CreateTaskComponentResult
     /// Создает успешный результат
     /// </summary>
     /// <param name="componentId">Идентификатор компонента</param>
-    /// <param name="linkId">Идентификатор связи</param>
     /// <param name="component">DTO компонента</param>
     /// <param name="message">Сообщение об успехе</param>
     /// <returns>Успешный результат</returns>
-    public static CreateTaskComponentResult Success(Guid componentId, Guid linkId, TaskComponentDto component, string? message = null)
+    public static CreateTaskComponentResult Success(Guid componentId, TaskComponentDto component, string? message = null)
     {
-        return new CreateTaskComponentResult(componentId, linkId, component, message ?? "Компонент задания успешно создан");
+        return new CreateTaskComponentResult(componentId, component, message ?? "Компонент задания успешно создан");
     }
 
     /// <summary>

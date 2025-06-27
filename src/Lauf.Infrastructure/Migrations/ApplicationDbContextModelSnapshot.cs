@@ -36,16 +36,29 @@ namespace Lauf.Infrastructure.Migrations
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(15);
 
+                    b.Property<Guid>("FlowStepId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Instructions")
                         .IsRequired()
                         .HasMaxLength(2000)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRequired")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
 
                     b.Property<int?>("MaxAttempts")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("MinPassingScore")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Order")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -64,6 +77,10 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
+
+                    b.HasIndex("FlowStepId");
+
+                    b.HasIndex("Order");
 
                     b.HasIndex("Status");
 
@@ -88,8 +105,9 @@ namespace Lauf.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Order")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Points")
                         .ValueGeneratedOnAdd()
@@ -212,10 +230,13 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<Guid>("FlowId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("FlowSnapshotId")
+                    b.Property<Guid>("FlowVersionId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastActivityAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OriginalFlowId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PauseReason")
@@ -266,6 +287,8 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasIndex("DueDate");
 
                     b.HasIndex("FlowId");
+
+                    b.HasIndex("FlowVersionId");
 
                     b.HasIndex("Status");
 
@@ -367,8 +390,9 @@ namespace Lauf.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Order")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
@@ -385,68 +409,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasIndex("FlowId");
 
                     b.ToTable("FlowSteps");
-                });
-
-            modelBuilder.Entity("Lauf.Domain.Entities.Flows.FlowStepComponent", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("ComponentId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("ComponentType")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EstimatedDurationMinutes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("FlowStepId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Instructions")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("MaxAttempts")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("MinPassingScore")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Settings")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FlowStepId");
-
-                    b.ToTable("FlowStepComponents");
                 });
 
             modelBuilder.Entity("Lauf.Domain.Entities.Notifications.Notification", b =>
@@ -554,7 +516,7 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ComponentSnapshotId")
+                    b.Property<Guid>("ComponentVersionId")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsCompleted")
@@ -586,7 +548,7 @@ namespace Lauf.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ComponentSnapshotId");
+                    b.HasIndex("ComponentVersionId");
 
                     b.HasIndex("StepProgressId");
 
@@ -614,7 +576,7 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<Guid>("FlowAssignmentId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("FlowSnapshotId")
+                    b.Property<Guid>("FlowVersionId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("LastUpdatedAt")
@@ -642,7 +604,7 @@ namespace Lauf.Infrastructure.Migrations
 
                     b.HasIndex("FlowAssignmentId");
 
-                    b.HasIndex("FlowSnapshotId");
+                    b.HasIndex("FlowVersionId");
 
                     b.HasIndex("UserId");
 
@@ -678,7 +640,7 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("StepSnapshotId")
+                    b.Property<Guid>("StepVersionId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("TimeSpentMinutes")
@@ -691,7 +653,7 @@ namespace Lauf.Infrastructure.Migrations
 
                     b.HasIndex("FlowProgressId");
 
-                    b.HasIndex("StepSnapshotId");
+                    b.HasIndex("StepVersionId");
 
                     b.ToTable("StepProgress");
                 });
@@ -734,145 +696,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UserProgress");
-                });
-
-            modelBuilder.Entity("Lauf.Domain.Entities.Snapshots.ComponentSnapshot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EstimatedMinutes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("MaxAttempts")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int?>("MinimumScore")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("OriginalComponentId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Settings")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("StepSnapshotId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StepSnapshotId");
-
-                    b.ToTable("ComponentSnapshots");
-                });
-
-            modelBuilder.Entity("Lauf.Domain.Entities.Snapshots.FlowSnapshot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EstimatedHours")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<bool>("IsRequired")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("OriginalFlowId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Tags")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("WorkingDaysToComplete")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FlowSnapshots");
-                });
-
-            modelBuilder.Entity("Lauf.Domain.Entities.Snapshots.FlowStepSnapshot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("EstimatedMinutes")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("FlowSnapshotId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<Guid>("OriginalStepId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("RequiresSequentialCompletion")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FlowSnapshotId");
-
-                    b.ToTable("FlowStepSnapshots");
                 });
 
             modelBuilder.Entity("Lauf.Domain.Entities.Users.Achievement", b =>
@@ -1033,46 +856,533 @@ namespace Lauf.Infrastructure.Migrations
                     b.ToTable("UserAchievements", (string)null);
                 });
 
-            modelBuilder.Entity("Lauf.Infrastructure.Persistence.Configurations.FlowStepComponentLink", b =>
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.ArticleComponentVersion", b =>
+                {
+                    b.Property<Guid>("ComponentVersionId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор версии компонента");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasComment("Содержимое статьи в формате Markdown");
+
+                    b.Property<int>("ReadingTimeMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(15)
+                        .HasComment("Время чтения статьи в минутах");
+
+                    b.HasKey("ComponentVersionId");
+
+                    b.HasIndex("ReadingTimeMinutes")
+                        .HasDatabaseName("IX_ArticleComponentVersions_ReadingTime");
+
+                    b.ToTable("ArticleComponentVersions", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.ComponentVersion", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("ComponentId")
-                        .HasColumnType("TEXT");
+                    b.Property<string>("ComponentType")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasComment("Тип компонента");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasComment("Дата создания версии");
 
-                    b.Property<Guid>("FlowStepId")
-                        .HasColumnType("TEXT");
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT")
+                        .HasComment("Описание компонента");
+
+                    b.Property<int>("EstimatedDurationMinutes")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(15)
+                        .HasComment("Оценочное время выполнения в минутах");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("")
+                        .HasComment("Инструкции для компонента");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false)
+                        .HasComment("Является ли версия активной");
 
                     b.Property<bool>("IsRequired")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
+                        .HasDefaultValue(true)
+                        .HasComment("Является ли компонент обязательным");
 
-                    b.Property<int>("Order")
-                        .HasColumnType("INTEGER");
+                    b.Property<int?>("MaxAttempts")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Максимальное количество попыток");
+
+                    b.Property<int?>("MinPassingScore")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Минимальный проходной балл");
+
+                    b.Property<string>("Order")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasComment("Порядок компонента (LexoRank)");
+
+                    b.Property<Guid>("OriginalId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор оригинального компонента");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Draft")
+                        .HasComment("Статус компонента");
+
+                    b.Property<Guid>("StepVersionId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор версии этапа");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT")
+                        .HasComment("Название компонента");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT")
+                        .HasComment("Дата последнего обновления версии");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Номер версии");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ComponentId");
+                    b.HasIndex("ComponentType")
+                        .HasDatabaseName("IX_ComponentVersions_ComponentType");
 
-                    b.HasIndex("FlowStepId");
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_ComponentVersions_CreatedAt");
 
-                    b.HasIndex("IsRequired");
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_ComponentVersions_Active")
+                        .HasFilter("IsActive = 1");
 
-                    b.HasIndex("Order");
+                    b.HasIndex("Order")
+                        .HasDatabaseName("IX_ComponentVersions_Order");
 
-                    b.HasIndex("FlowStepId", "ComponentId")
-                        .IsUnique();
+                    b.HasIndex("OriginalId")
+                        .HasDatabaseName("IX_ComponentVersions_OriginalId");
 
-                    b.HasIndex("FlowStepId", "Order")
-                        .IsUnique();
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_ComponentVersions_Status");
 
-                    b.ToTable("FlowStepComponentLinks", (string)null);
+                    b.HasIndex("StepVersionId")
+                        .HasDatabaseName("IX_ComponentVersions_StepVersionId");
+
+                    b.HasIndex("Version")
+                        .HasDatabaseName("IX_ComponentVersions_Version");
+
+                    b.HasIndex("OriginalId", "IsActive")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ComponentVersions_OriginalId_Active")
+                        .HasFilter("IsActive = 1");
+
+                    b.HasIndex("OriginalId", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ComponentVersions_OriginalId_Version");
+
+                    b.ToTable("ComponentVersions", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.FlowStepVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasComment("Дата создания версии");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT")
+                        .HasComment("Описание этапа");
+
+                    b.Property<int>("EstimatedDurationMinutes")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Оценочное время выполнения в минутах");
+
+                    b.Property<Guid>("FlowVersionId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор версии потока");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("")
+                        .HasComment("Инструкции для этапа");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false)
+                        .HasComment("Является ли версия активной");
+
+                    b.Property<bool>("IsRequired")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true)
+                        .HasComment("Является ли этап обязательным");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("")
+                        .HasComment("Заметки по этапу");
+
+                    b.Property<string>("Order")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT")
+                        .HasComment("Порядок этапа (LexoRank)");
+
+                    b.Property<Guid>("OriginalId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор оригинального этапа");
+
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0)
+                        .HasComment("Статус этапа");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT")
+                        .HasComment("Название этапа");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT")
+                        .HasComment("Дата последнего обновления версии");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Номер версии");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_FlowStepVersions_CreatedAt");
+
+                    b.HasIndex("FlowVersionId")
+                        .HasDatabaseName("IX_FlowStepVersions_FlowVersionId");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_FlowStepVersions_Active")
+                        .HasFilter("IsActive = 1");
+
+                    b.HasIndex("Order")
+                        .HasDatabaseName("IX_FlowStepVersions_Order");
+
+                    b.HasIndex("OriginalId")
+                        .HasDatabaseName("IX_FlowStepVersions_OriginalId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_FlowStepVersions_Status");
+
+                    b.HasIndex("Version")
+                        .HasDatabaseName("IX_FlowStepVersions_Version");
+
+                    b.HasIndex("OriginalId", "IsActive")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FlowStepVersions_OriginalId_Active")
+                        .HasFilter("IsActive = 1");
+
+                    b.HasIndex("OriginalId", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FlowStepVersions_OriginalId_Version");
+
+                    b.ToTable("FlowStepVersions", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.FlowVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasComment("Дата создания версии");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор создателя");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT")
+                        .HasComment("Описание потока");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false)
+                        .HasComment("Является ли версия активной");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Является ли поток обязательным");
+
+                    b.Property<Guid>("OriginalId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор оригинального потока");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Приоритет потока");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("TEXT")
+                        .HasComment("Дата публикации (если опубликован)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Draft")
+                        .HasComment("Статус потока");
+
+                    b.Property<string>("Tags")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("")
+                        .HasComment("Теги потока (разделенные запятыми)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT")
+                        .HasComment("Название потока");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT")
+                        .HasComment("Дата последнего обновления версии");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Номер версии");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_FlowVersions_CreatedAt");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_FlowVersions_Active")
+                        .HasFilter("IsActive = 1");
+
+                    b.HasIndex("OriginalId")
+                        .HasDatabaseName("IX_FlowVersions_OriginalId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_FlowVersions_Status");
+
+                    b.HasIndex("Version")
+                        .HasDatabaseName("IX_FlowVersions_Version");
+
+                    b.HasIndex("OriginalId", "IsActive")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FlowVersions_OriginalId_Active")
+                        .HasFilter("IsActive = 1");
+
+                    b.HasIndex("OriginalId", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("IX_FlowVersions_OriginalId_Version");
+
+                    b.ToTable("FlowVersions", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.QuizComponentVersion", b =>
+                {
+                    b.Property<Guid>("ComponentVersionId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор версии компонента");
+
+                    b.Property<bool>("AllowMultipleAttempts")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true)
+                        .HasComment("Разрешены ли множественные попытки");
+
+                    b.Property<int>("PassingScore")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(80)
+                        .HasComment("Проходной балл (в процентах)");
+
+                    b.Property<bool>("ShowCorrectAnswers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true)
+                        .HasComment("Показывать ли правильные ответы после завершения");
+
+                    b.Property<bool>("ShuffleAnswers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false)
+                        .HasComment("Перемешивать ли варианты ответов");
+
+                    b.Property<bool>("ShuffleQuestions")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false)
+                        .HasComment("Перемешивать ли вопросы");
+
+                    b.Property<int?>("TimeLimitMinutes")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Ограничение по времени в минутах");
+
+                    b.HasKey("ComponentVersionId");
+
+                    b.HasIndex("AllowMultipleAttempts")
+                        .HasDatabaseName("IX_QuizComponentVersions_MultipleAttempts");
+
+                    b.HasIndex("PassingScore")
+                        .HasDatabaseName("IX_QuizComponentVersions_PassingScore");
+
+                    b.HasIndex("TimeLimitMinutes")
+                        .HasDatabaseName("IX_QuizComponentVersions_TimeLimit");
+
+                    b.ToTable("QuizComponentVersions", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.QuizOptionVersion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Explanation")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT")
+                        .HasComment("Объяснение ответа");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Является ли ответ правильным");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Порядковый номер варианта ответа");
+
+                    b.Property<int>("Points")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0)
+                        .HasComment("Количество баллов за этот ответ");
+
+                    b.Property<Guid>("QuizVersionId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор версии квиза");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT")
+                        .HasComment("Текст варианта ответа");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsCorrect")
+                        .HasDatabaseName("IX_QuizOptionVersions_IsCorrect");
+
+                    b.HasIndex("Points")
+                        .HasDatabaseName("IX_QuizOptionVersions_Points");
+
+                    b.HasIndex("QuizVersionId")
+                        .HasDatabaseName("IX_QuizOptionVersions_QuizVersionId");
+
+                    b.HasIndex("QuizVersionId", "Order")
+                        .IsUnique()
+                        .HasDatabaseName("IX_QuizOptionVersions_QuizVersionId_Order");
+
+                    b.ToTable("QuizOptionVersions", (string)null);
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.TaskComponentVersion", b =>
+                {
+                    b.Property<Guid>("ComponentVersionId")
+                        .HasColumnType("TEXT")
+                        .HasComment("Идентификатор версии компонента");
+
+                    b.Property<string>("AllowedFileTypes")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT")
+                        .HasComment("Разрешенные типы файлов");
+
+                    b.Property<string>("AutoApprovalKeywords")
+                        .HasColumnType("TEXT")
+                        .HasComment("Ключевые слова для автоматического одобрения");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasComment("Подробные инструкции по выполнению задания");
+
+                    b.Property<int?>("MaxFileSize")
+                        .HasColumnType("INTEGER")
+                        .HasComment("Максимальный размер файла в байтах");
+
+                    b.Property<bool>("RequiresMentorApproval")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true)
+                        .HasComment("Требуется ли одобрение наставника");
+
+                    b.Property<string>("SubmissionType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Text")
+                        .HasComment("Тип отправки результата");
+
+                    b.HasKey("ComponentVersionId");
+
+                    b.HasIndex("MaxFileSize")
+                        .HasDatabaseName("IX_TaskComponentVersions_MaxFileSize");
+
+                    b.HasIndex("RequiresMentorApproval")
+                        .HasDatabaseName("IX_TaskComponentVersions_RequiresMentorApproval");
+
+                    b.HasIndex("SubmissionType")
+                        .HasDatabaseName("IX_TaskComponentVersions_SubmissionType");
+
+                    b.ToTable("TaskComponentVersions", (string)null);
                 });
 
             modelBuilder.Entity("UserRoles", b =>
@@ -1149,6 +1459,15 @@ namespace Lauf.Infrastructure.Migrations
                     b.ToTable("TaskComponents", (string)null);
                 });
 
+            modelBuilder.Entity("Lauf.Domain.Entities.Components.ComponentBase", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Flows.FlowStep", null)
+                        .WithMany("Components")
+                        .HasForeignKey("FlowStepId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Lauf.Domain.Entities.Components.QuestionOption", b =>
                 {
                     b.HasOne("Lauf.Domain.Entities.Components.QuizComponent", null)
@@ -1176,6 +1495,12 @@ namespace Lauf.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Lauf.Domain.Entities.Versions.FlowVersion", "FlowVersion")
+                        .WithMany("Assignments")
+                        .HasForeignKey("FlowVersionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Lauf.Domain.Entities.Users.User", "User")
                         .WithMany("FlowAssignments")
                         .HasForeignKey("UserId")
@@ -1187,6 +1512,8 @@ namespace Lauf.Infrastructure.Migrations
                     b.Navigation("Buddy");
 
                     b.Navigation("Flow");
+
+                    b.Navigation("FlowVersion");
 
                     b.Navigation("User");
                 });
@@ -1213,17 +1540,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.Navigation("Flow");
                 });
 
-            modelBuilder.Entity("Lauf.Domain.Entities.Flows.FlowStepComponent", b =>
-                {
-                    b.HasOne("Lauf.Domain.Entities.Flows.FlowStep", "FlowStep")
-                        .WithMany("Components")
-                        .HasForeignKey("FlowStepId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FlowStep");
-                });
-
             modelBuilder.Entity("Lauf.Domain.Entities.Notifications.Notification", b =>
                 {
                     b.HasOne("Lauf.Domain.Entities.Users.User", "User")
@@ -1237,9 +1553,9 @@ namespace Lauf.Infrastructure.Migrations
 
             modelBuilder.Entity("Lauf.Domain.Entities.Progress.ComponentProgress", b =>
                 {
-                    b.HasOne("Lauf.Domain.Entities.Snapshots.ComponentSnapshot", "ComponentSnapshot")
+                    b.HasOne("Lauf.Domain.Entities.Versions.ComponentVersion", "ComponentVersion")
                         .WithMany()
-                        .HasForeignKey("ComponentSnapshotId")
+                        .HasForeignKey("ComponentVersionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1249,7 +1565,7 @@ namespace Lauf.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ComponentSnapshot");
+                    b.Navigation("ComponentVersion");
 
                     b.Navigation("StepProgress");
                 });
@@ -1262,9 +1578,9 @@ namespace Lauf.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Lauf.Domain.Entities.Snapshots.FlowSnapshot", "FlowSnapshot")
+                    b.HasOne("Lauf.Domain.Entities.Versions.FlowVersion", "FlowVersion")
                         .WithMany()
-                        .HasForeignKey("FlowSnapshotId")
+                        .HasForeignKey("FlowVersionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1280,7 +1596,7 @@ namespace Lauf.Infrastructure.Migrations
 
                     b.Navigation("FlowAssignment");
 
-                    b.Navigation("FlowSnapshot");
+                    b.Navigation("FlowVersion");
 
                     b.Navigation("User");
                 });
@@ -1293,15 +1609,15 @@ namespace Lauf.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Lauf.Domain.Entities.Snapshots.FlowStepSnapshot", "StepSnapshot")
+                    b.HasOne("Lauf.Domain.Entities.Versions.FlowStepVersion", "StepVersion")
                         .WithMany()
-                        .HasForeignKey("StepSnapshotId")
+                        .HasForeignKey("StepVersionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("FlowProgress");
 
-                    b.Navigation("StepSnapshot");
+                    b.Navigation("StepVersion");
                 });
 
             modelBuilder.Entity("Lauf.Domain.Entities.Progress.UserProgress", b =>
@@ -1313,28 +1629,6 @@ namespace Lauf.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Lauf.Domain.Entities.Snapshots.ComponentSnapshot", b =>
-                {
-                    b.HasOne("Lauf.Domain.Entities.Snapshots.FlowStepSnapshot", "StepSnapshot")
-                        .WithMany("Components")
-                        .HasForeignKey("StepSnapshotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("StepSnapshot");
-                });
-
-            modelBuilder.Entity("Lauf.Domain.Entities.Snapshots.FlowStepSnapshot", b =>
-                {
-                    b.HasOne("Lauf.Domain.Entities.Snapshots.FlowSnapshot", "FlowSnapshot")
-                        .WithMany("Steps")
-                        .HasForeignKey("FlowSnapshotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FlowSnapshot");
                 });
 
             modelBuilder.Entity("Lauf.Domain.Entities.Users.User", b =>
@@ -1383,23 +1677,70 @@ namespace Lauf.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Lauf.Infrastructure.Persistence.Configurations.FlowStepComponentLink", b =>
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.ArticleComponentVersion", b =>
                 {
-                    b.HasOne("Lauf.Domain.Entities.Components.ComponentBase", "Component")
-                        .WithMany()
-                        .HasForeignKey("ComponentId")
+                    b.HasOne("Lauf.Domain.Entities.Versions.ComponentVersion", "ComponentVersion")
+                        .WithOne("ArticleVersion")
+                        .HasForeignKey("Lauf.Domain.Entities.Versions.ArticleComponentVersion", "ComponentVersionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Lauf.Domain.Entities.Flows.FlowStep", "FlowStep")
-                        .WithMany()
-                        .HasForeignKey("FlowStepId")
+                    b.Navigation("ComponentVersion");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.ComponentVersion", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Versions.FlowStepVersion", "StepVersion")
+                        .WithMany("ComponentVersions")
+                        .HasForeignKey("StepVersionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Component");
+                    b.Navigation("StepVersion");
+                });
 
-                    b.Navigation("FlowStep");
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.FlowStepVersion", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Versions.FlowVersion", "FlowVersion")
+                        .WithMany("StepVersions")
+                        .HasForeignKey("FlowVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FlowVersion");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.QuizComponentVersion", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Versions.ComponentVersion", "ComponentVersion")
+                        .WithOne("QuizVersion")
+                        .HasForeignKey("Lauf.Domain.Entities.Versions.QuizComponentVersion", "ComponentVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ComponentVersion");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.QuizOptionVersion", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Versions.QuizComponentVersion", "QuizVersion")
+                        .WithMany("Options")
+                        .HasForeignKey("QuizVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuizVersion");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.TaskComponentVersion", b =>
+                {
+                    b.HasOne("Lauf.Domain.Entities.Versions.ComponentVersion", "ComponentVersion")
+                        .WithOne("TaskVersion")
+                        .HasForeignKey("Lauf.Domain.Entities.Versions.TaskComponentVersion", "ComponentVersionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ComponentVersion");
                 });
 
             modelBuilder.Entity("UserRoles", b =>
@@ -1474,19 +1815,35 @@ namespace Lauf.Infrastructure.Migrations
                     b.Navigation("FlowProgresses");
                 });
 
-            modelBuilder.Entity("Lauf.Domain.Entities.Snapshots.FlowSnapshot", b =>
-                {
-                    b.Navigation("Steps");
-                });
-
-            modelBuilder.Entity("Lauf.Domain.Entities.Snapshots.FlowStepSnapshot", b =>
-                {
-                    b.Navigation("Components");
-                });
-
             modelBuilder.Entity("Lauf.Domain.Entities.Users.User", b =>
                 {
                     b.Navigation("FlowAssignments");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.ComponentVersion", b =>
+                {
+                    b.Navigation("ArticleVersion");
+
+                    b.Navigation("QuizVersion");
+
+                    b.Navigation("TaskVersion");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.FlowStepVersion", b =>
+                {
+                    b.Navigation("ComponentVersions");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.FlowVersion", b =>
+                {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("StepVersions");
+                });
+
+            modelBuilder.Entity("Lauf.Domain.Entities.Versions.QuizComponentVersion", b =>
+                {
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("Lauf.Domain.Entities.Components.QuizComponent", b =>

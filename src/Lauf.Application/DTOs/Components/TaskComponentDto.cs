@@ -1,7 +1,7 @@
 namespace Lauf.Application.DTOs.Components;
 
 /// <summary>
-/// DTO для компонента задания
+/// DTO для компонента задания (упрощенная версия)
 /// </summary>
 public class TaskComponentDto
 {
@@ -21,134 +21,19 @@ public class TaskComponentDto
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Описание задания в формате Markdown
+    /// Инструкция - как найти кодовое слово
     /// </summary>
-    public string TaskDescription { get; set; } = string.Empty;
+    public string Instruction { get; set; } = string.Empty;
 
     /// <summary>
-    /// Критерии оценки задания
+    /// Кодовое слово для проверки ответа
     /// </summary>
-    public string AcceptanceCriteria { get; set; } = string.Empty;
+    public string CodeWord { get; set; } = string.Empty;
 
     /// <summary>
-    /// Подсказки для выполнения задания
+    /// Подсказка, доступная в любой момент
     /// </summary>
-    public List<TaskHintDto> Hints { get; set; } = new();
-
-    /// <summary>
-    /// Файлы-шаблоны для задания
-    /// </summary>
-    public List<TaskTemplateDto> Templates { get; set; } = new();
-
-    /// <summary>
-    /// Тестовые cases для проверки решения
-    /// </summary>
-    public List<TestCaseDto> TestCases { get; set; } = new();
-
-    /// <summary>
-    /// Ограничение по времени в секундах
-    /// </summary>
-    public int? TimeLimit { get; set; }
-
-    /// <summary>
-    /// Разрешить ли частичную оценку
-    /// </summary>
-    public bool AllowPartialCredit { get; set; }
-
-    /// <summary>
-    /// Включена ли валидация кода
-    /// </summary>
-    public bool CodeValidationEnabled { get; set; }
-
-    /// <summary>
-    /// Язык программирования для валидации
-    /// </summary>
-    public string? CodeLanguage { get; set; }
-
-    /// <summary>
-    /// Таймаут валидации кода в секундах
-    /// </summary>
-    public int CodeValidationTimeout { get; set; }
-
-    /// <summary>
-    /// Лимит памяти для валидации кода
-    /// </summary>
-    public string CodeMemoryLimit { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Включены ли подсказки
-    /// </summary>
-    public bool HintsEnabled { get; set; }
-
-    /// <summary>
-    /// Максимальное количество подсказок
-    /// </summary>
-    public int MaxHints { get; set; }
-
-    /// <summary>
-    /// Штраф за каждую подсказку в баллах
-    /// </summary>
-    public int PenaltyPerHint { get; set; }
-
-    /// <summary>
-    /// Разрешить ли загрузку файлов
-    /// </summary>
-    public bool AllowFileUpload { get; set; }
-
-    /// <summary>
-    /// Максимальный размер файла
-    /// </summary>
-    public string MaxFileSize { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Разрешенные расширения файлов
-    /// </summary>
-    public List<string> AllowedExtensions { get; set; } = new();
-
-    /// <summary>
-    /// Обязательна ли загрузка файлов
-    /// </summary>
-    public bool RequireFiles { get; set; }
-
-    /// <summary>
-    /// Включена ли автоматическая оценка
-    /// </summary>
-    public bool AutoGrade { get; set; }
-
-    /// <summary>
-    /// Требуется ли ручная проверка
-    /// </summary>
-    public bool ManualReview { get; set; }
-
-    /// <summary>
-    /// Шаблон обратной связи
-    /// </summary>
-    public string FeedbackTemplate { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Разрешены ли обсуждения
-    /// </summary>
-    public bool AllowDiscussion { get; set; }
-
-    /// <summary>
-    /// Доступна ли помощь наставника
-    /// </summary>
-    public bool MentorHelp { get; set; }
-
-    /// <summary>
-    /// Категории задания
-    /// </summary>
-    public List<string> Categories { get; set; } = new();
-
-    /// <summary>
-    /// Уровень сложности задания
-    /// </summary>
-    public string Difficulty { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Навыки, которые развивает задание
-    /// </summary>
-    public List<string> Skills { get; set; } = new();
+    public string Hint { get; set; } = string.Empty;
 
     /// <summary>
     /// Статус компонента

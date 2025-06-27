@@ -35,8 +35,8 @@ public class FlowRepository : IFlowRepository
     public async Task<Flow?> GetByIdWithStepsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Flows
-            .Include(x => x.Steps)
-                .ThenInclude(s => s.Components)
+            .Include(x => x.Steps.OrderBy(s => s.Order))
+                .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -166,16 +166,16 @@ public class FlowRepository : IFlowRepository
     {
         return await _context.Flows
             .Include(f => f.Settings)
-            .Include(f => f.Steps)
-                .ThenInclude(s => s.Components)
+            .Include(f => f.Steps.OrderBy(s => s.Order))
+                .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<Flow?> GetFlowByStepIdAsync(Guid stepId, CancellationToken cancellationToken = default)
     {
         return await _context.Flows
-            .Include(f => f.Steps)
-                .ThenInclude(s => s.Components)
+            .Include(f => f.Steps.OrderBy(s => s.Order))
+                .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .Where(f => f.Steps.Any(s => s.Id == stepId))
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -221,7 +221,14 @@ public class FlowRepository : IFlowRepository
     public async Task<FlowStep?> GetStepByIdAsync(Guid stepId, CancellationToken cancellationToken = default)
     {
         return await _context.FlowSteps
-            .Include(s => s.Components)
+            .Include(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(s => s.Id == stepId, cancellationToken);
+    }
+
+    public async Task<FlowStep?> GetStepByComponentIdAsync(Guid componentId, CancellationToken cancellationToken = default)
+    {
+        return await _context.FlowSteps
+            .Include(s => s.Components.OrderBy(c => c.Order))
+            .FirstOrDefaultAsync(s => s.Components.Any(c => c.Id == componentId), cancellationToken);
     }
 }

@@ -267,28 +267,28 @@
     <div class="container">
         <div class="header">
             <h1>🚀 Lauf API E2E Test Report</h1>
-            <p><strong>Тестирование выполнено:</strong> 25.06.2025, 22:40:18</p>
-            <p><strong>Продолжительность:</strong> 1 секунд</p>
+            <p><strong>Тестирование выполнено:</strong> 27.06.2025, 01:36:17</p>
+            <p><strong>Продолжительность:</strong> 2 секунд</p>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number success">1</div>
+                <div class="stat-number success">8</div>
                 <div class="stat-label">Успешно</div>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: 100%"></div>
+                    <div class="progress-fill" style="width: 72.72727272727273%"></div>
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-number error">0</div>
+                <div class="stat-number error">3</div>
                 <div class="stat-label">Ошибок</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number info">1</div>
+                <div class="stat-number info">11</div>
                 <div class="stat-label">Всего запросов</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number warning">1</div>
+                <div class="stat-number warning">7</div>
                 <div class="stat-label">Запросов/сек</div>
             </div>
         </div>
@@ -309,16 +309,16 @@
                     <tbody>
                         <tr>
                             <td><strong>GraphQL Мутации</strong></td>
-                            <td>0</td>
-                            <td class="success">0</td>
-                            <td class="error">0</td>
-                            <td>0%</td>
+                            <td>8</td>
+                            <td class="success">7</td>
+                            <td class="error">1</td>
+                            <td>88%</td>
                         </tr>
                         <tr>
                             <td><strong>GraphQL Запросы</strong></td>
-                            <td>0</td>
+                            <td>2</td>
                             <td class="success">0</td>
-                            <td class="error">0</td>
+                            <td class="error">2</td>
                             <td>0%</td>
                         </tr>
                         <tr>
@@ -334,33 +334,17 @@
         </div>
 
         
-      <div class="section">
-          <div class="section-header">🔄 GraphQL Мутации</div>
-          <div class="section-content">
-              <p>Нет данных для отображения</p>
-          </div>
-      </div>
-    
-        
-      <div class="section">
-          <div class="section-header">📋 GraphQL Запросы</div>
-          <div class="section-content">
-              <p>Нет данных для отображения</p>
-          </div>
-      </div>
-    
-        
     <div class="section">
-        <div class="section-header">🌐 REST API Запросы (1)</div>
+        <div class="section-header">🔄 GraphQL Мутации (8)</div>
         <div class="section-content">
             
       <div class="api-call success">
           <div class="api-call-header">
-              <div class="api-call-title">Headers Check (GET /health)</div>
+              <div class="api-call-title">Создание потока онбординга дизайнера</div>
               <div class="api-call-meta">
                   <span class="status-badge status-success">Успешно</span>
-                  <span>60ms</span>
-                  <span>22:40:17</span>
+                  <span>149ms</span>
+                  <span>01:36:16</span>
                   <span class="arrow">▶</span>
               </div>
           </div>
@@ -372,15 +356,580 @@
               </div>
               <div class="tab-content active" id="request-0">
                   <div class="code-block">{
-  &quot;method&quot;: &quot;GET&quot;,
-  &quot;endpoint&quot;: &quot;/health&quot;,
-  &quot;params&quot;: {}
+  &quot;mutation&quot;: &quot;\n        mutation CreateFlow($input: CreateFlowInput!) {\n          createFlow(input: $input) {\n            id\n            title\n            description\n            status\n            isRequired\n            priority\n            createdAt\n            totalSteps\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;title&quot;: &quot;Онбординг нового дизайнера&quot;,
+      &quot;description&quot;: &quot;Комплексная программа адаптации нового дизайнера в компании&quot;,
+      &quot;isSequential&quot;: true,
+      &quot;allowRetry&quot;: true,
+      &quot;timeLimit&quot;: 14,
+      &quot;passingScore&quot;: 80
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-0">
+                  <div class="code-block">{
+  &quot;createFlow&quot;: {
+    &quot;id&quot;: &quot;f58b691e-4077-4161-80f6-9626305eb352&quot;,
+    &quot;title&quot;: &quot;Онбординг нового дизайнера&quot;,
+    &quot;description&quot;: &quot;Комплексная программа адаптации нового дизайнера в компании&quot;,
+    &quot;status&quot;: &quot;DRAFT&quot;,
+    &quot;isRequired&quot;: false,
+    &quot;priority&quot;: 5,
+    &quot;createdAt&quot;: &quot;2025-06-26T22:36:16.646Z&quot;,
+    &quot;totalSteps&quot;: 0
+  }
+}</div>
+              </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call success">
+          <div class="api-call-header">
+              <div class="api-call-title">Создание первого шага потока</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-success">Успешно</span>
+                  <span>65ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-1">Запрос</button>
+                  <button class="tab" data-tab="response-1">Ответ</button>
+                  
+              </div>
+              <div class="tab-content active" id="request-1">
+                  <div class="code-block">{
+  &quot;mutation&quot;: &quot;\n        mutation CreateFlowStep($input: CreateFlowStepInput!) {\n          createFlowStep(input: $input) {\n            isSuccess\n            message\n            stepId\n            step {\n              id\n              title\n              description\n              order\n              isRequired\n              instructions\n              notes\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;flowId&quot;: &quot;f58b691e-4077-4161-80f6-9626305eb352&quot;,
+      &quot;title&quot;: &quot;Знакомство с структурой компании&quot;,
+      &quot;description&quot;: &quot;Изучение организационной структуры, корпоративных ценностей и основных процессов компании&quot;,
+      &quot;order&quot;: 1,
+      &quot;isRequired&quot;: true,
+      &quot;instructions&quot;: &quot;Внимательно изучите предоставленные материалы о структуре компании&quot;,
+      &quot;notes&quot;: &quot;Первый шаг адаптации - самый важный для понимания контекста работы&quot;
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-1">
+                  <div class="code-block">{
+  &quot;createFlowStep&quot;: {
+    &quot;isSuccess&quot;: true,
+    &quot;message&quot;: &quot;Шаг успешно создан&quot;,
+    &quot;stepId&quot;: &quot;2b8c8eb7-d64a-4cd1-84ff-85270bad29d7&quot;,
+    &quot;step&quot;: {
+      &quot;id&quot;: &quot;2b8c8eb7-d64a-4cd1-84ff-85270bad29d7&quot;,
+      &quot;title&quot;: &quot;Знакомство с структурой компании&quot;,
+      &quot;description&quot;: &quot;Изучение организационной структуры, корпоративных ценностей и основных процессов компании&quot;,
+      &quot;order&quot;: 0,
+      &quot;isRequired&quot;: true,
+      &quot;instructions&quot;: &quot;Внимательно изучите предоставленные материалы о структуре компании&quot;,
+      &quot;notes&quot;: &quot;Первый шаг адаптации - самый важный для понимания контекста работы&quot;
+    }
+  }
+}</div>
+              </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call success">
+          <div class="api-call-header">
+              <div class="api-call-title">Создание второго шага потока</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-success">Успешно</span>
+                  <span>9ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-2">Запрос</button>
+                  <button class="tab" data-tab="response-2">Ответ</button>
+                  
+              </div>
+              <div class="tab-content active" id="request-2">
+                  <div class="code-block">{
+  &quot;mutation&quot;: &quot;\n        mutation CreateFlowStep($input: CreateFlowStepInput!) {\n          createFlowStep(input: $input) {\n            isSuccess\n            message\n            stepId\n            step {\n              id\n              title\n              description\n              order\n              isRequired\n              instructions\n              notes\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;flowId&quot;: &quot;f58b691e-4077-4161-80f6-9626305eb352&quot;,
+      &quot;title&quot;: &quot;Техническое обеспечение и поддержка&quot;,
+      &quot;description&quot;: &quot;Настройка рабочего места, получение доступов к системам и изучение процедур получения технической поддержки&quot;,
+      &quot;order&quot;: 2,
+      &quot;isRequired&quot;: true,
+      &quot;instructions&quot;: &quot;Настройте свое рабочее место согласно инструкциям&quot;,
+      &quot;notes&quot;: &quot;Техническая подготовка критически важна для эффективной работы дизайнера&quot;
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-2">
+                  <div class="code-block">{
+  &quot;createFlowStep&quot;: {
+    &quot;isSuccess&quot;: true,
+    &quot;message&quot;: &quot;Шаг успешно создан&quot;,
+    &quot;stepId&quot;: &quot;ac3e5f11-90e9-408c-967e-3df7cf45c0d1&quot;,
+    &quot;step&quot;: {
+      &quot;id&quot;: &quot;ac3e5f11-90e9-408c-967e-3df7cf45c0d1&quot;,
+      &quot;title&quot;: &quot;Техническое обеспечение и поддержка&quot;,
+      &quot;description&quot;: &quot;Настройка рабочего места, получение доступов к системам и изучение процедур получения технической поддержки&quot;,
+      &quot;order&quot;: 0,
+      &quot;isRequired&quot;: true,
+      &quot;instructions&quot;: &quot;Настройте свое рабочее место согласно инструкциям&quot;,
+      &quot;notes&quot;: &quot;Техническая подготовка критически важна для эффективной работы дизайнера&quot;
+    }
+  }
+}</div>
+              </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call success">
+          <div class="api-call-header">
+              <div class="api-call-title">Создание компонента статьи о структуре компании</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-success">Успешно</span>
+                  <span>58ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-3">Запрос</button>
+                  <button class="tab" data-tab="response-3">Ответ</button>
+                  
+              </div>
+              <div class="tab-content active" id="request-3">
+                  <div class="code-block">{
+  &quot;mutation&quot;: &quot;\n        mutation CreateComponent($input: CreateComponentInput!) {\n          createComponent(input: $input) {\n            article {\n              isSuccess\n              message\n              componentId\n              linkId\n              component {\n                id\n                title\n                description\n                content\n                readingTimeMinutes\n                status\n              }\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;article&quot;: {
+        &quot;flowStepId&quot;: &quot;2b8c8eb7-d64a-4cd1-84ff-85270bad29d7&quot;,
+        &quot;title&quot;: &quot;Структура и ценности компании&quot;,
+        &quot;description&quot;: &quot;Подробное описание организационной структуры компании, её миссии, видения и корпоративных ценностей&quot;,
+        &quot;content&quot;: &quot;# Добро пожаловать в нашу команду дизайнеров!\n\n## Миссия компании\nМы создаем инновационные цифровые решения, которые делают жизнь людей лучше и проще.\n\n## Наши ценности\n- **Пользователь в центре** - все решения принимаются с учетом потребностей конечных пользователей\n- **Качество превыше всего** - мы не идем на компромиссы в вопросах качества продукта\n- **Непрерывное обучение** - мы постоянно развиваемся и изучаем новые подходы\n- **Командная работа** - успех достигается только совместными усилиями&quot;,
+        &quot;readingTimeMinutes&quot;: 15,
+        &quot;isRequired&quot;: true
+      }
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-3">
+                  <div class="code-block">{
+  &quot;createComponent&quot;: {
+    &quot;article&quot;: {
+      &quot;isSuccess&quot;: true,
+      &quot;message&quot;: &quot;Компонент статьи успешно создан&quot;,
+      &quot;componentId&quot;: &quot;c69bcf35-df94-4acf-99de-3ece2a59fcc0&quot;,
+      &quot;linkId&quot;: &quot;45d71280-a739-42bd-85dc-5f933bb38bb0&quot;,
+      &quot;component&quot;: {
+        &quot;id&quot;: &quot;c69bcf35-df94-4acf-99de-3ece2a59fcc0&quot;,
+        &quot;title&quot;: &quot;Структура и ценности компании&quot;,
+        &quot;description&quot;: &quot;Подробное описание организационной структуры компании, её миссии, видения и корпоративных ценностей&quot;,
+        &quot;content&quot;: &quot;# Добро пожаловать в нашу команду дизайнеров!\n\n## Миссия компании\nМы создаем инновационные цифровые решения, которые делают жизнь людей лучше и проще.\n\n## Наши ценности\n- **Пользователь в центре** - все решения принимаются с учетом потребностей конечных пользователей\n- **Качество превыше всего** - мы не идем на компромиссы в вопросах качества продукта\n- **Непрерывное обучение** - мы постоянно развиваемся и изучаем новые подходы\n- **Командная работа** - успех достигается только совместными усилиями&quot;,
+        &quot;readingTimeMinutes&quot;: 15,
+        &quot;status&quot;: &quot;Draft&quot;
+      }
+    }
+  }
+}</div>
+              </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call error">
+          <div class="api-call-header">
+              <div class="api-call-title">Создание компонента квиза о компании</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-error">Ошибка</span>
+                  <span>34ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-4">Запрос</button>
+                  <button class="tab" data-tab="response-4">Ответ</button>
+                  <button class="tab" data-tab="error-4">Ошибка</button>
+              </div>
+              <div class="tab-content active" id="request-4">
+                  <div class="code-block">{
+  &quot;mutation&quot;: &quot;\n        mutation CreateComponent($input: CreateComponentInput!) {\n          createComponent(input: $input) {\n            quiz {\n              isSuccess\n              message\n              componentId\n              linkId\n              component {\n                id\n                title\n                description\n                questionText\n                options {\n                  id\n                  text\n                  isCorrect\n                  message\n                  points\n                }\n              }\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;quiz&quot;: {
+        &quot;flowStepId&quot;: &quot;2b8c8eb7-d64a-4cd1-84ff-85270bad29d7&quot;,
+        &quot;title&quot;: &quot;Проверка знаний о компании&quot;,
+        &quot;description&quot;: &quot;Тест для проверки понимания структуры компании и её ценностей&quot;,
+        &quot;questionText&quot;: &quot;Какая из перечисленных ценностей НЕ является основной ценностью нашей компании?&quot;,
+        &quot;options&quot;: [
+          {
+            &quot;text&quot;: &quot;Пользователь в центре&quot;,
+            &quot;isCorrect&quot;: false,
+            &quot;message&quot;: &quot;Это одна из наших ключевых ценностей!&quot;,
+            &quot;points&quot;: 0
+          },
+          {
+            &quot;text&quot;: &quot;Максимизация прибыли любой ценой&quot;,
+            &quot;isCorrect&quot;: true,
+            &quot;message&quot;: &quot;Правильно! Мы ставим качество и пользователей выше краткосрочной прибыли.&quot;,
+            &quot;points&quot;: 25
+          },
+          {
+            &quot;text&quot;: &quot;Качество превыше всего&quot;,
+            &quot;isCorrect&quot;: false,
+            &quot;message&quot;: &quot;Это одна из наших основных ценностей.&quot;,
+            &quot;points&quot;: 0
+          },
+          {
+            &quot;text&quot;: &quot;Непрерывное обучение&quot;,
+            &quot;isCorrect&quot;: false,
+            &quot;message&quot;: &quot;Мы действительно ценим постоянное развитие.&quot;,
+            &quot;points&quot;: 0
+          }
+        ],
+        &quot;isRequired&quot;: true,
+        &quot;estimatedDurationMinutes&quot;: 5
+      }
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-4">
+                  <div class="code-block">Нет ответа</div>
+              </div>
+              
+                  <div class="tab-content" id="error-4">
+                      <div class="code-block error">Не удалось создать компонент: {&quot;response&quot;:{&quot;errors&quot;:[{&quot;message&quot;:&quot;Не удалось создать компонент&quot;}],&quot;status&quot;:200,&quot;headers&quot;:{}},&quot;request&quot;:{&quot;query&quot;:&quot;\n        mutation CreateComponent($input: CreateComponentInput!) {\n          createComponent(input: $input) {\n            quiz {\n              isSuccess\n              message\n              componentId\n              linkId\n              component {\n                id\n                title\n                description\n                questionText\n                options {\n                  id\n                  text\n                  isCorrect\n                  message\n                  points\n                }\n              }\n            }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;input&quot;:{&quot;quiz&quot;:{&quot;flowStepId&quot;:&quot;2b8c8eb7-d64a-4cd1-84ff-85270bad29d7&quot;,&quot;title&quot;:&quot;Проверка знаний о компании&quot;,&quot;description&quot;:&quot;Тест для проверки понимания структуры компании и её ценностей&quot;,&quot;questionText&quot;:&quot;Какая из перечисленных ценностей НЕ является основной ценностью нашей компании?&quot;,&quot;options&quot;:[{&quot;text&quot;:&quot;Пользователь в центре&quot;,&quot;isCorrect&quot;:false,&quot;message&quot;:&quot;Это одна из наших ключевых ценностей!&quot;,&quot;points&quot;:0},{&quot;text&quot;:&quot;Максимизация прибыли любой ценой&quot;,&quot;isCorrect&quot;:true,&quot;message&quot;:&quot;Правильно! Мы ставим качество и пользователей выше краткосрочной прибыли.&quot;,&quot;points&quot;:25},{&quot;text&quot;:&quot;Качество превыше всего&quot;,&quot;isCorrect&quot;:false,&quot;message&quot;:&quot;Это одна из наших основных ценностей.&quot;,&quot;points&quot;:0},{&quot;text&quot;:&quot;Непрерывное обучение&quot;,&quot;isCorrect&quot;:false,&quot;message&quot;:&quot;Мы действительно ценим постоянное развитие.&quot;,&quot;points&quot;:0}],&quot;isRequired&quot;:true,&quot;estimatedDurationMinutes&quot;:5}}}}}</div>
+                  </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call success">
+          <div class="api-call-header">
+              <div class="api-call-title">Создание компонента задания на знакомство</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-success">Успешно</span>
+                  <span>23ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-5">Запрос</button>
+                  <button class="tab" data-tab="response-5">Ответ</button>
+                  
+              </div>
+              <div class="tab-content active" id="request-5">
+                  <div class="code-block">{
+  &quot;mutation&quot;: &quot;\n        mutation CreateComponent($input: CreateComponentInput!) {\n          createComponent(input: $input) {\n            task {\n              isSuccess\n              message\n              componentId\n              linkId\n              component {\n                id\n                title\n                description\n                instruction\n                codeWord\n                hint\n              }\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;task&quot;: {
+        &quot;flowStepId&quot;: &quot;2b8c8eb7-d64a-4cd1-84ff-85270bad29d7&quot;,
+        &quot;title&quot;: &quot;Знакомство с командой&quot;,
+        &quot;description&quot;: &quot;Практическое задание на знакомство с коллегами и рабочими процессами&quot;,
+        &quot;instruction&quot;: &quot;1. Познакомьтесь лично с каждым членом дизайн-команды\n2. Узнайте у Head of Design кодовое слово для этого задания\n3. Запишите 3 интересных факта о команде\n4. Введите полученное кодовое слово для завершения задания&quot;,
+        &quot;codeWord&quot;: &quot;DESIGN_TEAM_2024&quot;,
+        &quot;hint&quot;: &quot;Кодовое слово можно получить у руководителя дизайн-команды после знакомства с коллегами&quot;,
+        &quot;isRequired&quot;: true,
+        &quot;estimatedDurationMinutes&quot;: 60
+      }
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-5">
+                  <div class="code-block">{
+  &quot;createComponent&quot;: {
+    &quot;task&quot;: {
+      &quot;isSuccess&quot;: true,
+      &quot;message&quot;: &quot;Компонент задания успешно создан&quot;,
+      &quot;componentId&quot;: &quot;86383890-e5c8-4619-9732-a82469cab90c&quot;,
+      &quot;linkId&quot;: &quot;913e2028-44b9-4402-9f33-ba047048362e&quot;,
+      &quot;component&quot;: {
+        &quot;id&quot;: &quot;86383890-e5c8-4619-9732-a82469cab90c&quot;,
+        &quot;title&quot;: &quot;Знакомство с командой&quot;,
+        &quot;description&quot;: &quot;Практическое задание на знакомство с коллегами и рабочими процессами&quot;,
+        &quot;instruction&quot;: &quot;1. Познакомьтесь лично с каждым членом дизайн-команды\n2. Узнайте у Head of Design кодовое слово для этого задания\n3. Запишите 3 интересных факта о команде\n4. Введите полученное кодовое слово для завершения задания&quot;,
+        &quot;codeWord&quot;: &quot;DESIGN_TEAM_2024&quot;,
+        &quot;hint&quot;: &quot;Кодовое слово можно получить у руководителя дизайн-команды после знакомства с коллегами&quot;
+      }
+    }
+  }
+}</div>
+              </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call success">
+          <div class="api-call-header">
+              <div class="api-call-title">Создание статьи о технической настройке</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-success">Успешно</span>
+                  <span>7ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-6">Запрос</button>
+                  <button class="tab" data-tab="response-6">Ответ</button>
+                  
+              </div>
+              <div class="tab-content active" id="request-6">
+                  <div class="code-block">{
+  &quot;mutation&quot;: &quot;\n        mutation CreateComponent($input: CreateComponentInput!) {\n          createComponent(input: $input) {\n            article {\n              isSuccess\n              message\n              componentId\n              linkId\n              component {\n                id\n                title\n                description\n                content\n                readingTimeMinutes\n                status\n              }\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;article&quot;: {
+        &quot;flowStepId&quot;: &quot;ac3e5f11-90e9-408c-967e-3df7cf45c0d1&quot;,
+        &quot;title&quot;: &quot;Техническая настройка рабочего места&quot;,
+        &quot;description&quot;: &quot;Пошаговое руководство по настройке всех необходимых инструментов и программ для работы дизайнера&quot;,
+        &quot;content&quot;: &quot;# Техническая настройка рабочего места\n\n## Необходимое программное обеспечение\n\n### Основные инструменты дизайна\n1. **Figma** (основной инструмент)\n   - Создайте аккаунт на figma.com\n   - Присоединитесь к команде компании\n   - Установите desktop приложение\n\n2. **Adobe Creative Suite**\n   - Photoshop - для обработки изображений\n   - Illustrator - для создания иллюстраций\n\n### Инструменты для совместной работы\n1. **Miro** - для воркшопов и мозговых штурмов\n2. **Notion** - для документации и заметок\n3. **Slack** - корпоративный мессенджер&quot;,
+        &quot;readingTimeMinutes&quot;: 20,
+        &quot;isRequired&quot;: true
+      }
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-6">
+                  <div class="code-block">{
+  &quot;createComponent&quot;: {
+    &quot;article&quot;: {
+      &quot;isSuccess&quot;: true,
+      &quot;message&quot;: &quot;Компонент статьи успешно создан&quot;,
+      &quot;componentId&quot;: &quot;93d193f1-f4ca-457e-831c-3ebda3da4e5b&quot;,
+      &quot;linkId&quot;: &quot;bf18dfdb-1f79-41cb-b25e-9fe866d44432&quot;,
+      &quot;component&quot;: {
+        &quot;id&quot;: &quot;93d193f1-f4ca-457e-831c-3ebda3da4e5b&quot;,
+        &quot;title&quot;: &quot;Техническая настройка рабочего места&quot;,
+        &quot;description&quot;: &quot;Пошаговое руководство по настройке всех необходимых инструментов и программ для работы дизайнера&quot;,
+        &quot;content&quot;: &quot;# Техническая настройка рабочего места\n\n## Необходимое программное обеспечение\n\n### Основные инструменты дизайна\n1. **Figma** (основной инструмент)\n   - Создайте аккаунт на figma.com\n   - Присоединитесь к команде компании\n   - Установите desktop приложение\n\n2. **Adobe Creative Suite**\n   - Photoshop - для обработки изображений\n   - Illustrator - для создания иллюстраций\n\n### Инструменты для совместной работы\n1. **Miro** - для воркшопов и мозговых штурмов\n2. **Notion** - для документации и заметок\n3. **Slack** - корпоративный мессенджер&quot;,
+        &quot;readingTimeMinutes&quot;: 20,
+        &quot;status&quot;: &quot;Draft&quot;
+      }
+    }
+  }
+}</div>
+              </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call success">
+          <div class="api-call-header">
+              <div class="api-call-title">Создание задания по получению доступов</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-success">Успешно</span>
+                  <span>15ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-7">Запрос</button>
+                  <button class="tab" data-tab="response-7">Ответ</button>
+                  
+              </div>
+              <div class="tab-content active" id="request-7">
+                  <div class="code-block">{
+  &quot;mutation&quot;: &quot;\n        mutation CreateComponent($input: CreateComponentInput!) {\n          createComponent(input: $input) {\n            task {\n              isSuccess\n              message\n              componentId\n              linkId\n              component {\n                id\n                title\n                description\n                instruction\n                codeWord\n                hint\n              }\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;input&quot;: {
+      &quot;task&quot;: {
+        &quot;flowStepId&quot;: &quot;ac3e5f11-90e9-408c-967e-3df7cf45c0d1&quot;,
+        &quot;title&quot;: &quot;Получение технических доступов&quot;,
+        &quot;description&quot;: &quot;Практическое задание по получению всех необходимых доступов и настройке инструментов&quot;,
+        &quot;instruction&quot;: &quot;1. Настройте Figma и присоединитесь к команде компании\n2. Настройте Slack и присоединитесь к каналам\n3. Обратитесь к IT-администратору за доступами\n4. Получите кодовое слово для завершения задания\n5. Создайте тестовый макет в Figma&quot;,
+        &quot;codeWord&quot;: &quot;TECH_SETUP_OK&quot;,
+        &quot;hint&quot;: &quot;Кодовое слово можно получить у IT-администратора после настройки всех инструментов&quot;,
+        &quot;isRequired&quot;: true,
+        &quot;estimatedDurationMinutes&quot;: 120
+      }
+    }
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-7">
+                  <div class="code-block">{
+  &quot;createComponent&quot;: {
+    &quot;task&quot;: {
+      &quot;isSuccess&quot;: true,
+      &quot;message&quot;: &quot;Компонент задания успешно создан&quot;,
+      &quot;componentId&quot;: &quot;c6706c5c-56b8-433b-a0f0-f104006207e8&quot;,
+      &quot;linkId&quot;: &quot;bed1830e-20df-4b21-9dc6-2ad574297962&quot;,
+      &quot;component&quot;: {
+        &quot;id&quot;: &quot;c6706c5c-56b8-433b-a0f0-f104006207e8&quot;,
+        &quot;title&quot;: &quot;Получение технических доступов&quot;,
+        &quot;description&quot;: &quot;Практическое задание по получению всех необходимых доступов и настройке инструментов&quot;,
+        &quot;instruction&quot;: &quot;1. Настройте Figma и присоединитесь к команде компании\n2. Настройте Slack и присоединитесь к каналам\n3. Обратитесь к IT-администратору за доступами\n4. Получите кодовое слово для завершения задания\n5. Создайте тестовый макет в Figma&quot;,
+        &quot;codeWord&quot;: &quot;TECH_SETUP_OK&quot;,
+        &quot;hint&quot;: &quot;Кодовое слово можно получить у IT-администратора после настройки всех инструментов&quot;
+      }
+    }
+  }
+}</div>
+              </div>
+              
+          </div>
+      </div>
+    
+        </div>
+    </div>
+  
+        
+    <div class="section">
+        <div class="section-header">📋 GraphQL Запросы (2)</div>
+        <div class="section-content">
+            
+      <div class="api-call error">
+          <div class="api-call-header">
+              <div class="api-call-title">Получение информации о потоке для перестановки компонентов</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-error">Ошибка</span>
+                  <span>16ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-0">Запрос</button>
+                  <button class="tab" data-tab="response-0">Ответ</button>
+                  <button class="tab" data-tab="error-0">Ошибка</button>
+              </div>
+              <div class="tab-content active" id="request-0">
+                  <div class="code-block">{
+  &quot;query&quot;: &quot;\n        query GetFlow($id: UUID!) {\n          flow(id: $id) {\n            id\n            title\n            steps {\n              id\n              title\n              order\n              components {\n                id\n                title\n                componentType\n                order\n              }\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;id&quot;: &quot;f58b691e-4077-4161-80f6-9626305eb352&quot;
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-0">
+                  <div class="code-block">Нет ответа</div>
+              </div>
+              
+                  <div class="tab-content" id="error-0">
+                      <div class="code-block error">Unexpected Execution Error: {&quot;response&quot;:{&quot;errors&quot;:[{&quot;message&quot;:&quot;Unexpected Execution Error&quot;,&quot;locations&quot;:[{&quot;line&quot;:3,&quot;column&quot;:11}],&quot;path&quot;:[&quot;flow&quot;]}],&quot;data&quot;:{&quot;flow&quot;:null},&quot;status&quot;:200,&quot;headers&quot;:{}},&quot;request&quot;:{&quot;query&quot;:&quot;\n        query GetFlow($id: UUID!) {\n          flow(id: $id) {\n            id\n            title\n            steps {\n              id\n              title\n              order\n              components {\n                id\n                title\n                componentType\n                order\n              }\n            }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;id&quot;:&quot;f58b691e-4077-4161-80f6-9626305eb352&quot;}}}</div>
+                  </div>
+              
+          </div>
+      </div>
+    
+      <div class="api-call error">
+          <div class="api-call-header">
+              <div class="api-call-title">Получение полной информации о созданном потоке</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-error">Ошибка</span>
+                  <span>3ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-1">Запрос</button>
+                  <button class="tab" data-tab="response-1">Ответ</button>
+                  <button class="tab" data-tab="error-1">Ошибка</button>
+              </div>
+              <div class="tab-content active" id="request-1">
+                  <div class="code-block">{
+  &quot;query&quot;: &quot;\n        query GetFlow($id: UUID!) {\n          flow(id: $id) {\n            id\n            title\n            description\n            status\n            totalSteps\n            steps {\n              id\n              title\n              description\n              order\n              totalComponents\n              components {\n                id\n                title\n                componentType\n                order\n                isRequired\n                estimatedDurationMinutes\n              }\n            }\n          }\n        }\n      &quot;,
+  &quot;variables&quot;: {
+    &quot;id&quot;: &quot;f58b691e-4077-4161-80f6-9626305eb352&quot;
+  }
+}</div>
+              </div>
+              <div class="tab-content" id="response-1">
+                  <div class="code-block">Нет ответа</div>
+              </div>
+              
+                  <div class="tab-content" id="error-1">
+                      <div class="code-block error">The field `estimatedDurationMinutes` does not exist on the type `FlowStepComponentDetails`.: {&quot;response&quot;:{&quot;errors&quot;:[{&quot;message&quot;:&quot;The field `estimatedDurationMinutes` does not exist on the type `FlowStepComponentDetails`.&quot;,&quot;locations&quot;:[{&quot;line&quot;:21,&quot;column&quot;:17}],&quot;path&quot;:[&quot;flow&quot;,&quot;steps&quot;,&quot;components&quot;],&quot;extensions&quot;:{&quot;type&quot;:&quot;FlowStepComponentDetails&quot;,&quot;field&quot;:&quot;estimatedDurationMinutes&quot;,&quot;responseName&quot;:&quot;estimatedDurationMinutes&quot;,&quot;specifiedBy&quot;:&quot;http://spec.graphql.org/October2021/#sec-Field-Selections-on-Objects-Interfaces-and-Unions-Types&quot;}}],&quot;status&quot;:200,&quot;headers&quot;:{}},&quot;request&quot;:{&quot;query&quot;:&quot;\n        query GetFlow($id: UUID!) {\n          flow(id: $id) {\n            id\n            title\n            description\n            status\n            totalSteps\n            steps {\n              id\n              title\n              description\n              order\n              totalComponents\n              components {\n                id\n                title\n                componentType\n                order\n                isRequired\n                estimatedDurationMinutes\n              }\n            }\n          }\n        }\n      &quot;,&quot;variables&quot;:{&quot;id&quot;:&quot;f58b691e-4077-4161-80f6-9626305eb352&quot;}}}</div>
+                  </div>
+              
+          </div>
+      </div>
+    
+        </div>
+    </div>
+  
+        
+    <div class="section">
+        <div class="section-header">🌐 REST API Запросы (1)</div>
+        <div class="section-content">
+            
+      <div class="api-call success">
+          <div class="api-call-header">
+              <div class="api-call-title">Dev Authentication (POST /api/auth/dev-login)</div>
+              <div class="api-call-meta">
+                  <span class="status-badge status-success">Успешно</span>
+                  <span>137ms</span>
+                  <span>01:36:16</span>
+                  <span class="arrow">▶</span>
+              </div>
+          </div>
+          <div class="api-call-details">
+              <div class="tabs">
+                  <button class="tab active" data-tab="request-0">Запрос</button>
+                  <button class="tab" data-tab="response-0">Ответ</button>
+                  
+              </div>
+              <div class="tab-content active" id="request-0">
+                  <div class="code-block">{
+  &quot;method&quot;: &quot;POST&quot;,
+  &quot;endpoint&quot;: &quot;/api/auth/dev-login&quot;,
+  &quot;data&quot;: {
+    &quot;telegramId&quot;: 857395,
+    &quot;firstName&quot;: &quot;Админ2&quot;,
+    &quot;lastName&quot;: &quot;Петров&quot;,
+    &quot;username&quot;: &quot;admin_petrov2&quot;,
+    &quot;languageCode&quot;: &quot;ru&quot;,
+    &quot;role&quot;: &quot;Admin&quot;
+  }
 }</div>
               </div>
               <div class="tab-content" id="response-0">
                   <div class="code-block">{
   &quot;status&quot;: 200,
-  &quot;data&quot;: &quot;Healthy&quot;
+  &quot;data&quot;: {
+    &quot;token&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjIxZjE1ZmQzLWZjZTctNDM1OC1hODJiLWZlNGMxMzVmM2U2ZiIsInRlbGVncmFtX2lkIjoiODU3Mzk1IiwiZmlyc3RfbmFtZSI6ItCQ0LTQvNC40L0yIiwibGFzdF9uYW1lIjoi0J_QtdGC0YDQvtCyIiwicG9zaXRpb24iOiIiLCJpc19hY3RpdmUiOiJUcnVlIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJleHAiOjE3NTA5ODA5NzZ9.QXf63UlQ6cOFHWB_9dg5xXbOOwOXtmJy_D5Rb56j1Kg&quot;,
+    &quot;user&quot;: {
+      &quot;id&quot;: &quot;21f15fd3-fce7-4358-a82b-fe4c135f3e6f&quot;,
+      &quot;telegramId&quot;: 857395,
+      &quot;firstName&quot;: &quot;Админ2&quot;,
+      &quot;lastName&quot;: &quot;Петров&quot;,
+      &quot;position&quot;: null,
+      &quot;isActive&quot;: true,
+      &quot;roles&quot;: [
+        &quot;Admin&quot;
+      ]
+    }
+  }
 }</div>
               </div>
               

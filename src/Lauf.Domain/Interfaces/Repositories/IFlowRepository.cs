@@ -164,4 +164,12 @@ public interface IFlowRepository
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Шаг потока или null</returns>
     Task<FlowStep?> GetStepByIdAsync(Guid stepId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получает шаг потока по идентификатору компонента
+    /// </summary>
+    /// <param name="componentId">Идентификатор компонента</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Шаг потока содержащий указанный компонент</returns>
+    Task<FlowStep?> GetStepByComponentIdAsync(Guid componentId, CancellationToken cancellationToken = default);
 }

@@ -56,13 +56,6 @@ public interface IComponentRepository
     /// <returns>Добавленный компонент</returns>
     Task<TaskComponent> AddTaskComponentAsync(TaskComponent component, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Добавляет связь между шагом и компонентом
-    /// </summary>
-    /// <param name="stepComponent">Связь между шагом и компонентом</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    /// <returns>Добавленная связь</returns>
-    Task<FlowStepComponent> AddStepComponentAsync(FlowStepComponent stepComponent, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновляет компонент статьи

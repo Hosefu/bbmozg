@@ -21,12 +21,12 @@ public class FlowAssignmentTests
         var priority = 5;
 
         // Act
-        var assignment = new FlowAssignment(userId, flowId, snapshotId, dueDate, buddyId, assignedById, notes, priority);
+        var assignment = new FlowAssignment(userId, flowId, flowId, snapshotId, dueDate, buddyId, assignedById, notes, priority);
 
         // Assert
         assignment.UserId.Should().Be(userId);
         assignment.FlowId.Should().Be(flowId);
-        assignment.FlowSnapshotId.Should().Be(snapshotId);
+        assignment.FlowVersionId.Should().Be(snapshotId);
         assignment.DueDate.Should().Be(dueDate);
         assignment.BuddyId.Should().Be(buddyId);
         assignment.AssignedById.Should().Be(assignedById);
@@ -397,9 +397,11 @@ public class FlowAssignmentTests
 
     private static FlowAssignment CreateDefaultAssignment()
     {
+        var flowId = Guid.NewGuid();
         return new FlowAssignment(
             Guid.NewGuid(),
-            Guid.NewGuid(), 
+            flowId, 
+            flowId,
             Guid.NewGuid(),
             DateTime.UtcNow.AddDays(7),
             null,
@@ -410,9 +412,11 @@ public class FlowAssignmentTests
 
     private static FlowAssignment CreateAssignmentWithDueDate(DateTime dueDate)
     {
+        var flowId = Guid.NewGuid();
         return new FlowAssignment(
             Guid.NewGuid(),
-            Guid.NewGuid(), 
+            flowId, 
+            flowId,
             Guid.NewGuid(),
             dueDate,
             null,

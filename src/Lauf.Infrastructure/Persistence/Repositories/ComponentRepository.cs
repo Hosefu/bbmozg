@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Lauf.Domain.Entities.Components;
-using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Infrastructure.Persistence;
 
@@ -58,12 +57,6 @@ public class ComponentRepository : IComponentRepository
         return component;
     }
 
-    public async Task<FlowStepComponent> AddStepComponentAsync(FlowStepComponent stepComponent, CancellationToken cancellationToken = default)
-    {
-        _context.FlowStepComponents.Add(stepComponent);
-        await _context.SaveChangesAsync(cancellationToken);
-        return stepComponent;
-    }
 
     public async Task<ArticleComponent> UpdateArticleComponentAsync(ArticleComponent component, CancellationToken cancellationToken = default)
     {

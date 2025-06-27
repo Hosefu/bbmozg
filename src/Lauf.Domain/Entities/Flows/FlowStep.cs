@@ -1,4 +1,6 @@
 using Lauf.Domain.Enums;
+using Lauf.Domain.Entities.Components;
+using Lauf.Shared.Helpers;
 
 namespace Lauf.Domain.Entities.Flows;
 
@@ -33,9 +35,9 @@ public class FlowStep
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Порядковый номер шага в потоке
+    /// LexoRank позиция шага в потоке для динамической сортировки
     /// </summary>
-    public int Order { get; set; }
+    public string Order { get; set; } = string.Empty;
 
     /// <summary>
     /// Обязательный ли шаг
@@ -65,7 +67,7 @@ public class FlowStep
     /// <summary>
     /// Компоненты шага
     /// </summary>
-    public virtual ICollection<FlowStepComponent> Components { get; set; } = new List<FlowStepComponent>();
+    public virtual ICollection<ComponentBase> Components { get; set; } = new List<ComponentBase>();
 
     /// <summary>
     /// Дата создания
@@ -86,7 +88,7 @@ public class FlowStep
     /// <param name="order">Порядковый номер</param>
     /// <param name="isRequired">Обязательный ли шаг</param>
     /// <param name="estimatedDurationMinutes">Приблизительное время выполнения в минутах</param>
-    public FlowStep(Guid flowId, string title, string description, int order, bool isRequired = true, int estimatedDurationMinutes = 30)
+    public FlowStep(Guid flowId, string title, string description, string order, bool isRequired = true, int estimatedDurationMinutes = 30)
     {
         Id = Guid.NewGuid();
         FlowId = flowId;
@@ -160,10 +162,19 @@ public class FlowStep
     /// Добавляет компонент к шагу
     /// </summary>
     /// <param name="component">Компонент для добавления</param>
-    public void AddComponent(FlowStepComponent component)
+    public void AddComponent(ComponentBase component)
     {
-        component.Order = Components.Count + 1;
-        component.FlowStepId = Id;
+        if (component == null) throw new ArgumentNullException(nameof(component));
+        
+        // Устанавливаем связь с шагом
+        if (component.FlowStepId == Guid.Empty)
+        {
+            // Если компонент создан без FlowStepId, устанавливаем его
+            var componentType = component.GetType();
+            var flowStepIdProperty = componentType.GetProperty(nameof(ComponentBase.FlowStepId));
+            flowStepIdProperty?.SetValue(component, Id);
+        }
+        
         Components.Add(component);
         UpdatedAt = DateTime.UtcNow;
     }
@@ -184,14 +195,11 @@ public class FlowStep
     }
 
     /// <summary>
-    /// Переупорядочивает компоненты после удаления
+    /// Переупорядочивает компоненты после удаления (для LexoRank это не требуется)
     /// </summary>
     private void ReorderComponents()
     {
-        var orderedComponents = Components.OrderBy(c => c.Order).ToList();
-        for (int i = 0; i < orderedComponents.Count; i++)
-        {
-            orderedComponents[i].Order = i + 1;
-        }
+        // LexoRank не требует переупорядочивания после удаления
+        // Каждый элемент уже имеет свою уникальную позицию
     }
 }

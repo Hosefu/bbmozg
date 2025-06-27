@@ -110,7 +110,7 @@ public class NotificationService : INotificationService
             Title = "✅ Компонент завершен!",
             Content = $"Отлично! Вы завершили компонент \"{componentTitle}\" в потоке \"{flowTitle}\"",
             RelatedEntityId = componentId,
-            RelatedEntityType = "FlowStepComponent"
+            RelatedEntityType = "ComponentVersion"
         };
 
         await _notificationRepository.AddAsync(notification, cancellationToken);
@@ -141,7 +141,7 @@ public class NotificationService : INotificationService
             Title = "🔓 Новый шаг доступен!",
             Content = $"Разблокирован новый шаг \"{stepTitle}\" в потоке \"{flowTitle}\"",
             RelatedEntityId = stepId,
-            RelatedEntityType = "FlowStep"
+            RelatedEntityType = "StepVersion"
         };
 
         await _notificationRepository.AddAsync(notification, cancellationToken);

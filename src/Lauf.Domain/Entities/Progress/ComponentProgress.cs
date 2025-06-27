@@ -1,4 +1,4 @@
-using Lauf.Domain.Entities.Snapshots;
+using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.Enums;
 using Lauf.Domain.ValueObjects;
 
@@ -25,14 +25,14 @@ public class ComponentProgress
     public StepProgress StepProgress { get; private set; } = null!;
 
     /// <summary>
-    /// Идентификатор снапшота компонента
+    /// Идентификатор версии компонента
     /// </summary>
-    public Guid ComponentSnapshotId { get; private set; }
+    public Guid ComponentVersionId { get; private set; }
 
     /// <summary>
-    /// Снапшот компонента
+    /// Версия компонента
     /// </summary>
-    public ComponentSnapshot ComponentSnapshot { get; private set; } = null!;
+    public ComponentVersion ComponentVersion { get; private set; } = null!;
 
     /// <summary>
     /// Порядковый номер компонента в шаге
@@ -103,18 +103,18 @@ public class ComponentProgress
     /// Конструктор для создания записи прогресса компонента
     /// </summary>
     /// <param name="stepProgressId">ID прогресса шага</param>
-    /// <param name="componentSnapshotId">ID снапшота компонента</param>
+    /// <param name="componentVersionId">ID версии компонента</param>
     /// <param name="order">Порядковый номер</param>
     /// <param name="isRequired">Является ли обязательным</param>
     public ComponentProgress(
         Guid stepProgressId,
-        Guid componentSnapshotId,
+        Guid componentVersionId,
         int order,
         bool isRequired)
     {
         Id = Guid.NewGuid();
         StepProgressId = stepProgressId;
-        ComponentSnapshotId = componentSnapshotId;
+        ComponentVersionId = componentVersionId;
         Order = order;
         IsRequired = isRequired;
         Status = ProgressStatus.NotStarted;

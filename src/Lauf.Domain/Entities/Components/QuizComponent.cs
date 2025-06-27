@@ -1,4 +1,5 @@
 using Lauf.Domain.Enums;
+using Lauf.Shared.Helpers;
 
 namespace Lauf.Domain.Entities.Components;
 
@@ -25,14 +26,35 @@ public class QuizComponent : ComponentBase
     /// <summary>
     /// Конструктор для создания нового квиза
     /// </summary>
+    /// <param name="flowStepId">Идентификатор шага потока</param>
     /// <param name="title">Название квиза</param>
     /// <param name="description">Описание квиза</param>
     /// <param name="questionText">Текст вопроса</param>
+    /// <param name="order">Порядковый номер компонента</param>
+    /// <param name="isRequired">Обязательный ли компонент</param>
     /// <param name="estimatedDurationMinutes">Приблизительное время выполнения</param>
-    public QuizComponent(string title, string description, string questionText, int estimatedDurationMinutes = 5)
-        : base(title, description, estimatedDurationMinutes)
+    public QuizComponent(Guid flowStepId, string title, string description, string questionText, string order, bool isRequired = true, int estimatedDurationMinutes = 5)
+        : base(flowStepId, title, description, order, isRequired, estimatedDurationMinutes)
     {
         QuestionText = questionText ?? throw new ArgumentNullException(nameof(questionText));
+    }
+
+    /// <summary>
+    /// Конструктор для создания нового квиза с вариантами ответов
+    /// </summary>
+    /// <param name="flowStepId">Идентификатор шага потока</param>
+    /// <param name="title">Название квиза</param>
+    /// <param name="description">Описание квиза</param>
+    /// <param name="questionText">Текст вопроса</param>
+    /// <param name="options">Варианты ответов</param>
+    /// <param name="order">Порядковый номер компонента</param>
+    /// <param name="isRequired">Обязательный ли компонент</param>
+    /// <param name="estimatedDurationMinutes">Приблизительное время выполнения</param>
+    public QuizComponent(Guid flowStepId, string title, string description, string questionText, List<QuestionOption> options, string order, bool isRequired = true, int estimatedDurationMinutes = 5)
+        : base(flowStepId, title, description, order, isRequired, estimatedDurationMinutes)
+    {
+        QuestionText = questionText ?? throw new ArgumentNullException(nameof(questionText));
+        Options = options ?? new List<QuestionOption>();
     }
 
     /// <summary>
@@ -58,7 +80,7 @@ public class QuizComponent : ComponentBase
         
         for (int i = 0; i < options.Count; i++)
         {
-            options[i].Order = i + 1;
+            options[i].Order = i == 0 ? LexoRankHelper.Middle() : LexoRankHelper.Next(options[i-1].Order);
             Options.Add(options[i]);
         }
         
@@ -74,7 +96,8 @@ public class QuizComponent : ComponentBase
         if (option == null) throw new ArgumentNullException(nameof(option));
         if (Options.Count >= 5) throw new InvalidOperationException("Максимум 5 вариантов ответа");
         
-        option.Order = Options.Count + 1;
+        var lastOption = Options.OrderBy(o => o.Order).LastOrDefault();
+        option.Order = lastOption != null ? LexoRankHelper.Next(lastOption.Order) : LexoRankHelper.Middle();
         Options.Add(option);
         UpdatedAt = DateTime.UtcNow;
     }
@@ -120,9 +143,9 @@ public class QuestionOption
     public bool IsCorrect { get; set; }
 
     /// <summary>
-    /// Порядковый номер варианта
+    /// LexoRank позиция варианта для динамической сортировки
     /// </summary>
-    public int Order { get; set; }
+    public string Order { get; set; } = string.Empty;
 
     /// <summary>
     /// Сообщение, показываемое при выборе этого варианта

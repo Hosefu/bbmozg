@@ -1,6 +1,6 @@
 using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Entities.Progress;
-using Lauf.Domain.Entities.Snapshots;
+using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Domain.Services;
 using Lauf.Domain.ValueObjects;
@@ -14,16 +14,16 @@ public class ProgressCalculationService
 {
     private readonly IUserProgressRepository _progressRepository;
     private readonly IFlowAssignmentRepository _assignmentRepository;
-    private readonly IFlowSnapshotService _flowSnapshotService;
+    private readonly IVersioningService _versioningService;
 
     public ProgressCalculationService(
         IUserProgressRepository progressRepository,
         IFlowAssignmentRepository assignmentRepository,
-        IFlowSnapshotService flowSnapshotService)
+        IVersioningService versioningService)
     {
         _progressRepository = progressRepository;
         _assignmentRepository = assignmentRepository;
-        _flowSnapshotService = flowSnapshotService;
+        _versioningService = versioningService;
     }
 
     /// <summary>
@@ -59,51 +59,57 @@ public class ProgressCalculationService
         FlowAssignment assignment,
         CancellationToken cancellationToken = default)
     {
-        // Получаем snapshot
-        var flowSnapshot = await _flowSnapshotService.GetOrCreateFlowSnapshotAsync(assignment.FlowId, cancellationToken);
+        // Получаем версию потока
+        var flowVersion = await _versioningService.GetActiveFlowVersionAsync(assignment.FlowId, cancellationToken);
+        if (flowVersion == null)
+            throw new InvalidOperationException($"Активная версия потока {assignment.FlowId} не найдена");
         
-        var totalStepsCount = flowSnapshot.Steps?.Count ?? 0;
-        var totalComponentsCount = flowSnapshot.Steps?
-            .SelectMany(ss => ss.Components ?? new List<ComponentSnapshot>())
+        var totalStepsCount = flowVersion.StepVersions?.Count ?? 0;
+        var totalComponentsCount = flowVersion.StepVersions?
+            .SelectMany(sv => sv.ComponentVersions ?? new List<ComponentVersion>())
             .Count() ?? 0;
 
         // Создаем прогресс по потоку
         var flowProgress = new FlowProgress(
             assignment.UserId,
             assignment.Id,
-            flowSnapshot.Id,
+            flowVersion.Id,
             totalStepsCount,
             totalComponentsCount);
 
         // Создаем прогресс по шагам
-        if (flowSnapshot.Steps != null)
+        if (flowVersion.StepVersions != null)
         {
-            foreach (var stepSnapshot in flowSnapshot.Steps)
+            var stepIndex = 1;
+            foreach (var stepVersion in flowVersion.StepVersions.OrderBy(s => s.Order))
             {
-                var componentsInStep = stepSnapshot.Components?.Count ?? 0;
+                var componentsInStep = stepVersion.ComponentVersions?.Count ?? 0;
                 var stepProgress = new StepProgress(
                     flowProgress.Id,
-                    stepSnapshot.Id,
-                    stepSnapshot.Order,
+                    stepVersion.Id,
+                    stepIndex,
                     componentsInStep,
-                    stepSnapshot.Order == 1); // Первый шаг разблокирован
+                    stepIndex == 1); // Первый шаг разблокирован
 
                 // Создаем прогресс по компонентам
-                if (stepSnapshot.Components != null)
+                if (stepVersion.ComponentVersions != null)
                 {
-                    foreach (var componentSnapshot in stepSnapshot.Components)
+                    var componentIndex = 1;
+                    foreach (var componentVersion in stepVersion.ComponentVersions.OrderBy(c => c.Order))
                     {
                         var componentProgress = new ComponentProgress(
                             stepProgress.Id,
-                            componentSnapshot.Id,
-                            componentSnapshot.Order,
-                            true); // По умолчанию все компоненты обязательные
+                            componentVersion.Id,
+                            componentIndex,
+                            componentVersion.IsRequired);
 
                         stepProgress.ComponentProgresses.Add(componentProgress);
+                        componentIndex++;
                     }
                 }
 
                 flowProgress.StepProgresses.Add(stepProgress);
+                stepIndex++;
             }
         }
 
@@ -154,7 +160,7 @@ public class ProgressCalculationService
             await _progressRepository.UpdateStepProgressAsync(stepProgress, cancellationToken);
             
             result.StepCompleted = true;
-            result.StepId = stepProgress.StepSnapshotId;
+            result.StepId = stepProgress.StepVersionId;
 
             // Проверяем разблокировку следующего шага
             var nextStep = await GetNextStepToUnlockAsync(stepProgress, cancellationToken);
@@ -164,7 +170,7 @@ public class ProgressCalculationService
                 await _progressRepository.UpdateStepProgressAsync(nextStep, cancellationToken);
                 
                 result.NextStepUnlocked = true;
-                result.NextStepId = nextStep.StepSnapshotId;
+                result.NextStepId = nextStep.StepVersionId;
             }
         }
 
@@ -175,7 +181,7 @@ public class ProgressCalculationService
         if (flowProgress != null && flowProgress.Progress.Value >= 100)
         {
             result.FlowCompleted = true;
-            result.FlowId = flowProgress.FlowSnapshotId;
+            result.FlowId = flowProgress.FlowVersionId;
         }
 
         return result;

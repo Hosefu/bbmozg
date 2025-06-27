@@ -30,15 +30,18 @@ public class TaskComponent : ComponentBase
     /// <summary>
     /// Конструктор для создания нового задания
     /// </summary>
+    /// <param name="flowStepId">Идентификатор шага потока</param>
     /// <param name="title">Название задания</param>
     /// <param name="description">Описание задания</param>
     /// <param name="instruction">Инструкция как найти кодовое слово</param>
     /// <param name="codeWord">Кодовое слово</param>
     /// <param name="hint">Подсказка</param>
+    /// <param name="order">Порядковый номер компонента</param>
+    /// <param name="isRequired">Обязательный ли компонент</param>
     /// <param name="estimatedDurationMinutes">Приблизительное время выполнения</param>
-    public TaskComponent(string title, string description, string instruction, 
-        string codeWord, string hint, int estimatedDurationMinutes = 30)
-        : base(title, description, estimatedDurationMinutes)
+    public TaskComponent(Guid flowStepId, string title, string description, string instruction, 
+        string codeWord, string hint, string order, bool isRequired = true, int estimatedDurationMinutes = 30)
+        : base(flowStepId, title, description, order, isRequired, estimatedDurationMinutes)
     {
         Instruction = instruction ?? throw new ArgumentNullException(nameof(instruction));
         CodeWord = codeWord ?? throw new ArgumentNullException(nameof(codeWord));

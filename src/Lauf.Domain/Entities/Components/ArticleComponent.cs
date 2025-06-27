@@ -25,12 +25,15 @@ public class ArticleComponent : ComponentBase
     /// <summary>
     /// Конструктор для создания новой статьи
     /// </summary>
+    /// <param name="flowStepId">Идентификатор шага потока</param>
     /// <param name="title">Название статьи</param>
     /// <param name="description">Описание статьи</param>
     /// <param name="content">Содержимое статьи в Markdown</param>
+    /// <param name="order">Порядковый номер компонента</param>
+    /// <param name="isRequired">Обязательный ли компонент</param>
     /// <param name="readingTimeMinutes">Время чтения в минутах</param>
-    public ArticleComponent(string title, string description, string content, int readingTimeMinutes = 15)
-        : base(title, description, readingTimeMinutes)
+    public ArticleComponent(Guid flowStepId, string title, string description, string content, string order, bool isRequired = true, int readingTimeMinutes = 15)
+        : base(flowStepId, title, description, order, isRequired, readingTimeMinutes)
     {
         Content = content ?? throw new ArgumentNullException(nameof(content));
         ReadingTimeMinutes = readingTimeMinutes;

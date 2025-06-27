@@ -1,4 +1,5 @@
 using Lauf.Domain.Entities.Users;
+using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.Enums;
 
 namespace Lauf.Domain.Entities.Flows;
@@ -34,10 +35,20 @@ public class FlowAssignment
     public virtual Flow Flow { get; set; } = null!;
 
     /// <summary>
-    /// Идентификатор снапшота потока (будет создан в 4 этапе)
-    /// Снапшот - это неизменяемая копия потока на момент назначения
+    /// Идентификатор оригинального потока (для удобства запросов)
     /// </summary>
-    public Guid? FlowSnapshotId { get; set; }
+    public Guid OriginalFlowId { get; set; }
+
+    /// <summary>
+    /// Идентификатор версии потока, которая была назначена пользователю
+    /// Это создает неизменяемую связь с конкретной версией контента
+    /// </summary>
+    public Guid FlowVersionId { get; set; }
+
+    /// <summary>
+    /// Версия потока, назначенная пользователю
+    /// </summary>
+    public virtual FlowVersion FlowVersion { get; set; } = null!;
 
     /// <summary>
     /// Идентификатор бадди (наставника)
@@ -158,19 +169,21 @@ public class FlowAssignment
     /// Конструктор для создания нового назначения потока
     /// </summary>
     /// <param name="userId">Идентификатор пользователя</param>
-    /// <param name="flowId">Идентификатор потока</param>
-    /// <param name="snapshotId">Идентификатор снапшота</param>
+    /// <param name="flowId">Идентификатор оригинального потока</param>
+    /// <param name="originalFlowId">Идентификатор оригинального потока (может отличаться от flowId для обратной совместимости)</param>
+    /// <param name="flowVersionId">Идентификатор версии потока</param>
     /// <param name="dueDate">Дедлайн</param>
     /// <param name="buddyId">Идентификатор buddy</param>
     /// <param name="assignedById">Идентификатор назначившего</param>
     /// <param name="notes">Заметки</param>
     /// <param name="priority">Приоритет</param>
-    public FlowAssignment(Guid userId, Guid flowId, Guid snapshotId, DateTime? dueDate, Guid? buddyId, Guid assignedById, string? notes, int priority)
+    public FlowAssignment(Guid userId, Guid flowId, Guid originalFlowId, Guid flowVersionId, DateTime? dueDate, Guid? buddyId, Guid assignedById, string? notes, int priority)
     {
         Id = Guid.NewGuid();
         UserId = userId;
         FlowId = flowId;
-        FlowSnapshotId = snapshotId;
+        OriginalFlowId = originalFlowId;
+        FlowVersionId = flowVersionId;
         BuddyId = buddyId;
         DueDate = dueDate;
         AssignedById = assignedById;

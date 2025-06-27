@@ -43,12 +43,8 @@ public class ArticleComponentResult
     /// <summary>
     /// Идентификатор созданного компонента
     /// </summary>
-    public Guid ComponentId { get; set; }
+    public Guid? ComponentId { get; set; }
 
-    /// <summary>
-    /// Идентификатор связи компонента с шагом
-    /// </summary>
-    public Guid LinkId { get; set; }
 
     /// <summary>
     /// Созданный компонент статьи
@@ -74,12 +70,8 @@ public class QuizComponentResult
     /// <summary>
     /// Идентификатор созданного компонента
     /// </summary>
-    public Guid ComponentId { get; set; }
+    public Guid? ComponentId { get; set; }
 
-    /// <summary>
-    /// Идентификатор связи компонента с шагом
-    /// </summary>
-    public Guid LinkId { get; set; }
 
     /// <summary>
     /// Созданный компонент квиза
@@ -105,12 +97,8 @@ public class TaskComponentResult
     /// <summary>
     /// Идентификатор созданного компонента
     /// </summary>
-    public Guid ComponentId { get; set; }
+    public Guid? ComponentId { get; set; }
 
-    /// <summary>
-    /// Идентификатор связи компонента с шагом
-    /// </summary>
-    public Guid LinkId { get; set; }
 
     /// <summary>
     /// Созданный компонент задания

@@ -7,8 +7,10 @@ using Lauf.Application.Commands.Flows;
 using Lauf.Application.Commands.FlowManagement;
 using Lauf.Application.Commands.FlowAssignment;
 using Lauf.Application.Commands.FlowSteps;
+using FluentValidation;
 
 using Lauf.Application.Commands.Components;
+using Lauf.Application.Commands.FlowComponents;
 using Lauf.Application.Queries.Flows;
 using Lauf.Application.Services.Interfaces;
 using Lauf.Api.GraphQL.Types;
@@ -291,7 +293,6 @@ public class Mutation
                         IsSuccess = result.IsSuccess,
                         Message = result.Message,
                         ComponentId = result.ComponentId,
-                        LinkId = result.LinkId,
                         Component = result.Component
                     }
                 };
@@ -299,20 +300,36 @@ public class Mutation
             
             if (input.Quiz != null)
             {
-                var command = mapper.Map<CreateQuizComponentCommand>(input.Quiz);
-                var result = await mediator.Send(command, cancellationToken);
-                
-                return new CreateComponentResult
+                try
                 {
-                    Quiz = new QuizComponentResult
+                    var command = mapper.Map<CreateQuizComponentCommand>(input.Quiz);
+                    var result = await mediator.Send(command, cancellationToken);
+                    
+                    return new CreateComponentResult
                     {
-                        IsSuccess = result.IsSuccess,
-                        Message = result.Message,
-                        ComponentId = result.ComponentId,
-                        LinkId = result.LinkId,
-                        Component = result.Component
-                    }
-                };
+                        Quiz = new QuizComponentResult
+                        {
+                            IsSuccess = result.IsSuccess,
+                            Message = result.Message,
+                            ComponentId = result.ComponentId,
+                            Component = result.Component
+                        }
+                    };
+                }
+                catch (FluentValidation.ValidationException ex)
+                {
+                    var validationErrors = string.Join("; ", ex.Errors.Select(e => e.ErrorMessage));
+                    return new CreateComponentResult
+                    {
+                        Quiz = new QuizComponentResult
+                        {
+                            IsSuccess = false,
+                            Message = $"Ошибка валидации: {validationErrors}",
+                            ComponentId = null,
+                            Component = null
+                        }
+                    };
+                }
             }
             
             if (input.Task != null)
@@ -327,7 +344,6 @@ public class Mutation
                         IsSuccess = result.IsSuccess,
                         Message = result.Message,
                         ComponentId = result.ComponentId,
-                        LinkId = result.LinkId,
                         Component = result.Component
                     }
                 };
@@ -340,6 +356,44 @@ public class Mutation
             _logger.LogError(ex, "Ошибка при создании типизированного компонента");
             throw new GraphQLException("Не удалось создать компонент");
         }
+    }
+
+    /// <summary>
+    /// Изменить порядок шага в потоке
+    /// </summary>
+    [Authorize]
+    public async Task<ReorderFlowStepCommandResult> ReorderFlowStep(
+        [Service] IMediator mediator,
+        ReorderFlowStepInput input,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new ReorderFlowStepCommand
+        {
+            StepId = input.StepId,
+            NewPosition = input.NewPosition
+        };
+
+        var result = await mediator.Send(command, cancellationToken);
+        return result;
+    }
+
+    /// <summary>
+    /// Изменить порядок компонента в шаге
+    /// </summary>
+    [Authorize]
+    public async Task<ReorderFlowComponentCommandResult> ReorderFlowComponent(
+        [Service] IMediator mediator,
+        ReorderFlowComponentInput input,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new ReorderFlowComponentCommand
+        {
+            ComponentId = input.ComponentId,
+            NewPosition = input.NewPosition
+        };
+
+        var result = await mediator.Send(command, cancellationToken);
+        return result;
     }
 }
 
@@ -393,4 +447,12 @@ public record CreateFlowStepInput(
     bool IsRequired = true,
     string Instructions = "",
     string Notes = "");
+
+public record ReorderFlowStepInput(
+    Guid StepId,
+    int NewPosition);
+
+public record ReorderFlowComponentInput(
+    Guid ComponentId,
+    int NewPosition);
 

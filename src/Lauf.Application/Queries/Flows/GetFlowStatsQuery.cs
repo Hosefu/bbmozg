@@ -236,7 +236,7 @@ public class GetFlowStatsQueryHandler : IRequestHandler<GetFlowStatsQuery, FlowS
 
             stepStats.Add(new StepStatsDto
             {
-                StepNumber = step.Order,
+                StepNumber = Array.IndexOf(flowWithSteps.Steps.OrderBy(s => s.Order).ToArray(), step) + 1, // Конвертируем LexoRank в номер
                 StepTitle = step.Title,
                 CompletionRate = completionRate,
                 AverageTimeHours = avgTime

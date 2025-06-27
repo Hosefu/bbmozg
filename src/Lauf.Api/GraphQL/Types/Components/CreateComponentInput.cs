@@ -54,11 +54,6 @@ public class CreateArticleComponentInput
     public int ReadingTimeMinutes { get; set; } = 15;
 
     /// <summary>
-    /// Порядковый номер компонента в шаге
-    /// </summary>
-    public int? Order { get; set; }
-
-    /// <summary>
     /// Обязательный ли компонент
     /// </summary>
     public bool IsRequired { get; set; } = true;
@@ -93,11 +88,6 @@ public class CreateQuizComponentInput
     /// Варианты ответов (ровно 5)
     /// </summary>
     public List<CreateQuestionOptionInput> Options { get; set; } = new();
-
-    /// <summary>
-    /// Порядковый номер компонента в шаге
-    /// </summary>
-    public int? Order { get; set; }
 
     /// <summary>
     /// Обязательный ли компонент
@@ -144,11 +134,6 @@ public class CreateTaskComponentInput
     /// Подсказка, доступная в любой момент
     /// </summary>
     public string Hint { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Порядковый номер компонента в шаге
-    /// </summary>
-    public int? Order { get; set; }
 
     /// <summary>
     /// Обязательный ли компонент

@@ -38,9 +38,6 @@ public class CreateArticleComponentCommandValidator : AbstractValidator<CreateAr
             .LessThanOrEqualTo(480)
             .WithMessage("Время чтения не должно превышать 8 часов (480 минут)");
 
-        RuleFor(x => x.Order)
-            .GreaterThan(0)
-            .WithMessage("Порядковый номер должен быть больше 0")
-            .When(x => x.Order.HasValue);
+
     }
 }

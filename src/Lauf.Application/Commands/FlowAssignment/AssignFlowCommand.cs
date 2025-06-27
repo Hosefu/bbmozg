@@ -54,9 +54,9 @@ public class AssignFlowCommandResult
     public Guid AssignmentId { get; set; }
 
     /// <summary>
-    /// Идентификатор созданного снапшота потока
+    /// Идентификатор версии потока, назначенной пользователю
     /// </summary>
-    public Guid SnapshotId { get; set; }
+    public Guid FlowVersionId { get; set; }
 
     /// <summary>
     /// Успешно ли выполнено назначение

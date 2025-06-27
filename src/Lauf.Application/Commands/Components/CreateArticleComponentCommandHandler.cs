@@ -5,6 +5,7 @@ using Lauf.Domain.Entities.Components;
 using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Domain.Enums;
+using Lauf.Shared.Helpers;
 
 namespace Lauf.Application.Commands.Components;
 
@@ -51,31 +52,31 @@ public class CreateArticleComponentCommandHandler : IRequestHandler<CreateArticl
             if (flowStep == null)
                 return CreateArticleComponentResult.Failure("Шаг потока не найден");
 
-            // Создание компонента статьи
+            // Генерируем порядок для нового компонента
+            var order = GenerateNextOrder(flowStep.Components);
+
+            // Создание компонента статьи с привязкой к шагу
             var articleComponent = new ArticleComponent(
+                flowStepId: request.FlowStepId,
                 title: request.Title,
                 description: request.Description,
                 content: request.Content,
+                order: order,
+                isRequired: request.IsRequired,
                 readingTimeMinutes: request.ReadingTimeMinutes);
 
             // Сохраняем компонент в базе
             var savedComponent = await _componentRepository.AddArticleComponentAsync(articleComponent, cancellationToken);
 
-            // Создаем связь между шагом и компонентом
-            var order = request.Order ?? (flowStep.Components.Count + 1);
-            var stepComponent = new FlowStepComponent(
-                flowStepId: request.FlowStepId,
-                componentType: ComponentType.Article,
-                title: request.Title,
-                description: request.Description,
-                order: order,
-                isRequired: request.IsRequired,
-                estimatedDurationMinutes: request.ReadingTimeMinutes)
+            // Добавляем компонент к шагу
+            flowStep.AddComponent(savedComponent);
+            
+            // Получаем поток для обновления
+            var flow = await _flowRepository.GetFlowByStepIdAsync(request.FlowStepId, cancellationToken);
+            if (flow != null)
             {
-                ComponentId = savedComponent.Id
-            };
-
-            var savedStepComponent = await _componentRepository.AddStepComponentAsync(stepComponent, cancellationToken);
+                await _flowRepository.UpdateAsync(flow, cancellationToken);
+            }
 
             _logger.LogInformation("Компонент статьи {ComponentId} успешно создан для шага {StepId}", 
                 savedComponent.Id, request.FlowStepId);
@@ -83,12 +84,26 @@ public class CreateArticleComponentCommandHandler : IRequestHandler<CreateArticl
             // Преобразовать в DTO
             var componentDto = _mapper.Map<Application.DTOs.Components.ArticleComponentDto>(savedComponent);
 
-            return CreateArticleComponentResult.Success(savedComponent.Id, savedStepComponent.Id, componentDto);
+            return CreateArticleComponentResult.Success(savedComponent.Id, componentDto);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при создании компонента статьи для шага {StepId}", request.FlowStepId);
             return CreateArticleComponentResult.Failure($"Ошибка при создании компонента статьи: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Генерирует следующий LexoRank для компонента
+    /// </summary>
+    private static string GenerateNextOrder(ICollection<ComponentBase> existingComponents)
+    {
+        if (!existingComponents.Any())
+            return LexoRankHelper.Middle();
+            
+        var lastComponent = existingComponents.OrderBy(c => c.Order).LastOrDefault();
+        return lastComponent != null ? 
+            LexoRankHelper.Next(lastComponent.Order) : 
+            LexoRankHelper.Middle();
     }
 }

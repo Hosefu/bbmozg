@@ -24,6 +24,11 @@ public class FlowAssignmentDto
     public Guid FlowId { get; set; }
 
     /// <summary>
+    /// Идентификатор версии потока
+    /// </summary>
+    public Guid FlowVersionId { get; set; }
+
+    /// <summary>
     /// Статус назначения
     /// </summary>
     public AssignmentStatus Status { get; set; }
@@ -77,6 +82,11 @@ public class FlowAssignmentDto
     /// Поток обучения (может быть null, если не загружен)
     /// </summary>
     public FlowDto? Flow { get; set; }
+
+    /// <summary>
+    /// Версия потока (может быть null, если не загружена)
+    /// </summary>
+    public FlowVersionDto? FlowVersion { get; set; }
 
     /// <summary>
     /// ID назначившего пользователя
