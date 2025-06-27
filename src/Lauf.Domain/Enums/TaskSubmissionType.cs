@@ -1,22 +1,12 @@
 namespace Lauf.Domain.Enums;
 
 /// <summary>
-/// Тип отправки результата задания
+/// Тип отправки результата задания (упрощенный)
 /// </summary>
 public enum TaskSubmissionType
 {
     /// <summary>
-    /// Текстовый ответ
+    /// Кодовое слово
     /// </summary>
-    Text = 0,
-    
-    /// <summary>
-    /// Загрузка файла
-    /// </summary>
-    File = 1,
-    
-    /// <summary>
-    /// Ссылка на внешний ресурс
-    /// </summary>
-    Link = 2
+    CodeWord = 0
 }

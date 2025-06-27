@@ -35,10 +35,10 @@ public interface IFlowRepository
     /// <summary>
     /// Получает поток по названию
     /// </summary>
-    /// <param name="title">Название потока</param>
+    /// <param name="name">Название потока</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Поток или null</returns>
-    Task<Flow?> GetByTitleAsync(string title, CancellationToken cancellationToken = default);
+    Task<Flow?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получает потоки по статусу
@@ -97,11 +97,11 @@ public interface IFlowRepository
     /// <summary>
     /// Проверяет существование потока по названию
     /// </summary>
-    /// <param name="title">Название потока</param>
+    /// <param name="name">Название потока</param>
     /// <param name="excludeId">Исключаемый ID (для обновления)</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>true, если поток существует</returns>
-    Task<bool> ExistsByTitleAsync(string title, Guid? excludeId = null, CancellationToken cancellationToken = default);
+    Task<bool> ExistsByNameAsync(string name, Guid? excludeId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Добавляет новый поток

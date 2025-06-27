@@ -43,10 +43,6 @@ public class Notification
     /// </summary>
     public string Content { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Дополнительные данные в JSON формате
-    /// </summary>
-    public string? Metadata { get; set; }
 
     /// <summary>
     /// Статус уведомления
@@ -68,10 +64,6 @@ public class Notification
     /// </summary>
     public DateTime? SentAt { get; set; }
 
-    /// <summary>
-    /// Дата прочтения пользователем
-    /// </summary>
-    public DateTime? ReadAt { get; set; }
 
     /// <summary>
     /// Количество попыток отправки
@@ -83,10 +75,6 @@ public class Notification
     /// </summary>
     public int MaxAttempts { get; set; } = 3;
 
-    /// <summary>
-    /// Сообщение об ошибке при отправке
-    /// </summary>
-    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// Связанная сущность (поток, назначение, достижение)
@@ -112,23 +100,13 @@ public class Notification
         SentAt = DateTime.UtcNow;
     }
 
-    /// <summary>
-    /// Отметить как прочитанное
-    /// </summary>
-    public void MarkAsRead()
-    {
-        Status = NotificationStatus.Read;
-        ReadAt = DateTime.UtcNow;
-    }
 
     /// <summary>
     /// Отметить как неудачную попытку
     /// </summary>
-    /// <param name="errorMessage">Сообщение об ошибке</param>
-    public void MarkAsFailed(string errorMessage)
+    public void MarkAsFailed()
     {
         AttemptCount++;
-        ErrorMessage = errorMessage;
         
         if (AttemptCount >= MaxAttempts)
         {
@@ -171,8 +149,7 @@ public class Notification
             Title = "📚 Новое обучение назначено!",
             Content = $"Вам назначен поток обучения \"{flowTitle}\". Срок завершения: {deadline:dd.MM.yyyy}",
             RelatedEntityId = flowAssignmentId,
-            RelatedEntityType = "FlowAssignment",
-            Metadata = System.Text.Json.JsonSerializer.Serialize(new { flowTitle, deadline })
+            RelatedEntityType = "FlowAssignment"
         };
     }
 
@@ -202,8 +179,7 @@ public class Notification
             Title = $"{emoji} Напоминание о дедлайне",
             Content = $"До завершения обучения \"{flowTitle}\" осталось {daysLeft} дн. Дедлайн: {deadline:dd.MM.yyyy}",
             RelatedEntityId = flowAssignmentId,
-            RelatedEntityType = "FlowAssignment",
-            Metadata = System.Text.Json.JsonSerializer.Serialize(new { flowTitle, deadline, daysLeft })
+            RelatedEntityType = "FlowAssignment"
         };
     }
 
@@ -226,8 +202,7 @@ public class Notification
             Title = "🏆 Новое достижение!",
             Content = $"Поздравляем! Вы получили достижение \"{achievementTitle}\": {achievementDescription}",
             RelatedEntityId = achievementId,
-            RelatedEntityType = "Achievement",
-            Metadata = System.Text.Json.JsonSerializer.Serialize(new { achievementTitle, achievementDescription })
+            RelatedEntityType = "Achievement"
         };
     }
 }
