@@ -15,7 +15,7 @@ public class FlowDto
     /// <summary>
     /// Название потока
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Описание потока
@@ -79,47 +79,27 @@ public class FlowDto
 }
 
 /// <summary>
-/// DTO для настроек потока
+/// DTO для настроек потока (упрощенный)
 /// </summary>
 public class FlowSettingsDto
 {
     /// <summary>
-    /// Разрешить пропуск шагов
+    /// Дней на шаг
     /// </summary>
-    public bool AllowSkipping { get; set; }
+    public int DaysPerStep { get; set; } = 7;
 
     /// <summary>
-    /// Требовать последовательное прохождение
+    /// Требовать последовательное прохождение компонентов
     /// </summary>
-    public bool RequireSequentialCompletion { get; set; }
+    public bool RequireSequentialCompletionComponents { get; set; } = false;
 
     /// <summary>
-    /// Максимальное количество попыток
+    /// Разрешить самостоятельный перезапуск
     /// </summary>
-    public int? MaxAttempts { get; set; }
+    public bool AllowSelfRestart { get; set; } = false;
 
     /// <summary>
-    /// Время на выполнение в рабочих днях
+    /// Разрешить самостоятельную паузу
     /// </summary>
-    public int? TimeToCompleteWorkingDays { get; set; }
-
-    /// <summary>
-    /// Показывать прогресс
-    /// </summary>
-    public bool ShowProgress { get; set; }
-
-    /// <summary>
-    /// Разрешить повторное прохождение
-    /// </summary>
-    public bool AllowRetry { get; set; }
-
-    /// <summary>
-    /// Отправлять напоминания
-    /// </summary>
-    public bool SendReminders { get; set; }
-
-    /// <summary>
-    /// Дополнительные настройки
-    /// </summary>
-    public Dictionary<string, object> AdditionalSettings { get; set; } = new();
+    public bool AllowSelfPause { get; set; } = true;
 }

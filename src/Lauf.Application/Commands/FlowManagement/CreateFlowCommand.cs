@@ -10,7 +10,7 @@ public record CreateFlowCommand : IRequest<CreateFlowCommandResult>
     /// <summary>
     /// Название потока
     /// </summary>
-    public string Title { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
 
     /// <summary>
     /// Описание потока
@@ -49,49 +49,29 @@ public record CreateFlowCommand : IRequest<CreateFlowCommandResult>
 }
 
 /// <summary>
-/// Настройки для создаваемого потока
+/// Настройки для создаваемого потока (упрощенные)
 /// </summary>
 public record CreateFlowSettingsCommand
 {
     /// <summary>
-    /// Разрешить пропуск шагов
+    /// Дней на шаг
     /// </summary>
-    public bool AllowSkipping { get; init; } = false;
+    public int DaysPerStep { get; init; } = 7;
 
     /// <summary>
-    /// Требовать последовательное прохождение
+    /// Требовать последовательное прохождение компонентов
     /// </summary>
-    public bool RequireSequentialCompletion { get; init; } = true;
+    public bool RequireSequentialCompletionComponents { get; init; } = false;
 
     /// <summary>
-    /// Максимальное количество попыток
+    /// Разрешить самостоятельный перезапуск
     /// </summary>
-    public int? MaxAttempts { get; init; }
+    public bool AllowSelfRestart { get; init; } = false;
 
     /// <summary>
-    /// Время на выполнение в рабочих днях
+    /// Разрешить самостоятельную паузу
     /// </summary>
-    public int? TimeToCompleteWorkingDays { get; init; }
-
-    /// <summary>
-    /// Показывать прогресс
-    /// </summary>
-    public bool ShowProgress { get; init; } = true;
-
-    /// <summary>
-    /// Разрешить повторное прохождение
-    /// </summary>
-    public bool AllowRetry { get; init; } = false;
-
-    /// <summary>
-    /// Отправлять напоминания
-    /// </summary>
-    public bool SendReminders { get; init; } = true;
-
-    /// <summary>
-    /// Дополнительные настройки в JSON
-    /// </summary>
-    public string AdditionalSettings { get; init; } = "{}";
+    public bool AllowSelfPause { get; init; } = true;
 }
 
 /// <summary>
@@ -105,9 +85,9 @@ public class CreateFlowCommandResult
     public Guid FlowId { get; set; }
 
     /// <summary>
-    /// Идентификатор созданной версии потока
+    /// Идентификатор созданного содержимого
     /// </summary>
-    public Guid FlowVersionId { get; set; }
+    public Guid ContentId { get; set; }
 
     /// <summary>
     /// Номер созданной версии
@@ -127,7 +107,7 @@ public class CreateFlowCommandResult
     /// <summary>
     /// Название созданного потока
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Статус созданного потока

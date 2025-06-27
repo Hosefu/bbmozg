@@ -13,14 +13,14 @@ public class FlowStepDto
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Идентификатор потока
+    /// Идентификатор содержимого потока
     /// </summary>
-    public Guid FlowId { get; set; }
+    public Guid FlowContentId { get; set; }
 
     /// <summary>
     /// Название шага
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Описание шага
@@ -43,9 +43,9 @@ public class FlowStepDto
     public int EstimatedDurationMinutes { get; set; }
 
     /// <summary>
-    /// Статус шага
+    /// Включен ли шаг
     /// </summary>
-    public StepStatus Status { get; set; }
+    public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Инструкции для прохождения шага

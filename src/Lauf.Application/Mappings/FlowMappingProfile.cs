@@ -15,37 +15,29 @@ public class FlowMappingProfile : Profile
 {
     public FlowMappingProfile()
     {
-        // Маппинг Flow -> FlowDto
+        // Маппинг Flow -> FlowDto (обновленная архитектура)
         CreateMap<Flow, FlowDto>()
-            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => ParseTags(src.Tags)))
-            .ForMember(dest => dest.TotalSteps, opt => opt.MapFrom(src => src.TotalSteps))
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.TotalSteps, opt => opt.MapFrom(src => src.ActiveContent != null ? src.ActiveContent.Steps.Count : 0))
+            .ForMember(dest => dest.Steps, opt => opt.MapFrom((src, dest, destMember, context) => 
+                src.ActiveContent != null ? MapStepsWithOrder(src.ActiveContent.Steps, context) : new List<FlowStepDto>()));
+
+        // Маппинг FlowContent -> FlowContentDto
+        CreateMap<FlowContent, FlowContentDto>()
             .ForMember(dest => dest.Steps, opt => opt.MapFrom((src, dest, destMember, context) => 
                 MapStepsWithOrder(src.Steps, context)));
 
-        // Маппинг Flow -> FlowDetailsDto
-        CreateMap<Flow, FlowDetailsDto>()
-            .IncludeBase<Flow, FlowDto>()
-            .ForMember(dest => dest.Steps, opt => opt.MapFrom((src, dest, destMember, context) => 
-                MapStepsWithOrderDetailed(src.Steps, context)))
-            .ForMember(dest => dest.Statistics, opt => opt.Ignore())
-            .ForMember(dest => dest.UserProgress, opt => opt.Ignore());
+        // Маппинг FlowSettings -> FlowSettingsDto (упрощенный)
+        CreateMap<FlowSettings, FlowSettingsDto>();
 
-        // Маппинг FlowSettings -> FlowSettingsDto
-        CreateMap<FlowSettings, FlowSettingsDto>()
-            .ForMember(dest => dest.AllowSkipping, opt => opt.MapFrom(src => !src.RequiresBuddy))
-            .ForMember(dest => dest.RequireSequentialCompletion, opt => opt.MapFrom(src => !src.AllowSelfPaced))
-            .ForMember(dest => dest.MaxAttempts, opt => opt.Ignore())
-            .ForMember(dest => dest.TimeToCompleteWorkingDays, opt => opt.MapFrom(src => src.DaysToComplete))
-            .ForMember(dest => dest.ShowProgress, opt => opt.MapFrom(src => src.SendDailyProgress))
-            .ForMember(dest => dest.AllowRetry, opt => opt.MapFrom(src => src.AllowPause))
-            .ForMember(dest => dest.SendReminders, opt => opt.MapFrom(src => src.SendDeadlineReminders))
-            .ForMember(dest => dest.AdditionalSettings, opt => opt.MapFrom(src => ParseAdditionalSettings(src.CustomSettings)));
-
-        // Маппинг FlowStep -> FlowStepDto
+        // Маппинг FlowStep -> FlowStepDto (обновленная архитектура)
         CreateMap<FlowStep, FlowStepDto>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+            .ForMember(dest => dest.FlowContentId, opt => opt.MapFrom(src => src.FlowContentId))
+            .ForMember(dest => dest.IsEnabled, opt => opt.MapFrom(src => src.IsEnabled))
             .ForMember(dest => dest.Order, opt => opt.Ignore())
-            .ForMember(dest => dest.TotalComponents, opt => opt.MapFrom(src => src.TotalComponents))
-            .ForMember(dest => dest.RequiredComponents, opt => opt.MapFrom(src => src.RequiredComponents))
+            .ForMember(dest => dest.TotalComponents, opt => opt.MapFrom(src => src.Components.Count))
+            .ForMember(dest => dest.RequiredComponents, opt => opt.MapFrom(src => src.Components.Count(c => c.IsRequired)))
             .ForMember(dest => dest.Components, opt => opt.MapFrom((src, dest, destMember, context) => 
                 MapComponentsWithOrder(src.Components, context)));
 
@@ -55,8 +47,10 @@ public class FlowMappingProfile : Profile
             .ForMember(dest => dest.Components, opt => opt.MapFrom((src, dest, destMember, context) => 
                 MapComponentsWithOrderDetailed(src.Components, context)));
 
-        // Маппинг ComponentBase -> FlowStepComponentDto
+        // Маппинг ComponentBase -> FlowStepComponentDto (обновленная архитектура)
         CreateMap<ComponentBase, FlowStepComponentDto>()
+            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+            .ForMember(dest => dest.IsEnabled, opt => opt.MapFrom(src => src.IsEnabled))
             .ForMember(dest => dest.Order, opt => opt.Ignore())
             .ForMember(dest => dest.Settings, opt => opt.MapFrom(src => new Dictionary<string, object>()))
             .ForMember(dest => dest.Component, opt => opt.MapFrom(src => src))
@@ -75,14 +69,16 @@ public class FlowMappingProfile : Profile
             .ForMember(dest => dest.Order, opt => opt.Ignore())
             .ForMember(dest => dest.Progress, opt => opt.Ignore());
 
-        // Маппинг компонентов
+        // Маппинг компонентов (обновленная архитектура)
         CreateMap<ArticleComponent, ArticleComponentDto>();
         CreateMap<QuizComponent, QuizComponentDto>()
-            .ForMember(dest => dest.Options, opt => opt.MapFrom((src, dest, destMember, context) => 
-                MapOptionsWithOrder(src.Options, context)));
+            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
         CreateMap<TaskComponent, TaskComponentDto>();
 
-        // QuestionOption -> QuestionOptionDto с преобразованием LexoRank в order
+        // Маппинг вопросов и вариантов ответов
+        CreateMap<QuizQuestion, QuizQuestionDto>()
+            .ForMember(dest => dest.Options, opt => opt.MapFrom((src, dest, destMember, context) => 
+                MapOptionsWithOrder(src.Options.ToList(), context)));
         CreateMap<QuestionOption, QuestionOptionDto>()
             .ForMember(dest => dest.Order, opt => opt.Ignore());
     }
@@ -214,15 +210,15 @@ public class FlowMappingProfile : Profile
     }
 
     /// <summary>
-    /// Извлекает содержимое компонента в зависимости от его типа
+    /// Извлекает содержимое компонента в зависимости от его типа (обновленная архитектура)
     /// </summary>
     private static string MapComponentContent(ComponentBase component)
     {
         return component switch
         {
             ArticleComponent article => article.Content,
-            QuizComponent quiz => quiz.QuestionText,
-            TaskComponent task => task.Instruction,
+            QuizComponent quiz => quiz.Content,
+            TaskComponent task => task.Content,
             _ => component.Description
         };
     }

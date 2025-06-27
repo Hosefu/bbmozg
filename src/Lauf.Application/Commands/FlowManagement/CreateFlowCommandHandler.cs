@@ -1,5 +1,4 @@
 using Lauf.Domain.Entities.Flows;
-using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.Enums;
 using Lauf.Domain.Exceptions;
 using Lauf.Domain.Interfaces;
@@ -18,20 +17,20 @@ namespace Lauf.Application.Commands.FlowManagement;
 public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, CreateFlowCommandResult>
 {
     private readonly IFlowRepository _flowRepository;
-    private readonly IFlowVersionRepository _flowVersionRepository;
+    private readonly IFlowContentRepository _flowContentRepository;
     private readonly IUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CreateFlowCommandHandler> _logger;
 
     public CreateFlowCommandHandler(
         IFlowRepository flowRepository,
-        IFlowVersionRepository flowVersionRepository,
+        IFlowContentRepository flowContentRepository,
         IUserRepository userRepository,
         IUnitOfWork unitOfWork,
         ILogger<CreateFlowCommandHandler> logger)
     {
         _flowRepository = flowRepository ?? throw new ArgumentNullException(nameof(flowRepository));
-        _flowVersionRepository = flowVersionRepository ?? throw new ArgumentNullException(nameof(flowVersionRepository));
+        _flowContentRepository = flowContentRepository ?? throw new ArgumentNullException(nameof(flowContentRepository));
         _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -39,8 +38,8 @@ public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, Creat
 
     public async Task<CreateFlowCommandResult> Handle(CreateFlowCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Начинается создание потока \"{Title}\" пользователем {CreatedById}", 
-            request.Title, request.CreatedById);
+        _logger.LogInformation("Начинается создание потока \"{Name}\" пользователем {CreatedById}", 
+            request.Name, request.CreatedById);
 
         try
         {
@@ -54,54 +53,42 @@ public class CreateFlowCommandHandler : IRequestHandler<CreateFlowCommand, Creat
                 }
             }
 
-            // Создаем оригинальный поток (как ссылочную сущность)
-            var flow = new Flow(request.Title, request.Description);
+            // Создаем поток-координатор (новая архитектура)
+            var flow = new Flow(request.Name, request.Description, request.CreatedById);
             
-            // Заполняем дополнительные свойства
-            flow.Tags = request.Tags;
-            flow.Priority = request.Priority;
-            flow.IsRequired = request.IsRequired;
-            flow.CreatedById = request.CreatedById;
-
-            // Сохраняем оригинальный поток
+            // Сохраняем поток
             await _flowRepository.AddAsync(flow, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            // Создаем первую версию потока (версия 1, активная)
-            var firstFlowVersion = new FlowVersion(
-                flow.Id, // OriginalId
-                1, // Version = 1 для первой версии
-                request.Title,
-                request.Description,
-                request.Tags,
-                FlowStatus.Draft, // Начинаем с черновика
-                request.Priority,
-                request.IsRequired,
-                request.CreatedById,
-                true // IsActive = true для первой версии
-            );
+            // Создаем первое содержимое потока (версия 1)
+            var firstContent = new FlowContent(flow.Id, 1, request.CreatedById);
 
-            // Сохраняем первую версию
-            await _flowVersionRepository.AddAsync(firstFlowVersion, cancellationToken);
+            // Сохраняем содержимое
+            await _flowContentRepository.AddAsync(firstContent, cancellationToken);
+            
+            // Устанавливаем активное содержимое в потоке
+            flow.SetActiveContent(firstContent.Id);
+            await _flowRepository.UpdateAsync(flow, cancellationToken);
+            
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Поток \"{Title}\" успешно создан с ID {FlowId}, создана первая версия {FlowVersionId}", 
-                request.Title, flow.Id, firstFlowVersion.Id);
+            _logger.LogInformation("Поток \"{Name}\" успешно создан с ID {FlowId}, создано первое содержимое {ContentId}", 
+                request.Name, flow.Id, firstContent.Id);
 
             return new CreateFlowCommandResult
             {
                 FlowId = flow.Id,
-                FlowVersionId = firstFlowVersion.Id,
-                Version = firstFlowVersion.Version,
+                ContentId = firstContent.Id,
+                Version = firstContent.Version,
                 IsSuccess = true,
-                Message = $"Поток \"{request.Title}\" успешно создан с версией {firstFlowVersion.Version}",
-                Title = flow.Title,
-                Status = firstFlowVersion.Status.ToString()
+                Message = $"Поток \"{request.Name}\" успешно создан с версией {firstContent.Version}",
+                Name = flow.Name,
+                Status = FlowStatus.Draft.ToString()
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при создании потока \"{Title}\"", request.Title);
+            _logger.LogError(ex, "Ошибка при создании потока \"{Name}\"", request.Name);
 
             return new CreateFlowCommandResult
             {
