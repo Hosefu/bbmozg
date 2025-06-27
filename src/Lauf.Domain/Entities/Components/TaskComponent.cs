@@ -3,7 +3,7 @@ using Lauf.Domain.Enums;
 namespace Lauf.Domain.Entities.Components;
 
 /// <summary>
-/// Компонент практического задания - поиск кодового слова
+/// Компонент задания (только кодовое слово)
 /// </summary>
 public class TaskComponent : ComponentBase
 {
@@ -13,39 +13,44 @@ public class TaskComponent : ComponentBase
     public override ComponentType Type => ComponentType.Task;
 
     /// <summary>
-    /// Инструкция - как найти кодовое слово
+    /// Задания дают очки
     /// </summary>
-    public string Instruction { get; private set; } = string.Empty;
+    public override bool HasScore => true;
 
     /// <summary>
-    /// Кодовое слово для проверки ответа
+    /// Правильный ответ (кодовое слово)
     /// </summary>
     public string CodeWord { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Подсказка, доступная в любой момент
+    /// Очки за правильный ответ
     /// </summary>
-    public string Hint { get; private set; } = string.Empty;
+    public int Score { get; private set; } = 1;
+
+    /// <summary>
+    /// Учитывать ли регистр
+    /// </summary>
+    public bool IsCaseSensitive { get; private set; } = false;
 
     /// <summary>
     /// Конструктор для создания нового задания
     /// </summary>
     /// <param name="flowStepId">Идентификатор шага потока</param>
     /// <param name="title">Название задания</param>
-    /// <param name="description">Описание задания</param>
-    /// <param name="instruction">Инструкция как найти кодовое слово</param>
+    /// <param name="description">Описание задания (используется вместо Instruction)</param>
+    /// <param name="content">Содержимое задания</param>
     /// <param name="codeWord">Кодовое слово</param>
-    /// <param name="hint">Подсказка</param>
+    /// <param name="score">Очки за правильный ответ</param>
     /// <param name="order">Порядковый номер компонента</param>
     /// <param name="isRequired">Обязательный ли компонент</param>
-    /// <param name="estimatedDurationMinutes">Приблизительное время выполнения</param>
-    public TaskComponent(Guid flowStepId, string title, string description, string instruction, 
-        string codeWord, string hint, string order, bool isRequired = true, int estimatedDurationMinutes = 30)
-        : base(flowStepId, title, description, order, isRequired, estimatedDurationMinutes)
+    /// <param name="isCaseSensitive">Учитывать ли регистр</param>
+    public TaskComponent(Guid flowStepId, string title, string description, string content, string codeWord, 
+        int score, string order, bool isRequired = true, bool isCaseSensitive = false)
+        : base(flowStepId, title, description, content, order, isRequired)
     {
-        Instruction = instruction ?? throw new ArgumentNullException(nameof(instruction));
         CodeWord = codeWord ?? throw new ArgumentNullException(nameof(codeWord));
-        Hint = hint ?? throw new ArgumentNullException(nameof(hint));
+        Score = score > 0 ? score : 1;
+        IsCaseSensitive = isCaseSensitive;
     }
 
     /// <summary>
@@ -54,27 +59,9 @@ public class TaskComponent : ComponentBase
     protected TaskComponent() { }
 
     /// <summary>
-    /// Обновляет инструкцию задания
+    /// Общий балл за задание
     /// </summary>
-    /// <param name="instruction">Новая инструкция</param>
-    /// <param name="hint">Новая подсказка</param>
-    public void UpdateInstruction(string instruction, string? hint = null)
-    {
-        Instruction = instruction ?? throw new ArgumentNullException(nameof(instruction));
-        if (hint != null)
-            Hint = hint;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Устанавливает кодовое слово
-    /// </summary>
-    /// <param name="codeWord">Новое кодовое слово</param>
-    public void SetCodeWord(string codeWord)
-    {
-        CodeWord = codeWord ?? throw new ArgumentNullException(nameof(codeWord));
-        UpdatedAt = DateTime.UtcNow;
-    }
+    public override int GetTotalScore() => Score;
 
     /// <summary>
     /// Проверяет правильность ответа
@@ -84,16 +71,8 @@ public class TaskComponent : ComponentBase
     public bool CheckAnswer(string answer)
     {
         if (string.IsNullOrWhiteSpace(answer)) return false;
-        return string.Equals(CodeWord.Trim(), answer.Trim(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Проверяет, может ли компонент быть активирован
-    /// </summary>
-    public override bool CanBeActivated()
-    {
-        return !string.IsNullOrWhiteSpace(Instruction) && 
-               !string.IsNullOrWhiteSpace(CodeWord) &&
-               !string.IsNullOrWhiteSpace(Hint);
+        
+        var comparison = IsCaseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+        return string.Equals(CodeWord.Trim(), answer.Trim(), comparison);
     }
 }

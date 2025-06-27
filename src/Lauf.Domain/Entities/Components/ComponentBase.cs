@@ -28,39 +28,9 @@ public abstract class ComponentBase
     public string Description { get; protected set; } = string.Empty;
 
     /// <summary>
-    /// Статус компонента
+    /// Содержимое компонента
     /// </summary>
-    public ComponentStatus Status { get; protected set; } = ComponentStatus.Draft;
-
-    /// <summary>
-    /// Приблизительное время выполнения в минутах
-    /// </summary>
-    public int EstimatedDurationMinutes { get; protected set; } = 15;
-
-    /// <summary>
-    /// Максимальное количество попыток
-    /// </summary>
-    public int? MaxAttempts { get; protected set; }
-
-    /// <summary>
-    /// Минимальный проходной балл (для тестов и квизов)
-    /// </summary>
-    public int? MinPassingScore { get; protected set; }
-
-    /// <summary>
-    /// Дополнительные инструкции для компонента
-    /// </summary>
-    public string Instructions { get; protected set; } = string.Empty;
-
-    /// <summary>
-    /// Дата создания
-    /// </summary>
-    public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Дата последнего обновления
-    /// </summary>
-    public DateTime UpdatedAt { get; protected set; } = DateTime.UtcNow;
+    public string Content { get; protected set; } = string.Empty;
 
     /// <summary>
     /// Идентификатор шага потока, к которому принадлежит компонент
@@ -78,26 +48,29 @@ public abstract class ComponentBase
     public bool IsRequired { get; protected set; } = true;
 
     /// <summary>
+    /// Включен ли компонент (заменяет ComponentStatus)
+    /// </summary>
+    public bool IsEnabled { get; protected set; } = true;
+
+    /// <summary>
     /// Конструктор для создания нового компонента
     /// </summary>
     /// <param name="flowStepId">Идентификатор шага потока</param>
     /// <param name="title">Название компонента</param>
     /// <param name="description">Описание компонента</param>
+    /// <param name="content">Содержимое компонента</param>
     /// <param name="order">Порядковый номер компонента</param>
     /// <param name="isRequired">Обязательный ли компонент</param>
-    /// <param name="estimatedDurationMinutes">Приблизительное время выполнения в минутах</param>
-    protected ComponentBase(Guid flowStepId, string title, string description, string order, bool isRequired = true, int estimatedDurationMinutes = 15)
+    protected ComponentBase(Guid flowStepId, string title, string description, string content, string order, bool isRequired = true)
     {
         Id = Guid.NewGuid();
         FlowStepId = flowStepId;
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Description = description ?? throw new ArgumentNullException(nameof(description));
+        Content = content ?? throw new ArgumentNullException(nameof(content));
         Order = order ?? throw new ArgumentNullException(nameof(order));
         IsRequired = isRequired;
-        EstimatedDurationMinutes = estimatedDurationMinutes;
-        Status = ComponentStatus.Draft;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        IsEnabled = true;
     }
 
     /// <summary>
@@ -106,104 +79,28 @@ public abstract class ComponentBase
     protected ComponentBase() { }
 
     /// <summary>
-    /// Проверяет, может ли компонент быть активирован
+    /// Общий балл за компонент (переопределяется в наследниках)
     /// </summary>
-    /// <returns>true, если компонент может быть активирован</returns>
-    public virtual bool CanBeActivated()
+    public virtual int GetTotalScore() => 0;
+
+    /// <summary>
+    /// Дает ли компонент очки
+    /// </summary>
+    public virtual bool HasScore => false;
+
+    /// <summary>
+    /// Включает компонент
+    /// </summary>
+    public void Enable()
     {
-        return Status == ComponentStatus.Draft && 
-               !string.IsNullOrWhiteSpace(Title);
+        IsEnabled = true;
     }
 
     /// <summary>
-    /// Активирует компонент
+    /// Отключает компонент
     /// </summary>
-    public void Activate()
+    public void Disable()
     {
-        if (!CanBeActivated())
-            throw new InvalidOperationException("Компонент не может быть активирован в текущем состоянии");
-
-        Status = ComponentStatus.Active;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Деактивирует компонент
-    /// </summary>
-    public void Deactivate()
-    {
-        Status = ComponentStatus.Inactive;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Возвращает компонент в черновик
-    /// </summary>
-    public void ReturnToDraft()
-    {
-        Status = ComponentStatus.Draft;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Обновляет основную информацию компонента
-    /// </summary>
-    /// <param name="title">Новое название</param>
-    /// <param name="description">Новое описание</param>
-    /// <param name="instructions">Новые инструкции</param>
-    public void UpdateBasicInfo(string title, string description, string? instructions = null)
-    {
-        Title = title ?? throw new ArgumentNullException(nameof(title));
-        Description = description ?? throw new ArgumentNullException(nameof(description));
-        if (instructions != null)
-            Instructions = instructions;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Устанавливает настройки оценивания
-    /// </summary>
-    /// <param name="maxAttempts">Максимальное количество попыток</param>
-    /// <param name="minPassingScore">Минимальный проходной балл</param>
-    public void SetScoringSettings(int? maxAttempts, int? minPassingScore)
-    {
-        MaxAttempts = maxAttempts;
-        MinPassingScore = minPassingScore;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Проверяет, является ли компонент интерактивным (требует взаимодействия)
-    /// </summary>
-    /// <returns>true, если компонент интерактивный</returns>
-    public virtual bool IsInteractive()
-    {
-        return Type is ComponentType.Quiz or ComponentType.Task;
-    }
-
-    /// <summary>
-    /// Проверяет, поддерживает ли компонент отслеживание прогресса
-    /// </summary>
-    /// <returns>true, если поддерживает отслеживание прогресса</returns>
-    public virtual bool SupportsProgress()
-    {
-        return Type is ComponentType.Article or ComponentType.Task;
-    }
-
-    /// <summary>
-    /// Проверяет, имеет ли компонент систему оценок
-    /// </summary>
-    /// <returns>true, если имеет систему оценок</returns>
-    public virtual bool HasScoring()
-    {
-        return Type is ComponentType.Quiz or ComponentType.Task && MinPassingScore.HasValue;
-    }
-
-    /// <summary>
-    /// Обновляет время последнего изменения
-    /// </summary>
-    public void UpdateTimestamp()
-    {
-        UpdatedAt = DateTime.UtcNow;
+        IsEnabled = false;
     }
 }

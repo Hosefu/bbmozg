@@ -15,19 +15,19 @@ public class FlowStep
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Идентификатор потока
+    /// Идентификатор версии контента потока
     /// </summary>
-    public Guid FlowId { get; set; }
+    public Guid FlowContentId { get; set; }
 
     /// <summary>
-    /// Поток, которому принадлежит шаг
+    /// Версия контента потока
     /// </summary>
-    public virtual Flow Flow { get; set; } = null!;
+    public virtual FlowContent FlowContent { get; set; } = null!;
 
     /// <summary>
     /// Название шага
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Описание шага
@@ -35,34 +35,14 @@ public class FlowStep
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// LexoRank позиция шага в потоке для динамической сортировки
+    /// LexoRank позиция шага для динамической сортировки
     /// </summary>
     public string Order { get; set; } = string.Empty;
 
     /// <summary>
-    /// Обязательный ли шаг
+    /// Включен ли шаг (заменяет StepStatus)
     /// </summary>
-    public bool IsRequired { get; set; } = true;
-
-    /// <summary>
-    /// Приблизительное время выполнения в минутах
-    /// </summary>
-    public int EstimatedDurationMinutes { get; set; } = 30;
-
-    /// <summary>
-    /// Статус шага
-    /// </summary>
-    public StepStatus Status { get; set; } = StepStatus.Active;
-
-    /// <summary>
-    /// Инструкции для прохождения шага
-    /// </summary>
-    public string Instructions { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Дополнительные заметки
-    /// </summary>
-    public string Notes { get; set; } = string.Empty;
+    public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Компоненты шага
@@ -70,36 +50,20 @@ public class FlowStep
     public virtual ICollection<ComponentBase> Components { get; set; } = new List<ComponentBase>();
 
     /// <summary>
-    /// Дата создания
-    /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Дата последнего обновления
-    /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
     /// Конструктор для создания нового шага потока
     /// </summary>
-    /// <param name="flowId">Идентификатор потока</param>
-    /// <param name="title">Название шага</param>
+    /// <param name="flowContentId">Идентификатор версии контента</param>
+    /// <param name="name">Название шага</param>
     /// <param name="description">Описание шага</param>
     /// <param name="order">Порядковый номер</param>
-    /// <param name="isRequired">Обязательный ли шаг</param>
-    /// <param name="estimatedDurationMinutes">Приблизительное время выполнения в минутах</param>
-    public FlowStep(Guid flowId, string title, string description, string order, bool isRequired = true, int estimatedDurationMinutes = 30)
+    public FlowStep(Guid flowContentId, string name, string description, string order)
     {
         Id = Guid.NewGuid();
-        FlowId = flowId;
-        Title = title ?? throw new ArgumentNullException(nameof(title));
+        FlowContentId = flowContentId;
+        Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         Order = order;
-        IsRequired = isRequired;
-        EstimatedDurationMinutes = estimatedDurationMinutes;
-        Status = StepStatus.Draft;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        IsEnabled = true;
     }
 
     /// <summary>
@@ -118,44 +82,19 @@ public class FlowStep
     public int RequiredComponents => Components.Count(c => c.IsRequired);
 
     /// <summary>
-    /// Проверяет, может ли шаг быть активирован
+    /// Включает шаг
     /// </summary>
-    /// <returns>true, если шаг может быть активирован</returns>
-    public bool CanBeActivated()
+    public void Enable()
     {
-        return Status == StepStatus.Draft && 
-               Components.Any() && 
-               !string.IsNullOrWhiteSpace(Title);
+        IsEnabled = true;
     }
 
     /// <summary>
-    /// Активирует шаг
+    /// Отключает шаг
     /// </summary>
-    public void Activate()
+    public void Disable()
     {
-        if (!CanBeActivated())
-            throw new InvalidOperationException("Шаг не может быть активирован в текущем состоянии");
-
-        Status = StepStatus.Active;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Деактивирует шаг
-    /// </summary>
-    public void Deactivate()
-    {
-        Status = StepStatus.Inactive;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Возвращает шаг в черновик
-    /// </summary>
-    public void ReturnToDraft()
-    {
-        Status = StepStatus.Draft;
-        UpdatedAt = DateTime.UtcNow;
+        IsEnabled = false;
     }
 
     /// <summary>
@@ -166,17 +105,7 @@ public class FlowStep
     {
         if (component == null) throw new ArgumentNullException(nameof(component));
         
-        // Устанавливаем связь с шагом
-        if (component.FlowStepId == Guid.Empty)
-        {
-            // Если компонент создан без FlowStepId, устанавливаем его
-            var componentType = component.GetType();
-            var flowStepIdProperty = componentType.GetProperty(nameof(ComponentBase.FlowStepId));
-            flowStepIdProperty?.SetValue(component, Id);
-        }
-        
         Components.Add(component);
-        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -189,17 +118,6 @@ public class FlowStep
         if (component != null)
         {
             Components.Remove(component);
-            ReorderComponents();
-            UpdatedAt = DateTime.UtcNow;
         }
-    }
-
-    /// <summary>
-    /// Переупорядочивает компоненты после удаления (для LexoRank это не требуется)
-    /// </summary>
-    private void ReorderComponents()
-    {
-        // LexoRank не требует переупорядочивания после удаления
-        // Каждый элемент уже имеет свою уникальную позицию
     }
 }

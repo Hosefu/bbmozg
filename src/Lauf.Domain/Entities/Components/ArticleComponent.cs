@@ -13,14 +13,9 @@ public class ArticleComponent : ComponentBase
     public override ComponentType Type => ComponentType.Article;
 
     /// <summary>
-    /// Содержимое статьи в формате Markdown
+    /// Статьи не дают очков
     /// </summary>
-    public string Content { get; private set; } = string.Empty;
-
-    /// <summary>
-    /// Время чтения в минутах
-    /// </summary>
-    public int ReadingTimeMinutes { get; private set; }
+    public override bool HasScore => false;
 
     /// <summary>
     /// Конструктор для создания новой статьи
@@ -31,12 +26,9 @@ public class ArticleComponent : ComponentBase
     /// <param name="content">Содержимое статьи в Markdown</param>
     /// <param name="order">Порядковый номер компонента</param>
     /// <param name="isRequired">Обязательный ли компонент</param>
-    /// <param name="readingTimeMinutes">Время чтения в минутах</param>
-    public ArticleComponent(Guid flowStepId, string title, string description, string content, string order, bool isRequired = true, int readingTimeMinutes = 15)
-        : base(flowStepId, title, description, order, isRequired, readingTimeMinutes)
+    public ArticleComponent(Guid flowStepId, string title, string description, string content, string order, bool isRequired = true)
+        : base(flowStepId, title, description, content, order, isRequired)
     {
-        Content = content ?? throw new ArgumentNullException(nameof(content));
-        ReadingTimeMinutes = readingTimeMinutes;
     }
 
     /// <summary>
@@ -45,29 +37,16 @@ public class ArticleComponent : ComponentBase
     protected ArticleComponent() { }
 
     /// <summary>
-    /// Обновляет содержимое статьи
+    /// Вычисляемое время чтения в минутах (примерно 200 слов в минуту)
     /// </summary>
-    /// <param name="content">Новое содержимое в Markdown</param>
-    /// <param name="readingTimeMinutes">Новое время чтения</param>
-    public void UpdateContent(string content, int? readingTimeMinutes = null)
-    {
-        Content = content ?? throw new ArgumentNullException(nameof(content));
-        
-        if (readingTimeMinutes.HasValue)
-        {
-            ReadingTimeMinutes = readingTimeMinutes.Value;
-            EstimatedDurationMinutes = readingTimeMinutes.Value;
-        }
-        
-        UpdatedAt = DateTime.UtcNow;
-    }
+    public int ReadingTimeMinutes => CalculateReadingTime(Content);
 
-    /// <summary>
-    /// Проверяет, может ли компонент быть активирован
-    /// </summary>
-    public override bool CanBeActivated()
+    private int CalculateReadingTime(string content)
     {
-        return !string.IsNullOrWhiteSpace(Content) && 
-               !string.IsNullOrWhiteSpace(Title);
+        if (string.IsNullOrWhiteSpace(content))
+            return 1;
+            
+        var wordCount = content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+        return Math.Max(1, wordCount / 200);
     }
 }

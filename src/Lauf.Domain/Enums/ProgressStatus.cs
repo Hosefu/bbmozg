@@ -3,7 +3,7 @@ using System.ComponentModel;
 namespace Lauf.Domain.Enums;
 
 /// <summary>
-/// Статус прогресса компонента
+/// Статус прогресса (обновленный)
 /// </summary>
 public enum ProgressStatus
 {
@@ -20,20 +20,20 @@ public enum ProgressStatus
     InProgress = 1,
 
     /// <summary>
-    /// Приостановлен
-    /// </summary>
-    [Description("Приостановлен")]
-    Paused = 2,
-
-    /// <summary>
     /// Завершен
     /// </summary>
     [Description("Завершен")]
-    Completed = 3,
+    Completed = 2,
 
     /// <summary>
-    /// Пропущен
+    /// Неудачная попытка
     /// </summary>
-    [Description("Пропущен")]
-    Skipped = 4
+    [Description("Неудачно")]
+    Failed = 3,
+
+    /// <summary>
+    /// Отменено
+    /// </summary>
+    [Description("Отменено")]
+    Cancelled = 4
 }

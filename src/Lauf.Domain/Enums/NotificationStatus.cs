@@ -1,37 +1,22 @@
 namespace Lauf.Domain.Enums;
 
 /// <summary>
-/// Статус уведомления
+/// Статус уведомления (упрощенный)
 /// </summary>
 public enum NotificationStatus
 {
     /// <summary>
     /// Ожидает отправки
     /// </summary>
-    Pending = 1,
+    Pending = 0,
 
     /// <summary>
     /// Отправлено
     /// </summary>
-    Sent = 2,
-
-    /// <summary>
-    /// Доставлено получателю
-    /// </summary>
-    Delivered = 3,
-
-    /// <summary>
-    /// Прочитано пользователем
-    /// </summary>
-    Read = 4,
+    Sent = 1,
 
     /// <summary>
     /// Ошибка отправки
     /// </summary>
-    Failed = 5,
-
-    /// <summary>
-    /// Отменено
-    /// </summary>
-    Cancelled = 6
+    Failed = 2
 }
