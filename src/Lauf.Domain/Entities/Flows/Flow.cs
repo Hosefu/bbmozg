@@ -1,10 +1,10 @@
+using Lauf.Domain.Entities.Users;
 using Lauf.Domain.Enums;
-using Lauf.Shared.Helpers;
 
 namespace Lauf.Domain.Entities.Flows;
 
 /// <summary>
-/// Поток обучения - шаблон обучающей программы
+/// Поток обучения - координатор версий контента
 /// </summary>
 public class Flow
 {
@@ -14,59 +14,22 @@ public class Flow
     public Guid Id { get; set; }
 
     /// <summary>
-    /// Название потока
+    /// Неизменное административное имя потока
     /// </summary>    
-    public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Описание потока
+    /// Базовое описание потока
     /// </summary>
     public string Description { get; set; } = string.Empty;
 
-
     /// <summary>
-    /// Теги для поиска
+    /// Идентификатор создателя потока
     /// </summary>
-    public string Tags { get; set; } = string.Empty;
+    public Guid CreatedBy { get; set; }
 
     /// <summary>
-    /// Статус потока
-    /// </summary>
-    public FlowStatus Status { get; set; } = FlowStatus.Draft;
-
-
-    /// <summary>
-    /// Приоритет отображения
-    /// </summary>
-    public int Priority { get; set; } = 0;
-
-    /// <summary>
-    /// Обязательный ли поток
-    /// </summary>
-    public bool IsRequired { get; set; } = false;
-
-    /// <summary>
-    /// Настройки потока
-    /// </summary>
-    public virtual FlowSettings Settings { get; set; } = null!;
-
-    /// <summary>
-    /// Шаги потока
-    /// </summary>
-    public virtual ICollection<FlowStep> Steps { get; set; } = new List<FlowStep>();
-
-    /// <summary>
-    /// Назначения потока
-    /// </summary>
-    public virtual ICollection<FlowAssignment> Assignments { get; set; } = new List<FlowAssignment>();
-
-    /// <summary>
-    /// Автор потока
-    /// </summary>
-    public Guid CreatedById { get; set; }
-
-    /// <summary>
-    /// Дата создания
+    /// Дата создания потока
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -76,23 +39,55 @@ public class Flow
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Дата публикации
+    /// Можно ли создавать назначения
     /// </summary>
-    public DateTime? PublishedAt { get; set; }
+    public bool IsActive { get; set; } = true;
+
+    /// <summary>
+    /// Идентификатор активной версии контента
+    /// </summary>
+    public Guid ActiveContentId { get; set; }
+
+    /// <summary>
+    /// Создатель потока
+    /// </summary>
+    public virtual User CreatedByUser { get; set; } = null!;
+
+    /// <summary>
+    /// Настройки потока (не версионируются)
+    /// </summary>
+    public virtual FlowSettings Settings { get; set; } = null!;
+
+    /// <summary>
+    /// Активная версия контента
+    /// </summary>
+    public virtual FlowContent ActiveContent { get; set; } = null!;
+
+    /// <summary>
+    /// Все версии контента
+    /// </summary>
+    public virtual ICollection<FlowContent> Contents { get; set; } = new List<FlowContent>();
+
+    /// <summary>
+    /// Назначения потока
+    /// </summary>
+    public virtual ICollection<FlowAssignment> Assignments { get; set; } = new List<FlowAssignment>();
 
     /// <summary>
     /// Конструктор для создания нового потока
     /// </summary>
-    /// <param name="title">Название потока</param>
+    /// <param name="name">Название потока</param>
     /// <param name="description">Описание потока</param>
-    public Flow(string title, string description)
+    /// <param name="createdBy">Создатель потока</param>
+    public Flow(string name, string description, Guid createdBy)
     {
         Id = Guid.NewGuid();
-        Title = title ?? throw new ArgumentNullException(nameof(title));
+        Name = name ?? throw new ArgumentNullException(nameof(name));
         Description = description ?? throw new ArgumentNullException(nameof(description));
-        Status = FlowStatus.Draft;
+        CreatedBy = createdBy;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
+        IsActive = true;
     }
 
     /// <summary>
@@ -101,98 +96,64 @@ public class Flow
     protected Flow() { }
 
     /// <summary>
-    /// Получает общее количество шагов в потоке
+    /// Получает общее количество шагов в активной версии контента
     /// </summary>
-    public int TotalSteps => Steps.Count;
-
+    public int TotalSteps => ActiveContent?.TotalSteps ?? 0;
 
     /// <summary>
-    /// Проверяет, может ли поток быть опубликован
+    /// Проверяет, может ли поток быть активирован для создания назначений
     /// </summary>
-    /// <returns>true, если поток готов к публикации</returns>
-    public bool CanBePublished()
+    /// <returns>true, если поток готов к использованию</returns>
+    public bool CanBeActivated()
     {
-        return Status == FlowStatus.Draft && 
-               Steps.Any() && 
+        return ActiveContent != null && 
+               ActiveContent.Steps.Any() && 
                Settings != null && 
-               !string.IsNullOrWhiteSpace(Title) &&
+               !string.IsNullOrWhiteSpace(Name) &&
                !string.IsNullOrWhiteSpace(Description);
     }
 
     /// <summary>
-    /// Публикует поток
+    /// Активирует поток для создания назначений
     /// </summary>
-    public void Publish()
+    public void Activate()
     {
-        if (!CanBePublished())
-            throw new InvalidOperationException("Поток не может быть опубликован в текущем состоянии");
+        if (!CanBeActivated())
+            throw new InvalidOperationException("Поток не может быть активирован в текущем состоянии");
 
-        Status = FlowStatus.Published;
-        PublishedAt = DateTime.UtcNow;
+        IsActive = true;
         UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Архивирует поток
+    /// Деактивирует поток (новые назначения нельзя создавать)
     /// </summary>
-    public void Archive()
+    public void Deactivate()
     {
-        Status = FlowStatus.Archived;
+        IsActive = false;
         UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Возвращает поток в черновик
+    /// Устанавливает активную версию контента
     /// </summary>
-    public void ReturnToDraft()
+    /// <param name="contentId">Идентификатор версии контента</param>
+    public void SetActiveContent(Guid contentId)
     {
-        Status = FlowStatus.Draft;
-        PublishedAt = null;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-
-    /// <summary>
-    /// Добавляет шаг в поток
-    /// </summary>
-    /// <param name="step">Шаг для добавления</param>
-    public void AddStep(FlowStep step)
-    {
-        // Генерируем LexoRank для нового шага
-        if (string.IsNullOrEmpty(step.Order))
-        {
-            var lastStep = Steps.OrderBy(s => s.Order).LastOrDefault();
-            step.Order = lastStep != null ? 
-                LexoRankHelper.Next(lastStep.Order) : 
-                LexoRankHelper.Middle();
-        }
-        
-        step.FlowId = Id;
-        Steps.Add(step);
+        ActiveContentId = contentId;
         UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Удаляет шаг из потока
+    /// Создает новую версию контента
     /// </summary>
-    /// <param name="stepId">Идентификатор шага</param>
-    public void RemoveStep(Guid stepId)
+    /// <param name="createdBy">Создатель версии</param>
+    /// <returns>Новая версия контента</returns>
+    public FlowContent CreateNewContentVersion(Guid createdBy)
     {
-        var step = Steps.FirstOrDefault(s => s.Id == stepId);
-        if (step != null)
-        {
-            Steps.Remove(step);
-            ReorderSteps();
-            UpdatedAt = DateTime.UtcNow;
-        }
-    }
-
-    /// <summary>
-    /// Переупорядочивает шаги после удаления (для LexoRank это не требуется)
-    /// </summary>
-    private void ReorderSteps()
-    {
-        // LexoRank не требует переупорядочивания после удаления
-        // Каждый элемент уже имеет свою уникальную позицию
+        var nextVersion = Contents.Any() ? Contents.Max(c => c.Version) + 1 : 1;
+        var newContent = new FlowContent(Id, nextVersion, createdBy);
+        Contents.Add(newContent);
+        return newContent;
     }
 }

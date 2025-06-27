@@ -1,11 +1,10 @@
 using Lauf.Domain.Entities.Users;
-using Lauf.Domain.Entities.Versions;
 using Lauf.Domain.Enums;
 
 namespace Lauf.Domain.Entities.Flows;
 
 /// <summary>
-/// Назначение потока пользователю - создает связь между пользователем и потоком с конкретными условиями
+/// Назначение потока пользователю
 /// </summary>
 public class FlowAssignment
 {
@@ -20,55 +19,19 @@ public class FlowAssignment
     public Guid UserId { get; set; }
 
     /// <summary>
-    /// Пользователь, которому назначен поток
-    /// </summary>
-    public virtual User User { get; set; } = null!;
-
-    /// <summary>
-    /// Идентификатор потока
+    /// Идентификатор потока-координатора
     /// </summary>
     public Guid FlowId { get; set; }
 
     /// <summary>
-    /// Поток, который назначен пользователю
+    /// Идентификатор конкретной версии контента
     /// </summary>
-    public virtual Flow Flow { get; set; } = null!;
+    public Guid FlowContentId { get; set; }
 
     /// <summary>
-    /// Идентификатор оригинального потока (для удобства запросов)
+    /// Идентификатор назначившего (админ или бадди)
     /// </summary>
-    public Guid OriginalFlowId { get; set; }
-
-    /// <summary>
-    /// Идентификатор версии потока, которая была назначена пользователю
-    /// Это создает неизменяемую связь с конкретной версией контента
-    /// </summary>
-    public Guid FlowVersionId { get; set; }
-
-    /// <summary>
-    /// Версия потока, назначенная пользователю
-    /// </summary>
-    public virtual FlowVersion FlowVersion { get; set; } = null!;
-
-    /// <summary>
-    /// Идентификатор бадди (наставника)
-    /// </summary>
-    public Guid? BuddyId { get; set; }
-
-    /// <summary>
-    /// Бадди (наставник), курирующий прохождение
-    /// </summary>
-    public virtual User? Buddy { get; set; }
-
-    /// <summary>
-    /// Идентификатор администратора, который сделал назначение
-    /// </summary>
-    public Guid AssignedById { get; set; }
-
-    /// <summary>
-    /// Администратор, который сделал назначение
-    /// </summary>
-    public virtual User AssignedBy { get; set; } = null!;
+    public Guid AssignedBy { get; set; }
 
     /// <summary>
     /// Статус назначения
@@ -76,122 +39,56 @@ public class FlowAssignment
     public AssignmentStatus Status { get; set; } = AssignmentStatus.Assigned;
 
     /// <summary>
-    /// Приоритет выполнения
-    /// </summary>
-    public int Priority { get; set; } = 0;
-
-    /// <summary>
     /// Дата назначения
     /// </summary>
     public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Дата начала прохождения
+    /// Пользователь, которому назначен поток
     /// </summary>
-    public DateTime? StartedAt { get; set; }
+    public virtual User User { get; set; } = null!;
 
     /// <summary>
-    /// Дедлайн завершения
+    /// Поток-координатор
     /// </summary>
-    public DateTime? DueDate { get; set; }
+    public virtual Flow Flow { get; set; } = null!;
 
     /// <summary>
-    /// Дата завершения
+    /// Конкретная версия контента
     /// </summary>
-    public DateTime? CompletedAt { get; set; }
+    public virtual FlowContent FlowContent { get; set; } = null!;
 
     /// <summary>
-    /// Дата последней активности
+    /// Пользователь, который назначил
     /// </summary>
-    public DateTime? LastActivityAt { get; set; }
+    public virtual User AssignedByUser { get; set; } = null!;
 
     /// <summary>
-    /// Дата постановки на паузу
+    /// Бадди (может быть несколько)
     /// </summary>
-    public DateTime? PausedAt { get; set; }
+    public virtual ICollection<User> Buddies { get; set; } = new List<User>();
 
     /// <summary>
-    /// Причина постановки на паузу
+    /// Прогресс назначения
     /// </summary>
-    public string? PauseReason { get; set; }
-
-    /// <summary>
-    /// Общий прогресс в процентах (0-100)
-    /// </summary>
-    public int ProgressPercent { get; set; } = 0;
-
-    /// <summary>
-    /// Количество завершенных шагов
-    /// </summary>
-    public int CompletedSteps { get; set; } = 0;
-
-    /// <summary>
-    /// Общее количество шагов в потоке
-    /// </summary>
-    public int TotalSteps { get; set; } = 0;
-
-    /// <summary>
-    /// Количество попыток прохождения
-    /// </summary>
-    public int AttemptCount { get; set; } = 1;
-
-    /// <summary>
-    /// Финальная оценка (если применимо)
-    /// </summary>
-    public int? FinalScore { get; set; }
-
-    /// <summary>
-    /// Заметки администратора
-    /// </summary>
-    public string AdminNotes { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Обратная связь от пользователя
-    /// </summary>
-    public string UserFeedback { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Оценка потока пользователем (1-5)
-    /// </summary>
-    public int? UserRating { get; set; }
-
-    /// <summary>
-    /// Дата создания записи
-    /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    /// <summary>
-    /// Дата последнего обновления
-    /// </summary>
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public virtual FlowAssignmentProgress Progress { get; set; } = null!;
 
     /// <summary>
     /// Конструктор для создания нового назначения потока
     /// </summary>
     /// <param name="userId">Идентификатор пользователя</param>
-    /// <param name="flowId">Идентификатор оригинального потока</param>
-    /// <param name="originalFlowId">Идентификатор оригинального потока (может отличаться от flowId для обратной совместимости)</param>
-    /// <param name="flowVersionId">Идентификатор версии потока</param>
-    /// <param name="dueDate">Дедлайн</param>
-    /// <param name="buddyId">Идентификатор buddy</param>
-    /// <param name="assignedById">Идентификатор назначившего</param>
-    /// <param name="notes">Заметки</param>
-    /// <param name="priority">Приоритет</param>
-    public FlowAssignment(Guid userId, Guid flowId, Guid originalFlowId, Guid flowVersionId, DateTime? dueDate, Guid? buddyId, Guid assignedById, string? notes, int priority)
+    /// <param name="flowId">Идентификатор потока</param>
+    /// <param name="flowContentId">Идентификатор версии контента</param>
+    /// <param name="assignedBy">Идентификатор назначившего</param>
+    public FlowAssignment(Guid userId, Guid flowId, Guid flowContentId, Guid assignedBy)
     {
         Id = Guid.NewGuid();
         UserId = userId;
         FlowId = flowId;
-        OriginalFlowId = originalFlowId;
-        FlowVersionId = flowVersionId;
-        BuddyId = buddyId;
-        DueDate = dueDate;
-        AssignedById = assignedById;
-        AdminNotes = notes ?? string.Empty;
-        Priority = priority;
+        FlowContentId = flowContentId;
+        AssignedBy = assignedBy;
         Status = AssignmentStatus.Assigned;
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        AssignedAt = DateTime.UtcNow;
     }
 
     /// <summary>
@@ -205,8 +102,7 @@ public class FlowAssignment
     /// <returns>true, если может начать</returns>
     public bool CanStart()
     {
-        return Status == AssignmentStatus.Assigned && 
-               !StartedAt.HasValue;
+        return Status == AssignmentStatus.Assigned;
     }
 
     /// <summary>
@@ -218,9 +114,7 @@ public class FlowAssignment
             throw new InvalidOperationException("Назначение не может быть запущено в текущем состоянии");
 
         Status = AssignmentStatus.InProgress;
-        StartedAt = DateTime.UtcNow;
-        LastActivityAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        Progress.Start();
     }
 
     /// <summary>
@@ -233,9 +127,7 @@ public class FlowAssignment
             throw new InvalidOperationException("Только активные назначения могут быть поставлены на паузу");
 
         Status = AssignmentStatus.Paused;
-        PausedAt = DateTime.UtcNow;
-        PauseReason = reason;
-        UpdatedAt = DateTime.UtcNow;
+        Progress.Pause(reason);
     }
 
     /// <summary>
@@ -247,10 +139,7 @@ public class FlowAssignment
             throw new InvalidOperationException("Только приостановленные назначения могут быть возобновлены");
 
         Status = AssignmentStatus.InProgress;
-        PausedAt = null;
-        PauseReason = null;
-        LastActivityAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        Progress.Resume();
     }
 
     /// <summary>
@@ -263,98 +152,38 @@ public class FlowAssignment
             throw new InvalidOperationException("Только активные назначения могут быть завершены");
 
         Status = AssignmentStatus.Completed;
-        CompletedAt = DateTime.UtcNow;
-        FinalScore = finalScore;
-        ProgressPercent = 100;
-        UpdatedAt = DateTime.UtcNow;
+        Progress.Complete(finalScore);
     }
 
     /// <summary>
     /// Отменяет назначение
     /// </summary>
-    /// <param name="reason">Причина отмены</param>
-    public void Cancel(string reason)
+    public void Cancel()
     {
         if (Status == AssignmentStatus.Completed)
             throw new InvalidOperationException("Завершенные назначения не могут быть отменены");
 
         Status = AssignmentStatus.Cancelled;
-        AdminNotes = reason;
-        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
-    /// Продлевает дедлайн
+    /// Добавляет бадди
     /// </summary>
-    /// <param name="newDueDate">Новый дедлайн</param>
-    public void ExtendDeadline(DateTime newDueDate)
+    /// <param name="buddy">Пользователь-бадди</param>
+    public void AddBuddy(User buddy)
     {
-        if (newDueDate <= DateTime.UtcNow)
-            throw new ArgumentException("Новый дедлайн должен быть в будущем");
-
-        DueDate = newDueDate;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Обновляет прогресс прохождения
-    /// </summary>
-    /// <param name="completedSteps">Количество завершенных шагов</param>
-    /// <param name="totalSteps">Общее количество шагов</param>
-    public void UpdateProgress(int completedSteps, int totalSteps)
-    {
-        CompletedSteps = completedSteps;
-        TotalSteps = totalSteps;
-        ProgressPercent = totalSteps > 0 ? (int)Math.Round((double)completedSteps / totalSteps * 100) : 0;
-        LastActivityAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Назначает бадди
-    /// </summary>
-    /// <param name="buddyId">Идентификатор бадди</param>
-    public void AssignBuddy(Guid buddyId)
-    {
-        BuddyId = buddyId;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    /// <summary>
-    /// Проверяет, просрочено ли назначение
-    /// </summary>
-    /// <returns>true, если просрочено</returns>
-    public bool IsOverdue()
-    {
-        return DueDate.HasValue && 
-               DateTime.UtcNow > DueDate.Value && 
-               Status == AssignmentStatus.InProgress;
-    }
-
-    /// <summary>
-    /// Проверяет, приближается ли дедлайн
-    /// </summary>
-    /// <param name="daysThreshold">Количество дней до дедлайна</param>
-    /// <returns>true, если дедлайн приближается</returns>
-    public bool IsDeadlineApproaching(int daysThreshold)
-    {
-        return DueDate.HasValue && 
-               Status == AssignmentStatus.InProgress &&
-               (DueDate.Value - DateTime.UtcNow).Days <= daysThreshold;
-    }
-
-    /// <summary>
-    /// Добавляет обратную связь от пользователя
-    /// </summary>
-    /// <param name="feedback">Текст обратной связи</param>
-    /// <param name="rating">Оценка от 1 до 5</param>
-    public void AddUserFeedback(string feedback, int? rating = null)
-    {
-        UserFeedback = feedback;
-        if (rating.HasValue && rating >= 1 && rating <= 5)
+        if (!Buddies.Contains(buddy))
         {
-            UserRating = rating;
+            Buddies.Add(buddy);
         }
-        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Удаляет бадди
+    /// </summary>
+    /// <param name="buddy">Пользователь-бадди</param>
+    public void RemoveBuddy(User buddy)
+    {
+        Buddies.Remove(buddy);
     }
 }

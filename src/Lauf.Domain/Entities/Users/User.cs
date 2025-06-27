@@ -38,15 +38,6 @@ public class User
     /// </summary>
     public TelegramUserId TelegramUserId { get; set; } = null!;
 
-    /// <summary>
-    /// Должность пользователя
-    /// </summary>
-    public string? Position { get; set; }
-
-    /// <summary>
-    /// Язык интерфейса
-    /// </summary>
-    public string Language { get; set; } = "ru";
 
     /// <summary>
     /// Активен ли пользователь

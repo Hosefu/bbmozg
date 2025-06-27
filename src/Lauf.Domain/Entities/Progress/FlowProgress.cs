@@ -192,7 +192,8 @@ public class FlowProgress
     /// </summary>
     public bool IsOverdue()
     {
-        return FlowAssignment.IsOverdue();
+        // Проверка просрочки теперь происходит через настройки потока
+        return false; // Временная заглушка
     }
 
     /// <summary>
