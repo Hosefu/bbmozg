@@ -68,10 +68,6 @@ public class UserProgress
     /// </summary>
     public DateTime UpdatedAt { get; private set; }
 
-    /// <summary>
-    /// Прогресс по потокам
-    /// </summary>
-    public List<FlowProgress> FlowProgresses { get; private set; } = new();
 
     /// <summary>
     /// Приватный конструктор для EF Core
@@ -98,25 +94,25 @@ public class UserProgress
     }
 
     /// <summary>
-    /// Обновить общий прогресс на основе прогресса по потокам
+    /// Обновить общий прогресс на основе данных назначений (упрощено)
     /// </summary>
-    public void RecalculateProgress()
+    public void RecalculateProgress(int assignedCount, int completedCount, int activeCount, int overdueCount)
     {
-        if (FlowProgresses.Count == 0)
+        AssignedFlowsCount = assignedCount;
+        CompletedFlowsCount = completedCount;
+        ActiveFlowsCount = activeCount;
+        OverdueFlowsCount = overdueCount;
+
+        // Рассчитываем общий прогресс
+        if (assignedCount == 0)
         {
             OverallProgress = new ProgressPercentage(0);
-            return;
         }
-
-        var totalProgress = FlowProgresses.Sum(fp => fp.Progress.Value);
-        var averageProgress = totalProgress / FlowProgresses.Count;
-        OverallProgress = new ProgressPercentage(averageProgress);
-
-        AssignedFlowsCount = FlowProgresses.Count;
-        CompletedFlowsCount = FlowProgresses.Count(fp => fp.Progress.Value >= 100);
-        ActiveFlowsCount = FlowProgresses.Count(fp => fp.Progress.Value > 0 && fp.Progress.Value < 100);
-        OverdueFlowsCount = FlowProgresses.Count(fp => fp.IsOverdue());
-        TotalLearningTimeMinutes = FlowProgresses.Sum(fp => fp.TimeSpentMinutes);
+        else
+        {
+            var progressPercent = (completedCount * 100) / assignedCount;
+            OverallProgress = new ProgressPercentage(progressPercent);
+        }
 
         UpdatedAt = DateTime.UtcNow;
     }
@@ -140,20 +136,14 @@ public class UserProgress
     }
 
     /// <summary>
-    /// Получить статистику активности пользователя
+    /// Получить статистику активности пользователя (упрощено)
     /// </summary>
-    public (int TotalHours, int DaysActive, double AverageSessionTime) GetActivityStats()
+    public (int TotalHours, double AverageSessionTime) GetActivityStats()
     {
         var totalHours = TotalLearningTimeMinutes / 60;
-        var daysActive = FlowProgresses
-            .SelectMany(fp => fp.StepProgresses)
-            .SelectMany(sp => sp.ComponentProgresses)
-            .Select(cp => cp.LastUpdatedAt.Date)
-            .Distinct()
-            .Count();
+        var daysSinceStart = (DateTime.UtcNow - LastActivityAt).Days;
+        var averageSessionTime = daysSinceStart > 0 ? (double)TotalLearningTimeMinutes / daysSinceStart : 0;
 
-        var averageSessionTime = daysActive > 0 ? (double)TotalLearningTimeMinutes / daysActive : 0;
-
-        return (totalHours, daysActive, averageSessionTime);
+        return (totalHours, averageSessionTime);
     }
 }

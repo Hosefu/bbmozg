@@ -56,8 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
         services.AddScoped<IUserProgressRepository, UserProgressRepository>();
 
-        // Domain services
-        services.AddScoped<ProgressCalculationService>();
+        // Domain services (упрощено в новой архитектуре)
 
         // Infrastructure services
         services.AddScoped<ICurrentUserService, CurrentUserService>();
