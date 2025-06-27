@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Потоки (Flows)**: Шаблоны обучающих программ
 - **Назначения (Assignments)**: Привязка пользователя к потоку с дедлайнами
 - **Наставники (Mentors)**: Кураторы, курирующие прохождение
-- **Снапшоты (Snapshots)**: Неизменяемые копии потоков на момент назначения (ключевая особенность архитектуры)
+- **Версионирование (Versioning)**: Полная система версий для потоков, этапов и компонентов с физическим хранением в БД (заменила snapshot архитектуру)
 - **Компоненты (Components)**: Атомарные единицы контента (статьи, тесты, задания)
 
 ## Development Commands
@@ -51,15 +51,14 @@ dotnet test --filter "FullyQualifiedName~TestMethodName"
 
 ### Database Operations
 ```bash
-# Add migration
-cd src/Lauf.Infrastructure
-dotnet ef migrations add <MigrationName> --startup-project ../Lauf.Api
+# Add migration (use proper PATH for EF tools)
+export PATH="$PATH:$HOME/.dotnet/tools" && dotnet ef migrations add <MigrationName> --project src/Lauf.Infrastructure --startup-project src/Lauf.Api
 
 # Update database
-dotnet ef database update --startup-project ../Lauf.Api
+export PATH="$PATH:$HOME/.dotnet/tools" && dotnet ef database update --project src/Lauf.Infrastructure --startup-project src/Lauf.Api
 
 # Generate SQL script
-dotnet ef migrations script --startup-project ../Lauf.Api
+export PATH="$PATH:$HOME/.dotnet/tools" && dotnet ef migrations script --project src/Lauf.Infrastructure --startup-project src/Lauf.Api
 ```
 
 ## Architecture
@@ -67,7 +66,7 @@ dotnet ef migrations script --startup-project ../Lauf.Api
 ### Technology Stack (.NET 9.0)
 - **ASP.NET Core 9.0** + **C# 12** — основная платформа
 - **GraphQL (HotChocolate 13.7)** — API с автогенерацией схемы, Playground UI
-- **PostgreSQL + Entity Framework Core 9.0** — база данных с Code-First подходом
+- **SQLite + Entity Framework Core 9.0** — база данных с Code-First подходом (локальная разработка)
 - **SignalR** — real-time коммуникация (NotificationHub, ProgressHub)
 - **MediatR** — CQRS с командами/запросами и pipeline behaviors
 - **In-Memory Cache/File Storage** — кэширование и файловое хранилище (production-ready заглушки)
@@ -91,10 +90,11 @@ src/
 - API использует Application и Infrastructure
 
 ### Key Domain Patterns
-- **Snapshot Pattern**: Полное копирование потоков при назначении для обеспечения неизменности
+- **Versioning Pattern**: Полное физическое версионирование сущностей в БД (FlowVersion, ComponentVersion) с каскадным созданием версий
 - **Domain Events**: Событийно-ориентированная архитектура для уведомлений и прогресса
 - **Value Objects**: Типизированные значения (TelegramUserId, ProgressPercentage)
 - **Repository Pattern**: Абстракция доступа к данным через интерфейсы
+- **CQRS**: Разделение команд и запросов через MediatR
 
 ### Configuration Structure
 Приложение использует стандартную конфигурацию ASP.NET Core:
@@ -102,7 +102,7 @@ src/
 - **Production**: appsettings.json (продакшн настройки)
 
 Основные конфигурационные секции:
-- `ConnectionStrings` — PostgreSQL подключения
+- `ConnectionStrings` — SQLite подключения (локальная разработка)
 - `Redis` — настройки кэширования и pub/sub
 - `TelegramBot` — токен и webhook URL
 - `JWT` — аутентификация и авторизация
@@ -115,10 +115,10 @@ src/
 Проект завершен согласно 10-этапному плану (`docs/План.md`). **Все этапы 1-10 реализованы.**
 
 **Текущее состояние:**
-- ✅ 420 тестов пройдено (300 Shared + 120 Domain)
-- ✅ Покрытие кода: Domain 28.81%, Shared 72.79%
-- ✅ Все TODO комментарии удалены
+- ✅ Архитектура версионирования полностью реализована (заменила snapshot систему)
 - ✅ Полная функциональность без ошибок сборки
+- ✅ Новая миграция InitialVersioningArchitecture создана с нуля
+- ✅ Версионирование прозрачно для API (скрыто от фронтенда)
 
 ### Code Standards
 - **Язык комментариев**: Русский
@@ -131,9 +131,26 @@ src/
 - Использование CQRS через MediatR для разделения команд и запросов
 - Pipeline behaviors для кросс-функциональности (логирование, валидация, кэширование)
 - FluentValidation для валидации входных данных
-- AutoMapper для маппинга между слоями
+- AutoMapper для маппинга между слоями с прозрачным версионированием
 - Structured logging через Serilog
 - Domain Events для межсервисного взаимодействия
+
+### Versioning System Structure
+```
+Domain.Entities.Versions/
+├── FlowVersion.cs          # Версия потока с метаданными
+├── FlowStepVersion.cs      # Версия этапа потока
+├── ComponentVersion.cs     # Базовая версия компонента
+├── ArticleComponentVersion.cs  # Версия статьи
+├── QuizComponentVersion.cs     # Версия теста
+└── TaskComponentVersion.cs     # Версия задания
+
+Domain.Services/
+└── IVersioningService.cs   # Сервис управления версиями
+
+Application.Mappings/
+└── VersioningMappingProfile.cs  # Прозрачный маппинг версий в DTO
+```
 
 ### Testing Strategy
 - Unit тесты для доменной логики
@@ -143,8 +160,13 @@ src/
 
 ## Important Notes
 
-### Snapshots Implementation
-При назначении потока пользователю система создает полную копию (snapshot) всего содержимого. Это гарантирует, что изменения в оригинальном потоке не влияют на пользователей, уже проходящих обучение.
+### Versioning Architecture
+Система использует полное физическое версионирование вместо snapshot подхода:
+- **FlowVersion, FlowStepVersion, ComponentVersion** — отдельные таблицы для каждой версии сущности
+- **Каскадное версионирование**: при создании новой версии потока создаются версии всех этапов и компонентов
+- **Transparent API**: версионирование полностью скрыто от фронтенда через AutoMapper профили
+- **IVersioningService**: центральный сервис для управления жизненным циклом версий
+- **Immutable Assignments**: FlowAssignment ссылается на конкретную FlowVersionId для неизменности контента
 
 ### Real-time Features
 SignalR используется для:
@@ -167,7 +189,8 @@ Background Job Service обрабатывает:
 - **Documentation:** `/docs`, `/playground`, `/voyager`
 
 ### Critical Domain Concepts
-- **Snapshot Pattern:** FlowAssignment создает неизменяемую копию Flow при назначении
+- **Versioning Pattern:** FlowAssignment ссылается на FlowVersionId для получения неизменяемого контента
 - **Progressive Disclosure:** Шаги разблокируются по мере прохождения (если RequireSequentialCompletion=true)
-- **Component-Based Content:** Статьи, тесты, видео как атомарные компоненты с прогрессом
+- **Component-Based Content:** Статьи, тесты, задания как атомарные компоненты с TPT наследованием
+- **Version Transparency:** API всегда возвращает активные версии, скрывая детали версионирования от клиентов
 - **Deadline Calculation:** Рабочие дни с учетом праздников и рабочих часов
