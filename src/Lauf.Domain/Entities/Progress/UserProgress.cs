@@ -72,7 +72,10 @@ public class UserProgress
     /// <summary>
     /// Приватный конструктор для EF Core
     /// </summary>
-    private UserProgress() { }
+    private UserProgress() 
+    { 
+        OverallProgress = new ProgressPercentage(0);
+    }
 
     /// <summary>
     /// Конструктор для создания записи прогресса пользователя

@@ -45,7 +45,7 @@ public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
             .IsRequired(false);
 
         // Связь с пользователем
-        builder.HasOne<Domain.Entities.Users.User>()
+        builder.HasOne(x => x.User)
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);

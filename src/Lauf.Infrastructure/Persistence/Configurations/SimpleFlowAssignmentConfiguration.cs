@@ -2,7 +2,6 @@ using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Flows;
-using Lauf.Domain.Enums;
 
 namespace Lauf.Infrastructure.Persistence.Configurations;
 
@@ -77,7 +76,7 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
 
         // Связь с прогрессом (один к одному)
         builder.HasOne(x => x.Progress)
-            .WithOne()
+            .WithOne(p => p.FlowAssignment)
             .HasForeignKey<FlowAssignmentProgress>(x => x.FlowAssignmentId)
             .OnDelete(DeleteBehavior.Cascade);
 

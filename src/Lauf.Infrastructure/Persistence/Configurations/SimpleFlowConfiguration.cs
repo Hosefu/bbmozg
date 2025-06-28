@@ -2,7 +2,6 @@ using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Flows;
-using Lauf.Domain.Enums;
 
 namespace Lauf.Infrastructure.Persistence.Configurations;
 
@@ -60,7 +59,7 @@ public class SimpleFlowConfiguration : IEntityTypeConfiguration<Flow>
 
         // Связь со всеми версиями содержимого (один ко многим)
         builder.HasMany(x => x.Contents)
-            .WithOne()
+            .WithOne(fc => fc.Flow)
             .HasForeignKey(fc => fc.FlowId)
             .OnDelete(DeleteBehavior.Cascade);
 

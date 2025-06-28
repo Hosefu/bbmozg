@@ -2,7 +2,6 @@ using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Users;
-using Lauf.Domain.Enums;
 
 namespace Lauf.Infrastructure.Persistence.Configurations;
 

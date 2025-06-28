@@ -35,10 +35,13 @@ public class FlowContentConfiguration : IEntityTypeConfiguration<FlowContent>
             .IsUnique()
             .HasDatabaseName("IX_FlowContents_FlowId_Version");
 
-        // Связи
-        builder.HasOne<Flow>()
-            .WithMany(f => f.Contents)
-            .HasForeignKey(fc => fc.FlowId)
+        // Связь с Flow настроена в SimpleFlowConfiguration
+        // чтобы избежать дублирования конфигурации
+
+        // Связь с создателем
+        builder.HasOne(fc => fc.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(fc => fc.CreatedBy)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(fc => fc.Steps)

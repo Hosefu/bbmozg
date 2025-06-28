@@ -189,7 +189,6 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
         {
             // Заглушка для названия шага - в реальности получаем из снапшота
             var stepTitle = $"Шаг {stepId}";
-            var flowTitle = "Поток обучения";
 
             _logger.LogInformation(
                 "Отправка уведомления о завершении шага {StepId} пользователю {UserId}",
@@ -234,9 +233,6 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
     {
         try
         {
-            // Заглушка для названия потока - в реальности получаем из репозитория
-            var flowTitle = "Поток обучения";
-
             _logger.LogInformation(
                 "Отправка уведомления о завершении потока {FlowId} пользователю {UserId}",
                 flowId, userId);
