@@ -129,6 +129,11 @@ public class FlowStepComponentDto
     public bool IsRequired { get; set; }
 
     /// <summary>
+    /// Включен ли компонент
+    /// </summary>
+    public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
     /// Статус компонента
     /// </summary>
     public ComponentStatus Status { get; set; }

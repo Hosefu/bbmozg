@@ -61,9 +61,7 @@ public class UpdateFlowCommandHandler : IRequestHandler<UpdateFlowCommand, Updat
 
             return new UpdateFlowCommandResult
             {
-                FlowId = flow.Id,
                 Success = true,
-                Message = $"Поток '{flow.Name}' успешно обновлен",
                 Flow = new FlowDto
                 {
                     Id = flow.Id,

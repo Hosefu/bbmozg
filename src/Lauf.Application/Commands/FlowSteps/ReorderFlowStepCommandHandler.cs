@@ -41,14 +41,14 @@ public class ReorderFlowStepCommandHandler : IRequestHandler<ReorderFlowStepComm
                 return ReorderFlowStepCommandResult.Failure("Нельзя изменять порядок шагов в неактивном потоке");
             }
 
-            var step = flow.Steps.FirstOrDefault(s => s.Id == request.StepId);
+            var step = flow.ActiveContent.Steps.FirstOrDefault(s => s.Id == request.StepId);
             if (step == null)
             {
                 return ReorderFlowStepCommandResult.Failure("Шаг не найден");
             }
 
-            // Получаем все шаги отсортированные по LexoRank
-            var allSteps = flow.Steps.OrderBy(s => s.Order).ToArray();
+            // Получаем все шаги отсортированные по LexoRank (новая архитектура)
+            var allSteps = flow.ActiveContent.Steps.OrderBy(s => s.Order).ToArray();
             
             // Проверяем корректность новой позиции
             if (request.NewPosition < 0 || request.NewPosition >= allSteps.Length)
@@ -88,7 +88,6 @@ public class ReorderFlowStepCommandHandler : IRequestHandler<ReorderFlowStepComm
 
             // Обновляем LexoRank шага
             step.Order = newLexoRank;
-            step.UpdatedAt = DateTime.UtcNow;
 
             // Сохраняем изменения
             await _flowRepository.UpdateAsync(flow, cancellationToken);

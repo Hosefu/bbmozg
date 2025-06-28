@@ -131,11 +131,11 @@ public class GetUserProgressQueryHandler : IRequestHandler<GetUserProgressQuery,
             var assignmentProgress = new AssignmentProgressDto
             {
                 AssignmentId = assignment.Id,
-                FlowTitle = assignment.Flow?.Title ?? "Неизвестный поток",
+                FlowTitle = assignment.Flow?.Name ?? "Неизвестный поток",
                 Progress = progress?.OverallProgress?.Value ?? 0,
                 Status = assignment.Status,
-                DueDate = assignment.DueDate,
-                IsOverdue = assignment.DueDate.HasValue && assignment.DueDate.Value < DateTime.UtcNow && assignment.Status != AssignmentStatus.Completed
+                DueDate = assignment.Deadline,
+                IsOverdue = assignment.Deadline < DateTime.UtcNow && assignment.Status != AssignmentStatus.Completed
             };
 
             assignmentProgressList.Add(assignmentProgress);

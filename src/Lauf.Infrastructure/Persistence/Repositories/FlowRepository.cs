@@ -36,8 +36,9 @@ public class FlowRepository : IFlowRepository
     public async Task<Flow?> GetByIdWithStepsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Flows
-            .Include(x => x.Steps.OrderBy(s => s.Order))
-                .ThenInclude(s => s.Components.OrderBy(c => c.Order))
+            .Include(x => x.ActiveContent)
+                .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
+                    .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -52,7 +53,7 @@ public class FlowRepository : IFlowRepository
     {
         return await _context.Flows
             .Include(x => x.Settings)
-            .Where(x => x.Status == status)
+            .Where(x => x.IsActive == (status == FlowStatus.Published))
             .OrderBy(x => x.Name)
             .Skip(skip)
             .Take(take)
@@ -63,7 +64,7 @@ public class FlowRepository : IFlowRepository
     {
         return await _context.Flows
             .Include(x => x.Settings)
-            .Where(x => x.Status == FlowStatus.Published)
+            .Where(x => x.IsActive)
             .OrderBy(x => x.Name)
             .Skip(skip)
             .Take(take)
@@ -73,19 +74,19 @@ public class FlowRepository : IFlowRepository
     public async Task<IReadOnlyList<Flow>> GetByCategoryAsync(string category, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
         // Пока категории нет в модели, возвращаем все опубликованные потоки
-        return await GetByStatusAsync(FlowStatus.Published, skip, take, cancellationToken);
+        return await GetPublishedAsync(skip, take, cancellationToken);
     }
 
     public async Task<IReadOnlyList<Flow>> GetRequiredFlowsAsync(CancellationToken cancellationToken = default)
     {
         // Пока логики обязательных потоков нет, возвращаем все опубликованные
-        return await GetByStatusAsync(FlowStatus.Published, cancellationToken: cancellationToken);
+        return await GetPublishedAsync(cancellationToken: cancellationToken);
     }
 
     public async Task<int> CountByStatusAsync(FlowStatus status, CancellationToken cancellationToken = default)
     {
         return await _context.Flows
-            .CountAsync(x => x.Status == status, cancellationToken);
+            .CountAsync(x => x.IsActive == (status == FlowStatus.Published), cancellationToken);
     }
 
     public async Task<Flow> AddAsync(Flow flow, CancellationToken cancellationToken = default)
@@ -159,7 +160,8 @@ public class FlowRepository : IFlowRepository
     public async Task<IReadOnlyList<Flow>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Flows
-            .Include(f => f.Steps)
+            .Include(f => f.ActiveContent)
+                .ThenInclude(ac => ac.Steps)
             .ToListAsync(cancellationToken);
     }
 
@@ -167,17 +169,19 @@ public class FlowRepository : IFlowRepository
     {
         return await _context.Flows
             .Include(f => f.Settings)
-            .Include(f => f.Steps.OrderBy(s => s.Order))
-                .ThenInclude(s => s.Components.OrderBy(c => c.Order))
+            .Include(f => f.ActiveContent)
+                .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
+                    .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<Flow?> GetFlowByStepIdAsync(Guid stepId, CancellationToken cancellationToken = default)
     {
         return await _context.Flows
-            .Include(f => f.Steps.OrderBy(s => s.Order))
-                .ThenInclude(s => s.Components.OrderBy(c => c.Order))
-            .Where(f => f.Steps.Any(s => s.Id == stepId))
+            .Include(f => f.ActiveContent)
+                .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
+                    .ThenInclude(s => s.Components.OrderBy(c => c.Order))
+            .Where(f => f.ActiveContent.Steps.Any(s => s.Id == stepId))
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -187,17 +191,20 @@ public class FlowRepository : IFlowRepository
         using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
-            // Загружаем поток с шагами
+            // Загружаем поток с контентом и шагами
             var flow = await _context.Flows
-                .Include(f => f.Steps)
+                .Include(f => f.ActiveContent)
+                    .ThenInclude(ac => ac.Steps)
                 .FirstOrDefaultAsync(f => f.Id == flowId, cancellationToken);
 
             if (flow == null)
                 throw new InvalidOperationException($"Поток с ID {flowId} не найден");
 
-            // Добавляем шаг
-            step.FlowId = flowId;
-            flow.Steps.Add(step);
+            if (flow.ActiveContent == null)
+                throw new InvalidOperationException($"У потока {flowId} нет активного контента");
+
+            // Добавляем шаг к контенту
+            step.FlowContentId = flow.ActiveContent.Id;
             flow.UpdatedAt = DateTime.UtcNow;
 
             // Добавляем шаг в контекст

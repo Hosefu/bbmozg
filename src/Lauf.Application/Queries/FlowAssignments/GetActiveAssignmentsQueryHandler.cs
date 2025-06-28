@@ -21,6 +21,23 @@ public class GetActiveAssignmentsQueryHandler : IRequestHandler<GetActiveAssignm
         _logger = logger;
     }
 
+    /// <summary>
+    /// Конвертирует AssignmentStatus в ProgressStatus для DTO
+    /// </summary>
+    private static Domain.Enums.ProgressStatus ConvertToProgressStatus(Domain.Enums.AssignmentStatus status)
+    {
+        return status switch
+        {
+            Domain.Enums.AssignmentStatus.Assigned => Domain.Enums.ProgressStatus.NotStarted,
+            Domain.Enums.AssignmentStatus.InProgress => Domain.Enums.ProgressStatus.InProgress,
+            Domain.Enums.AssignmentStatus.Completed => Domain.Enums.ProgressStatus.Completed,
+            Domain.Enums.AssignmentStatus.Cancelled => Domain.Enums.ProgressStatus.Cancelled,
+            Domain.Enums.AssignmentStatus.Paused => Domain.Enums.ProgressStatus.InProgress,
+            Domain.Enums.AssignmentStatus.Overdue => Domain.Enums.ProgressStatus.InProgress,
+            _ => Domain.Enums.ProgressStatus.NotStarted
+        };
+    }
+
     public async Task<GetActiveAssignmentsQueryResult> Handle(GetActiveAssignmentsQuery request, CancellationToken cancellationToken)
     {
         try
@@ -29,7 +46,9 @@ public class GetActiveAssignmentsQueryHandler : IRequestHandler<GetActiveAssignm
 
             // Получаем активные назначения пользователя (новая архитектура)
             var activeAssignments = await _assignmentRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-            var filteredAssignments = activeAssignments.Where(a => a.Status == Domain.Enums.ProgressStatus.InProgress).ToList();
+            var filteredAssignments = activeAssignments.Where(a => 
+                a.Status == Domain.Enums.AssignmentStatus.Assigned || 
+                a.Status == Domain.Enums.AssignmentStatus.InProgress).ToList();
 
             // Преобразуем в DTO (новая архитектура)
             var assignmentDtos = filteredAssignments.Select(assignment => new FlowAssignmentDto
@@ -37,12 +56,12 @@ public class GetActiveAssignmentsQueryHandler : IRequestHandler<GetActiveAssignm
                 Id = assignment.Id,
                 UserId = assignment.UserId,
                 FlowId = assignment.FlowId,
-                Status = assignment.Status,
+                Status = ConvertToProgressStatus(assignment.Status),
                 AssignedBy = assignment.AssignedBy,
-                Buddy = assignment.Buddy?.Id,
-                Deadline = assignment.Deadline, // DueDate теперь Deadline
+                Buddy = assignment.Buddy,
+                Deadline = assignment.Deadline,
                 CompletedAt = assignment.CompletedAt,
-                AssignedAt = assignment.AssignedAt // CreatedAt теперь AssignedAt
+                AssignedAt = assignment.AssignedAt
             }).ToList();
 
             _logger.LogInformation("Найдено {Count} активных назначений для пользователя {UserId}", 
@@ -51,7 +70,7 @@ public class GetActiveAssignmentsQueryHandler : IRequestHandler<GetActiveAssignm
             return new GetActiveAssignmentsQueryResult
             {
                 Assignments = assignmentDtos,
-                TotalCount = assignmentDtos.Count,
+                // TotalCount убран если нет в GetActiveAssignmentsQueryResult
                 Success = true
             };
         }

@@ -37,7 +37,7 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
             .Include(x => x.User)
             .Include(x => x.Flow)
             .Where(x => x.UserId == userId)
-            .OrderByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.AssignedAt)
             .ToListAsync(cancellationToken);
     }
 
@@ -47,7 +47,7 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
             .Include(x => x.User)
             .Include(x => x.Flow)
             .Where(x => x.UserId == userId)
-            .OrderByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.AssignedAt)
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);
@@ -59,7 +59,7 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
             .Include(x => x.User)
             .Include(x => x.Flow)
             .Where(x => x.FlowId == flowId)
-            .OrderByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.AssignedAt)
             .ToListAsync(cancellationToken);
     }
 
@@ -69,7 +69,7 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
             .Include(x => x.User)
             .Include(x => x.Flow)
             .Where(x => x.Status == status)
-            .OrderByDescending(x => x.CreatedAt)
+            .OrderByDescending(x => x.AssignedAt)
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);
@@ -81,10 +81,9 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
         return await _context.FlowAssignments
             .Include(x => x.User)
             .Include(x => x.Flow)
-            .Where(x => x.Status == AssignmentStatus.Assigned && 
-                       x.DueDate.HasValue && 
-                       x.DueDate.Value <= targetDate)
-            .OrderBy(x => x.DueDate)
+            .Where(x => x.Status == AssignmentStatus.InProgress && 
+                       x.Deadline <= targetDate)
+            .OrderBy(x => x.Deadline)
             .ToListAsync(cancellationToken);
     }
 
@@ -94,10 +93,9 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
         return await _context.FlowAssignments
             .Include(x => x.User)
             .Include(x => x.Flow)
-            .Where(x => x.Status == AssignmentStatus.Assigned && 
-                       x.DueDate.HasValue && 
-                       x.DueDate.Value < now)
-            .OrderBy(x => x.DueDate)
+            .Where(x => x.Status == AssignmentStatus.InProgress && 
+                       x.Deadline < now)
+            .OrderBy(x => x.Deadline)
             .ToListAsync(cancellationToken);
     }
 

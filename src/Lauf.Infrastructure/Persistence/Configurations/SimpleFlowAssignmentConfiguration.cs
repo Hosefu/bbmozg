@@ -32,14 +32,13 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
             .HasConversion<string>()
             .HasDefaultValue(AssignmentStatus.Assigned);
 
-        builder.Property(x => x.DueDate);
+        builder.Property(x => x.FlowContentId)
+            .IsRequired();
+
         builder.Property(x => x.CompletedAt);
 
         // Аудит
-        builder.Property(x => x.CreatedAt)
-            .IsRequired();
-
-        builder.Property(x => x.UpdatedAt)
+        builder.Property(x => x.AssignedAt)
             .IsRequired();
 
         // Связи
@@ -53,17 +52,16 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
             .HasForeignKey(x => x.FlowId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Связь с назначившим пользователем
-        builder.HasOne(x => x.AssignedBy)
-            .WithMany() // Не добавляем обратную навигацию, чтобы избежать циклических ссылок
-            .HasForeignKey(x => x.AssignedById)
+        // Связь с контентом потока
+        builder.HasOne(x => x.FlowContent)
+            .WithMany()
+            .HasForeignKey(x => x.FlowContentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Связь с куратором (бадди)
-        builder.HasOne(x => x.Buddy)
-            .WithMany() // Не добавляем обратную навигацию
-            .HasForeignKey(x => x.BuddyId)
-            .OnDelete(DeleteBehavior.SetNull);
+        // Связь с наставниками (многие ко многим через промежуточную таблицу)
+        builder.HasMany(x => x.Buddies)
+            .WithMany()
+            .UsingEntity("FlowAssignmentBuddies");
 
         // Связь с прогрессом (один к одному)
         builder.HasOne(x => x.Progress)
@@ -71,17 +69,11 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
             .HasForeignKey<FlowAssignmentProgress>(x => x.FlowAssignmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Дополнительные свойства
-        builder.Property(x => x.AssignedById)
-            .IsRequired();
-
-        builder.Property(x => x.BuddyId)
-            .IsRequired(false);
+        // Дополнительные свойства - AssignedById убрано из новой архитектуры
 
         // Индексы
         builder.HasIndex(x => new { x.UserId, x.FlowId });
         builder.HasIndex(x => x.Status);
-        builder.HasIndex(x => x.DueDate);
-        builder.HasIndex(x => x.CreatedAt);
+        builder.HasIndex(x => x.AssignedAt);
     }
 }

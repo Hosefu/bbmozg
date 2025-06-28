@@ -64,7 +64,7 @@ public class AuthController : ControllerBase
                 FirstName = request.FirstName ?? "Пользователь",
                 LastName = request.LastName ?? "",
                 TelegramUsername = request.Username,
-                Language = request.LanguageCode ?? "ru",
+                // Language поле убрано из новой архитектуры
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -95,7 +95,7 @@ public class AuthController : ControllerBase
             user.FirstName = request.FirstName ?? user.FirstName;
             user.LastName = request.LastName ?? user.LastName;
             user.TelegramUsername = request.Username ?? user.TelegramUsername;
-            user.Language = request.LanguageCode ?? user.Language;
+            // Language поле убрано из новой архитектуры
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdateLastActivity();
             await _unitOfWork.SaveChangesAsync();
@@ -113,7 +113,7 @@ public class AuthController : ControllerBase
                 telegramId = user.TelegramUserId.Value,
                 firstName = user.FirstName,
                 lastName = user.LastName,
-                position = user.Position,
+                // position поле убрано из новой архитектуры
                 isActive = user.IsActive,
                 roles = user.Roles.Select(r => r.Name).ToArray()
             }
@@ -160,7 +160,7 @@ public class AuthController : ControllerBase
                 FirstName = userData.FirstName ?? "Пользователь",
                 LastName = userData.LastName ?? "",
                 TelegramUsername = userData.Username,
-                Language = userData.LanguageCode ?? "ru",
+                // Language поле убрано из новой архитектуры
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -187,7 +187,7 @@ public class AuthController : ControllerBase
             user.FirstName = userData.FirstName ?? user.FirstName;
             user.LastName = userData.LastName ?? user.LastName;
             user.TelegramUsername = userData.Username ?? user.TelegramUsername;
-            user.Language = userData.LanguageCode ?? user.Language;
+            // Language поле убрано из новой архитектуры
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdateLastActivity();
             await _unitOfWork.SaveChangesAsync();
@@ -204,7 +204,7 @@ public class AuthController : ControllerBase
                 telegramId = user.TelegramUserId.Value,
                 firstName = user.FirstName,
                 lastName = user.LastName,
-                position = user.Position,
+                // position поле убрано из новой архитектуры
                 isActive = user.IsActive,
                 roles = user.Roles.Select(r => r.Name).ToArray()
             }
@@ -224,7 +224,7 @@ public class AuthController : ControllerBase
             new Claim("telegram_id", user.TelegramUserId.Value.ToString()),
             new Claim("first_name", user.FirstName),
             new Claim("last_name", user.LastName),
-            new Claim("position", user.Position ?? string.Empty),
+            // position поле убрано из новой архитектуры
             new Claim("is_active", user.IsActive.ToString())
         };
 

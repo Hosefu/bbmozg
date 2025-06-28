@@ -47,7 +47,7 @@ public class NotificationRepository : INotificationRepository
 
         if (!includeRead)
         {
-            query = query.Where(n => n.Status != NotificationStatus.Read);
+            query = query.Where(n => n.Status != NotificationStatus.Sent);
         }
 
         return await query
@@ -83,7 +83,7 @@ public class NotificationRepository : INotificationRepository
     {
         return await _context.Notifications
             .Where(n => n.UserId == userId)
-            .Where(n => n.Status != NotificationStatus.Read)
+            .Where(n => n.Status != NotificationStatus.Sent)
             .CountAsync(cancellationToken);
     }
 
@@ -134,7 +134,7 @@ public class NotificationRepository : INotificationRepository
         var notification = await GetByIdAsync(notificationId, cancellationToken);
         if (notification != null)
         {
-            notification.MarkAsRead();
+            notification.MarkAsSent();
             await UpdateAsync(notification, cancellationToken);
         }
     }
@@ -146,12 +146,12 @@ public class NotificationRepository : INotificationRepository
     {
         var unreadNotifications = await _context.Notifications
             .Where(n => n.UserId == userId)
-            .Where(n => n.Status != NotificationStatus.Read)
+            .Where(n => n.Status != NotificationStatus.Sent)
             .ToListAsync(cancellationToken);
 
         foreach (var notification in unreadNotifications)
         {
-            notification.MarkAsRead();
+            notification.MarkAsSent();
         }
 
         _logger.LogInformation(
@@ -166,7 +166,7 @@ public class NotificationRepository : INotificationRepository
     {
         var oldNotifications = await _context.Notifications
             .Where(n => n.CreatedAt < olderThan)
-            .Where(n => n.Status == NotificationStatus.Read || n.Status == NotificationStatus.Failed)
+            .Where(n => n.Status == NotificationStatus.Sent || n.Status == NotificationStatus.Failed)
             .ToListAsync(cancellationToken);
 
         _context.Notifications.RemoveRange(oldNotifications);
@@ -191,7 +191,7 @@ public class NotificationRepository : INotificationRepository
         return new NotificationStatistics
         {
             TotalCount = notifications.Count,
-            UnreadCount = notifications.Count(n => n.Status != NotificationStatus.Read),
+            UnreadCount = notifications.Count(n => n.Status != NotificationStatus.Sent),
             CountByType = notifications
                 .GroupBy(n => n.Type)
                 .ToDictionary(g => g.Key, g => g.Count()),

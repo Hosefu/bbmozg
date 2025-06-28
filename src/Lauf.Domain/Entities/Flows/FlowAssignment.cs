@@ -64,9 +64,33 @@ public class FlowAssignment
     public virtual User AssignedByUser { get; set; } = null!;
 
     /// <summary>
-    /// Бадди (может быть несколько)
+    /// Бадди (может быть несколько) - новая архитектура
     /// </summary>
     public virtual ICollection<User> Buddies { get; set; } = new List<User>();
+
+    /// <summary>
+    /// Вычисляемый дедлайн назначения (на основе FlowSettings)
+    /// </summary>
+    public DateTime Deadline 
+    { 
+        get 
+        {
+            // Простая логика: 7 дней по умолчанию на весь поток
+            var daysPerStep = Flow?.Settings?.DaysPerStep ?? 7;
+            var totalSteps = FlowContent?.Steps?.Count ?? 1;
+            return AssignedAt.AddDays(daysPerStep * totalSteps);
+        } 
+    }
+
+    /// <summary>
+    /// Дата завершения назначения (если завершено)
+    /// </summary>
+    public DateTime? CompletedAt => Progress?.CompletedAt;
+
+    /// <summary>
+    /// Первый бадди (для обратной совместимости)
+    /// </summary>
+    public Guid? Buddy => Buddies?.FirstOrDefault()?.Id;
 
     /// <summary>
     /// Прогресс назначения

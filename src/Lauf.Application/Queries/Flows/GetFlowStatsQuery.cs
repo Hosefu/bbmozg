@@ -138,15 +138,14 @@ public class GetFlowStatsQueryHandler : IRequestHandler<GetFlowStatsQuery, FlowS
         var stats = new FlowStatsDto
         {
             FlowId = request.FlowId,
-            FlowTitle = flow.Title,
+            FlowTitle = flow.Name,
             TotalAssignments = assignmentsList.Count,
             ActiveAssignments = assignmentsList.Count(a => 
                 a.Status == AssignmentStatus.Assigned || 
                 a.Status == AssignmentStatus.InProgress),
             CompletedAssignments = assignmentsList.Count(a => a.Status == AssignmentStatus.Completed),
             OverdueAssignments = assignmentsList.Count(a => 
-                a.DueDate.HasValue && 
-                a.DueDate.Value < DateTime.UtcNow && 
+                a.Deadline < DateTime.UtcNow && 
                 a.Status != AssignmentStatus.Completed)
         };
 
@@ -170,7 +169,7 @@ public class GetFlowStatsQueryHandler : IRequestHandler<GetFlowStatsQuery, FlowS
                 // Рассчитываем время завершения для завершенных назначений
                 if (assignment.Status == AssignmentStatus.Completed)
                 {
-                    var completionTime = assignment.UpdatedAt - assignment.CreatedAt;
+                    var completionTime = assignment.CompletedAt.GetValueOrDefault() - assignment.AssignedAt;
                     completionTimes.Add(completionTime);
                 }
             }
@@ -199,14 +198,14 @@ public class GetFlowStatsQueryHandler : IRequestHandler<GetFlowStatsQuery, FlowS
         CancellationToken cancellationToken)
     {
         var flowWithSteps = await _flowRepository.GetByIdWithStepsAsync(flowId, cancellationToken);
-        if (flowWithSteps?.Steps == null || !flowWithSteps.Steps.Any())
+        if (flowWithSteps?.ActiveContent?.Steps == null || !flowWithSteps.ActiveContent.Steps.Any())
         {
             return new List<StepStatsDto>();
         }
 
         var stepStats = new List<StepStatsDto>();
 
-        foreach (var step in flowWithSteps.Steps.OrderBy(s => s.Order))
+        foreach (var step in flowWithSteps.ActiveContent.Steps.OrderBy(s => s.Order))
         {
             var stepProgressList = new List<bool>();
             var stepTimeList = new List<double>();
@@ -236,8 +235,8 @@ public class GetFlowStatsQueryHandler : IRequestHandler<GetFlowStatsQuery, FlowS
 
             stepStats.Add(new StepStatsDto
             {
-                StepNumber = Array.IndexOf(flowWithSteps.Steps.OrderBy(s => s.Order).ToArray(), step) + 1, // Конвертируем LexoRank в номер
-                StepTitle = step.Title,
+                StepNumber = Array.IndexOf(flowWithSteps.ActiveContent.Steps.OrderBy(s => s.Order).ToArray(), step) + 1, // Конвертируем LexoRank в номер
+                StepTitle = step.Name,
                 CompletionRate = completionRate,
                 AverageTimeHours = avgTime
             });

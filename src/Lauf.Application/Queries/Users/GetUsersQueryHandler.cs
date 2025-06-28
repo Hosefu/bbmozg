@@ -57,7 +57,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersQuery
                 .Take(request.Take)
                 .ToList();
 
-            // Конвертируем в DTO
+            // Конвертируем в DTO (новая архитектура - убрали Position и Language)
             var userDtos = pagedUsers.Select(user => new UserDto
             {
                 Id = user.Id,
@@ -65,8 +65,6 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersQuery
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Username = user.TelegramUsername,
-                Position = user.Position,
-                Language = user.Language,
                 IsActive = user.IsActive,
                 Roles = user.Roles.Select(r => r.Name).ToList(),
                 CreatedAt = user.CreatedAt,

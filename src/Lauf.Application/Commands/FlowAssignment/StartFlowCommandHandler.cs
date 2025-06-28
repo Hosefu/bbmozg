@@ -22,6 +22,23 @@ public class StartFlowCommandHandler : IRequestHandler<StartFlowCommand, StartFl
         _logger = logger;
     }
 
+    /// <summary>
+    /// Конвертирует AssignmentStatus в ProgressStatus для DTO
+    /// </summary>
+    private static ProgressStatus ConvertToProgressStatus(AssignmentStatus status)
+    {
+        return status switch
+        {
+            AssignmentStatus.Assigned => ProgressStatus.NotStarted,
+            AssignmentStatus.InProgress => ProgressStatus.InProgress,
+            AssignmentStatus.Completed => ProgressStatus.Completed,
+            AssignmentStatus.Cancelled => ProgressStatus.Cancelled,
+            AssignmentStatus.Paused => ProgressStatus.InProgress,
+            AssignmentStatus.Overdue => ProgressStatus.InProgress,
+            _ => ProgressStatus.NotStarted
+        };
+    }
+
     public async Task<StartFlowCommandResult> Handle(
         StartFlowCommand request, 
         CancellationToken cancellationToken)
@@ -65,18 +82,18 @@ public class StartFlowCommandHandler : IRequestHandler<StartFlowCommand, StartFl
             _logger.LogInformation("Прохождение потока для назначения {AssignmentId} успешно начато", 
                 request.AssignmentId);
 
-            // Создаем DTO для ответа
+            // Создаем DTO для ответа (новая архитектура)
             var assignmentDto = new FlowAssignmentDto
             {
                 Id = assignment.Id,
                 UserId = assignment.UserId,
                 FlowId = assignment.FlowId,
-                Status = assignment.Status,
-                CreatedAt = assignment.CreatedAt,
-                DueDate = assignment.DueDate,
-                StartedAt = assignment.StartedAt,
+                Status = ConvertToProgressStatus(assignment.Status),
+                AssignedAt = assignment.AssignedAt,
+                Deadline = assignment.Deadline,
                 CompletedAt = assignment.CompletedAt,
-                ProgressPercentage = assignment.ProgressPercent
+                AssignedBy = assignment.AssignedBy,
+                Buddy = assignment.Buddy
             };
 
             return new StartFlowCommandResult

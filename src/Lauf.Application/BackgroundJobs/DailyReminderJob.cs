@@ -111,15 +111,15 @@ public class DailyReminderJob
     /// </summary>
     private bool ShouldSendReminder(Lauf.Domain.Entities.Flows.FlowAssignment assignment)
     {
-        // Проверяем время последней активности
-        var daysSinceLastActivity = (DateTime.UtcNow - assignment.UpdatedAt).TotalDays;
+        // Проверяем время последней активности (новая архитектура - используем AssignedAt)
+        var daysSinceAssigned = (DateTime.UtcNow - assignment.AssignedAt).TotalDays;
 
         // Отправляем напоминание если:
         // 1. Нет активности больше 3 дней для активных назначений
         // 2. Нет активности больше 1 дня для назначений в процессе
         var reminderThreshold = assignment.Status == AssignmentStatus.Assigned ? 3 : 1;
 
-        return daysSinceLastActivity >= reminderThreshold;
+        return daysSinceAssigned >= reminderThreshold;
     }
 
     /// <summary>
@@ -127,18 +127,16 @@ public class DailyReminderJob
     /// </summary>
     private ReminderType GetReminderType(Lauf.Domain.Entities.Flows.FlowAssignment assignment)
     {
-        if (assignment.DueDate.HasValue)
-        {
-            var daysUntilDeadline = (assignment.DueDate.Value - DateTime.UtcNow).TotalDays;
+        // В новой архитектуре Deadline всегда есть
+        var daysUntilDeadline = (assignment.Deadline - DateTime.UtcNow).TotalDays;
 
-            if (daysUntilDeadline <= 1)
-            {
-                return ReminderType.UrgentDeadline;
-            }
-            else if (daysUntilDeadline <= 3)
-            {
-                return ReminderType.ApproachingDeadline;
-            }
+        if (daysUntilDeadline <= 1)
+        {
+            return ReminderType.UrgentDeadline;
+        }
+        else if (daysUntilDeadline <= 3)
+        {
+            return ReminderType.ApproachingDeadline;
         }
 
         return assignment.Status == AssignmentStatus.Assigned 
@@ -168,8 +166,8 @@ public class DailyReminderJob
                 case ReminderType.NotStarted:
                     await _notificationService.NotifyReminderNotStartedAsync(
                         user.Id,
-                        assignment.Flow.Title,
-                        assignment.DueDate ?? DateTime.UtcNow.AddDays(7),
+                        assignment.Flow.Name,
+                        assignment.Deadline,
                         assignment.Id,
                         cancellationToken);
                     break;
@@ -177,19 +175,20 @@ public class DailyReminderJob
                 case ReminderType.InProgress:
                     await _notificationService.NotifyReminderInProgressAsync(
                         user.Id,
-                        assignment.Flow.Title,
-                        assignment.ProgressPercent,
-                        assignment.DueDate ?? DateTime.UtcNow.AddDays(7),
+                        assignment.Flow.Name,
+                        assignment.Progress?.ProgressPercent ?? 0,
+                        assignment.Deadline,
                         assignment.Id,
                         cancellationToken);
                     break;
 
                 case ReminderType.ApproachingDeadline:
+                    var daysLeft = (int)(assignment.Deadline - DateTime.UtcNow).TotalDays;
                     await _notificationService.NotifyApproachingDeadlineAsync(
                         user.Id,
-                        assignment.Flow.Title,
-                        assignment.DueDate!.Value,
-                        (int)(assignment.DueDate!.Value - DateTime.UtcNow).TotalDays,
+                        assignment.Flow.Name,
+                        assignment.Deadline,
+                        daysLeft,
                         assignment.Id,
                         cancellationToken);
                     break;
@@ -197,8 +196,8 @@ public class DailyReminderJob
                 case ReminderType.UrgentDeadline:
                     await _notificationService.NotifyUrgentDeadlineAsync(
                         user.Id,
-                        assignment.Flow.Title,
-                        assignment.DueDate!.Value,
+                        assignment.Flow.Name,
+                        assignment.Deadline,
                         assignment.Id,
                         cancellationToken);
                     break;
@@ -217,6 +216,21 @@ public class DailyReminderJob
                 user.Id);
             // Не пробрасываем исключение, чтобы не прерывать обработку других напоминаний
         }
+    }
+
+    /// <summary>
+    /// Генерирует сообщение напоминания
+    /// </summary>
+    private string GetReminderMessage(ReminderType reminderType, Lauf.Domain.Entities.Flows.FlowAssignment assignment)
+    {
+        return reminderType switch
+        {
+            ReminderType.NotStarted => $"Вы еще не начали поток обучения. Дедлайн: {assignment.Deadline:dd.MM.yyyy}",
+            ReminderType.InProgress => $"Продолжайте прохождение потока. Дедлайн: {assignment.Deadline:dd.MM.yyyy}",
+            ReminderType.ApproachingDeadline => $"Приближается дедлайн! Осталось дней: {(assignment.Deadline - DateTime.UtcNow).Days}",
+            ReminderType.UrgentDeadline => "Срочно! Дедлайн наступает сегодня или уже прошел!",
+            _ => "Напоминание о прохождении потока"
+        };
     }
 }
 

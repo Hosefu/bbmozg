@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lauf.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250627015456_InitialVersioningArchitecture")]
-    partial class InitialVersioningArchitecture
+    [Migration("20250628000458_NewArchitectureInitial")]
+    partial class NewArchitectureInitial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

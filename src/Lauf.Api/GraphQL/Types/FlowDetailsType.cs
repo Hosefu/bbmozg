@@ -16,7 +16,7 @@ public class FlowDetailsType : ObjectType<FlowDetailsDto>
         descriptor.Field(f => f.Id)
             .Description("Уникальный идентификатор потока");
 
-        descriptor.Field(f => f.Title)
+        descriptor.Field(f => f.Name)
             .Description("Название потока");
 
         descriptor.Field(f => f.Description)

@@ -26,6 +26,11 @@ public class QuizComponentDto
     public string QuestionText { get; set; } = string.Empty;
 
     /// <summary>
+    /// Вопросы квиза
+    /// </summary>
+    public List<QuizQuestionDto> Questions { get; set; } = new();
+
+    /// <summary>
     /// Варианты ответов (ровно 5)
     /// </summary>
     public List<QuestionOptionDto> Options { get; set; } = new();
@@ -64,6 +69,27 @@ public class QuizComponentDto
     /// Дата последнего обновления
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+}
+
+/// <summary>
+/// DTO для вопроса квиза
+/// </summary>
+public class QuizQuestionDto
+{
+    /// <summary>
+    /// Уникальный идентификатор вопроса
+    /// </summary>
+    public Guid Id { get; set; }
+
+    /// <summary>
+    /// Текст вопроса
+    /// </summary>
+    public string Text { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Варианты ответов
+    /// </summary>
+    public List<QuestionOptionDto> Options { get; set; } = new();
 }
 
 /// <summary>

@@ -22,6 +22,23 @@ public class GetOverdueAssignmentsQueryHandler : IRequestHandler<GetOverdueAssig
         _logger = logger;
     }
 
+    /// <summary>
+    /// Конвертирует AssignmentStatus в ProgressStatus
+    /// </summary>
+    private static ProgressStatus ConvertAssignmentStatusToProgressStatus(AssignmentStatus status)
+    {
+        return status switch
+        {
+            AssignmentStatus.Assigned => ProgressStatus.NotStarted,
+            AssignmentStatus.InProgress => ProgressStatus.InProgress,
+            AssignmentStatus.Completed => ProgressStatus.Completed,
+            AssignmentStatus.Cancelled => ProgressStatus.Cancelled,
+            AssignmentStatus.Paused => ProgressStatus.InProgress,
+            AssignmentStatus.Overdue => ProgressStatus.InProgress,
+            _ => ProgressStatus.NotStarted
+        };
+    }
+
     public async Task<GetOverdueAssignmentsQueryResult> Handle(GetOverdueAssignmentsQuery request, CancellationToken cancellationToken)
     {
         try
@@ -33,12 +50,14 @@ public class GetOverdueAssignmentsQueryHandler : IRequestHandler<GetOverdueAssig
             
             var now = DateTime.UtcNow;
             
-            // Фильтруем просроченные назначения (с установленным дедлайном, но не завершенные)
+            // Фильтруем просроченные назначения (с вычисляемым дедлайном, но не завершенные)
             var overdueAssignments = assignments.Where(a => 
-                a.DueDate.HasValue && 
-                a.DueDate.Value < now &&
-                a.Status != AssignmentStatus.Completed &&
-                a.Status != AssignmentStatus.Cancelled).ToList();
+            {
+                var deadline = a.Progress?.StartedAt?.AddDays(30) ?? a.AssignedAt.AddDays(30);
+                return deadline < now &&
+                       a.Status != AssignmentStatus.Completed &&
+                       a.Status != AssignmentStatus.Cancelled;
+            }).ToList();
 
             // Конвертируем в DTO
             var assignmentDtos = overdueAssignments.Select(assignment => new FlowAssignmentDto
@@ -46,13 +65,13 @@ public class GetOverdueAssignmentsQueryHandler : IRequestHandler<GetOverdueAssig
                 Id = assignment.Id,
                 UserId = assignment.UserId,
                 FlowId = assignment.FlowId,
-                Status = assignment.Status,
-                AssignedById = assignment.AssignedById,
-                BuddyId = assignment.BuddyId,
-                DueDate = assignment.DueDate,
-                CompletedAt = assignment.CompletedAt,
-                CreatedAt = assignment.CreatedAt,
-                UpdatedAt = assignment.UpdatedAt
+                Status = ConvertAssignmentStatusToProgressStatus(assignment.Status),
+                AssignedBy = assignment.AssignedBy,
+                Buddy = assignment.Buddies?.FirstOrDefault()?.Id,
+                Deadline = assignment.Progress?.StartedAt?.AddDays(30) ?? assignment.AssignedAt.AddDays(30),
+                CompletedAt = assignment.Progress?.CompletedAt,
+                AssignedAt = assignment.AssignedAt,
+                Notes = null
             }).ToList();
 
             _logger.LogInformation("Найдено {Count} просроченных назначений", assignmentDtos.Count);

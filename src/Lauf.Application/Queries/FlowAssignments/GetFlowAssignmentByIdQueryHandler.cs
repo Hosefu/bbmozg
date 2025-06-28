@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Application.DTOs.Flows;
+using Lauf.Domain.Enums;
 
 namespace Lauf.Application.Queries.FlowAssignments;
 
@@ -19,6 +20,23 @@ public class GetFlowAssignmentByIdQueryHandler : IRequestHandler<GetFlowAssignme
     {
         _flowAssignmentRepository = flowAssignmentRepository;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Конвертирует AssignmentStatus в ProgressStatus
+    /// </summary>
+    private static ProgressStatus ConvertAssignmentStatusToProgressStatus(AssignmentStatus status)
+    {
+        return status switch
+        {
+            AssignmentStatus.Assigned => ProgressStatus.NotStarted,
+            AssignmentStatus.InProgress => ProgressStatus.InProgress,
+            AssignmentStatus.Completed => ProgressStatus.Completed,
+            AssignmentStatus.Cancelled => ProgressStatus.Cancelled,
+            AssignmentStatus.Paused => ProgressStatus.InProgress, // Паузу считаем как "в процессе"
+            AssignmentStatus.Overdue => ProgressStatus.InProgress, // Просроченное тоже как "в процессе"
+            _ => ProgressStatus.NotStarted
+        };
     }
 
     public async Task<GetFlowAssignmentByIdQueryResult> Handle(GetFlowAssignmentByIdQuery request, CancellationToken cancellationToken)
@@ -41,19 +59,19 @@ public class GetFlowAssignmentByIdQueryHandler : IRequestHandler<GetFlowAssignme
                 };
             }
 
-            // Конвертируем в DTO
+            // Конвертируем в DTO (новая архитектура)
             var assignmentDto = new FlowAssignmentDto
             {
                 Id = assignment.Id,
                 UserId = assignment.UserId,
                 FlowId = assignment.FlowId,
-                Status = assignment.Status,
-                AssignedById = assignment.AssignedById,
-                BuddyId = assignment.BuddyId,
-                DueDate = assignment.DueDate,
+                Status = ConvertAssignmentStatusToProgressStatus(assignment.Status),
+                AssignedBy = assignment.AssignedBy,
+                Buddy = assignment.Buddy,
+                Deadline = assignment.Deadline,
                 CompletedAt = assignment.CompletedAt,
-                CreatedAt = assignment.CreatedAt,
-                UpdatedAt = assignment.UpdatedAt
+                AssignedAt = assignment.AssignedAt,
+                Notes = null // Будет добавлено при необходимости
             };
 
             _logger.LogInformation("Назначение {AssignmentId} успешно получено", request.AssignmentId);

@@ -47,18 +47,18 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
                 return CreateFlowComponentCommandResult.Failure("Шаг потока не найден");
             }
 
-            var flowStep = flow.Steps.FirstOrDefault(s => s.Id == request.FlowStepId);
+            var flowStep = flow.ActiveContent.Steps.FirstOrDefault(s => s.Id == request.FlowStepId);
             if (flowStep == null)
             {
                 _logger.LogWarning("Шаг {StepId} не найден в потоке {FlowId}", request.FlowStepId, flow.Id);
                 return CreateFlowComponentCommandResult.Failure("Шаг потока не найден");
             }
 
-            // Проверяем, что поток в статусе черновика
-            if (flow.Status != FlowStatus.Draft)
+            // Проверяем, что поток активен (новая архитектура)
+            if (!flow.IsActive)
             {
-                _logger.LogWarning("Попытка добавления компонента к шагу опубликованного потока {FlowId}", flow.Id);
-                return CreateFlowComponentCommandResult.Failure("Нельзя добавлять компоненты к шагам опубликованного потока");
+                _logger.LogWarning("Попытка добавления компонента к шагу неактивного потока {FlowId}", flow.Id);
+                return CreateFlowComponentCommandResult.Failure("Нельзя добавлять компоненты к шагам неактивного потока");
             }
 
             // Определяем LexoRank порядок
@@ -135,16 +135,24 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
             order: order,
             isRequired: request.IsRequired);
 
+        // Создаем вопрос квиза
+        var quizQuestion = new Domain.Entities.Components.QuizQuestion(
+            quizComponent.Id,
+            contentData.QuestionText,
+            LexoRankHelper.Middle());
+        quizComponent.Questions.Add(quizQuestion);
+
         // Добавляем варианты ответов
         foreach (var option in contentData.Options)
         {
             var questionOption = new QuestionOption(
+                quizQuestionId: quizQuestion.Id,
                 text: option.Text,
                 isCorrect: option.IsCorrect,
-                explanation: option.IsCorrect ? "Правильно!" : "Неправильно, попробуйте еще раз.",
-                score: option.IsCorrect ? 1 : 0); // points теперь score
+                score: option.IsCorrect ? 1 : 0,
+                order: LexoRankHelper.Middle());
             
-            quizComponent.Questions.First().Options.Add(questionOption); // Новая архитектура
+            quizQuestion.Options.Add(questionOption);
         }
 
         return await _componentRepository.AddQuizComponentAsync(quizComponent, cancellationToken);
@@ -164,7 +172,7 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
             description: request.Description,
             content: contentData.Instruction, // instruction теперь content
             codeWord: contentData.CodeWord,
-            hint: contentData.Hint,
+            score: 10, // дефолтный score
             order: order,
             isRequired: request.IsRequired);
 

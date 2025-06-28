@@ -52,7 +52,8 @@ public class AchievementCalculationService
     public async Task<List<Achievement>> CheckNewAchievementsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         // Новая архитектура - упрощенные критерии достижений
-        var completedAssignments = await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken);
+        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var completedAssignments = allAssignments.Where(a => a.Status == Domain.Enums.AssignmentStatus.Completed).ToList();
         var newAchievements = new List<Achievement>();
 
         // Проверяем базовые критерии достижений
@@ -72,13 +73,15 @@ public class AchievementCalculationService
 
     private async Task<decimal> CalculateFirstStepsProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var completedCount = allAssignments.Where(a => a.Status == Domain.Enums.AssignmentStatus.Completed).Count();
         return Math.Min(100, completedCount * 100);
     }
 
     private async Task<decimal> CalculateFastStartProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var completedCount = allAssignments.Where(a => a.Status == Domain.Enums.AssignmentStatus.Completed).Count();
         var progress = (decimal)completedCount / 3 * 100;
         return Math.Min(100, progress);
     }
@@ -86,14 +89,16 @@ public class AchievementCalculationService
     private async Task<decimal> CalculatePersistenceProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
         // Упрощенная логика - базируется на количестве назначений
-        var totalCount = (await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken)).Count;
+        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var totalCount = allAssignments.Count();
         var progress = (decimal)totalCount / 10 * 100;
         return Math.Min(100, progress);
     }
 
     private async Task<decimal> CalculateMarathonProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var completedCount = allAssignments.Where(a => a.Status == Domain.Enums.AssignmentStatus.Completed).Count();
         var progress = (decimal)completedCount / 20 * 100;
         return Math.Min(100, progress);
     }
@@ -101,8 +106,8 @@ public class AchievementCalculationService
     private async Task<decimal> CalculatePerfectStudentProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
         // Упрощенная логика - базируется на процентном соотношении завершенных потоков
-        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
-        var completedAssignments = await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken);
+        var allAssignments = (await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken)).ToList();
+        var completedAssignments = allAssignments.Where(a => a.Status == Domain.Enums.AssignmentStatus.Completed).ToList();
         
         if (allAssignments.Count == 0) return 0;
         return (decimal)completedAssignments.Count / allAssignments.Count * 100;
@@ -117,7 +122,8 @@ public class AchievementCalculationService
 
     private async Task<decimal> CalculateExpertProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var completedCount = (await _assignmentRepository.GetCompletedByUserIdAsync(userId, cancellationToken)).Count;
+        var allAssignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var completedCount = allAssignments.Where(a => a.Status == Domain.Enums.AssignmentStatus.Completed).Count();
         var progress = (decimal)completedCount / 10 * 100;
         return Math.Min(100, progress);
     }
@@ -131,7 +137,8 @@ public class AchievementCalculationService
 
     private async Task<decimal> CalculateExplorerProgressAsync(Guid userId, CancellationToken cancellationToken)
     {
-        var assignedCount = (await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken)).Count;
+        var assignments = await _assignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var assignedCount = assignments.Count();
         var progress = (decimal)assignedCount / 20 * 100;
         return Math.Min(100, progress);
     }

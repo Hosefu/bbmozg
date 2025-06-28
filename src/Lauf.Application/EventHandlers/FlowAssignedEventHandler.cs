@@ -160,7 +160,7 @@ public class FlowAssignedEventHandler : INotificationHandler<FlowAssignedNotific
 
             _logger.LogInformation(
                 "Уведомление бадди {BuddyId} о назначении потока '{FlowTitle}' пользователю {UserId} отправлено",
-                @event.BuddyId, flow.Title, @event.UserId);
+                @event.BuddyId, flow.Name, @event.UserId);
         }
         catch (Exception ex)
         {

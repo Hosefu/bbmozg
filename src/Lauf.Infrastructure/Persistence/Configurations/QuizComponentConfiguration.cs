@@ -1,4 +1,3 @@
-using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Components;
@@ -6,7 +5,7 @@ using Lauf.Domain.Entities.Components;
 namespace Lauf.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Конфигурация для QuizComponent
+/// Конфигурация для компонентов квизов - обновлена под новую архитектуру
 /// </summary>
 public class QuizComponentConfiguration : IEntityTypeConfiguration<QuizComponent>
 {
@@ -14,22 +13,12 @@ public class QuizComponentConfiguration : IEntityTypeConfiguration<QuizComponent
     {
         builder.ToTable("QuizComponents");
 
-        // Наследование от ComponentBase
-        builder.HasBaseType<ComponentBase>();
-
-        // Основные свойства
-        builder.Property(q => q.QuestionText)
-            .IsRequired()
-            .HasMaxLength(1000);
-
-        // Навигационные свойства
-        builder.HasMany(q => q.Options)
+        // Настройки базового компонента уже заданы в ComponentBaseConfiguration
+        
+        // Связь с вопросами
+        builder.HasMany(q => q.Questions)
             .WithOne()
-            .HasForeignKey("QuizComponentId")
+            .HasForeignKey(qq => qq.QuizComponentId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // Индексы для производительности
-        builder.HasIndex(q => q.QuestionText)
-            .HasDatabaseName("IX_QuizComponents_QuestionText");
     }
 }

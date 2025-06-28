@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Lauf.Application.BackgroundJobs;
 
 /// <summary>
-/// Фоновая задача для проверки дедлайнов назначений
+/// Фоновая задача для проверки дедлайнов назначений (новая архитектура)
 /// </summary>
 public class DeadlineCheckJob
 {
@@ -32,8 +32,11 @@ public class DeadlineCheckJob
         {
             _logger.LogInformation("Начинается проверка дедлайнов назначений");
 
-            // Получаем все активные назначения (новая архитектура)
-            var activeAssignments = await _assignmentRepository.GetActiveAsync(cancellationToken);
+            // Получаем все назначения и фильтруем активные (новая архитектура)
+            var allAssignments = await _assignmentRepository.GetAllAsync(cancellationToken);
+            var activeAssignments = allAssignments.Where(a => 
+                a.Status == Domain.Enums.AssignmentStatus.Assigned || 
+                a.Status == Domain.Enums.AssignmentStatus.InProgress).ToList();
 
             var now = DateTime.UtcNow;
             var overdueCount = 0;
@@ -78,17 +81,25 @@ public class DeadlineCheckJob
             assignment.Id,
             assignment.Deadline);
 
-        // Уведомляем пользователя
-        await NotifyUserAboutOverdueAsync(assignment, cancellationToken);
+        // Уведомляем пользователя через специализированный метод
+        await _notificationService.NotifyUrgentDeadlineAsync(
+            assignment.UserId,
+            assignment.Flow.Name,
+            assignment.Deadline,
+            assignment.Id,
+            cancellationToken);
 
-        // Уведомляем бадди если есть
-        if (assignment.Buddy != null)
+        // Уведомляем бадди если есть через системное уведомление
+        if (assignment.Buddy.HasValue)
         {
-            await NotifyBuddyAboutOverdueAsync(assignment, cancellationToken);
+            await _notificationService.CreateCustomNotificationAsync(
+                assignment.Buddy.Value,
+                Domain.Enums.NotificationType.SystemNotification,
+                "Подопечный просрочил дедлайн",
+                $"Подопечный просрочил дедлайн по назначению потока '{assignment.Flow.Name}'",
+                Domain.Enums.NotificationPriority.High,
+                cancellationToken: cancellationToken);
         }
-
-        // Уведомляем администратора/HR
-        await NotifyAdminAboutOverdueAsync(assignment, cancellationToken);
     }
 
     /// <summary>
@@ -103,155 +114,26 @@ public class DeadlineCheckJob
             assignment.Id,
             assignment.Deadline);
 
-        // Уведомляем пользователя о приближающемся дедлайне
-        await NotifyUserAboutApproachingDeadlineAsync(assignment, cancellationToken);
+        // Уведомляем пользователя о приближающемся дедлайне через специализированный метод
+        var daysLeft = (int)(assignment.Deadline - DateTime.UtcNow).TotalDays;
+        await _notificationService.NotifyApproachingDeadlineAsync(
+            assignment.UserId,
+            assignment.Flow.Name,
+            assignment.Deadline,
+            daysLeft,
+            assignment.Id,
+            cancellationToken);
 
-        // Уведомляем бадди если есть
-        if (assignment.Buddy != null)
+        // Уведомляем бадди если есть через системное уведомление
+        if (assignment.Buddy.HasValue)
         {
-            await NotifyBuddyAboutApproachingDeadlineAsync(
-                assignment.UserId,
-                assignment.FlowId,
-                assignment.Buddy.Id,
-                assignment.Deadline,
-                cancellationToken);
-        }
-    }
-
-    /// <summary>
-    /// Уведомление пользователя о просрочке
-    /// </summary>
-    private async Task NotifyUserAboutOverdueAsync(
-        Lauf.Domain.Entities.Flows.FlowAssignment assignment,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Создаем уведомление о просрочке
-            await _notificationService.NotifyDeadlineOverdueAsync(
-                assignment.UserId,
-                assignment.FlowId,
-                assignment.Deadline,
-                assignment.Id,
-                cancellationToken);
-
-            _logger.LogInformation(
-                "Уведомление о просрочке отправлено пользователю {UserId} для назначения {AssignmentId}",
-                assignment.UserId, assignment.Id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Ошибка отправки уведомления о просрочке пользователю {UserId}",
-                assignment.UserId);
-        }
-    }
-
-    /// <summary>
-    /// Уведомление пользователя о приближающемся дедлайне
-    /// </summary>
-    private async Task NotifyUserAboutApproachingDeadlineAsync(
-        Lauf.Domain.Entities.Flows.FlowAssignment assignment,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await _notificationService.NotifyDeadlineApproachingAsync(
-                assignment.UserId,
-                assignment.FlowId,
-                assignment.Deadline,
-                assignment.Id,
-                cancellationToken);
-
-            _logger.LogInformation(
-                "Уведомление о приближающемся дедлайне отправлено пользователю {UserId}",
-                assignment.UserId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Ошибка отправки уведомления о приближающемся дедлайне пользователю {UserId}",
-                assignment.UserId);
-        }
-    }
-
-    /// <summary>
-    /// Уведомление бадди о просрочке подопечного
-    /// </summary>
-    private async Task NotifyBuddyAboutOverdueAsync(
-        Lauf.Domain.Entities.Flows.FlowAssignment assignment,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await _notificationService.NotifyBuddyAboutOverdueAsync(
-                assignment.Buddy!.Id,
-                assignment.UserId,
-                assignment.FlowId,
-                assignment.Deadline,
-                assignment.Id,
-                cancellationToken);
-
-            _logger.LogInformation(
-                "Уведомление о просрочке подопечного отправлено бадди {BuddyId}",
-                assignment.Buddy.Id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Ошибка отправки уведомления бадди {BuddyId} о просрочке",
-                assignment.Buddy?.Id);
-        }
-    }
-
-    /// <summary>
-    /// Уведомление бадди о приближающемся дедлайне подопечного
-    /// </summary>
-    private async Task NotifyBuddyAboutApproachingDeadlineAsync(
-        Guid userId,
-        Guid flowId,
-        Guid buddyId,
-        DateTime deadline,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await _notificationService.NotifyBuddyAboutApproachingDeadlineAsync(
-                buddyId, userId, flowId, deadline, cancellationToken);
-
-            _logger.LogInformation(
-                "Уведомление о приближающемся дедлайне подопечного отправлено бадди {BuddyId}",
-                buddyId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Ошибка отправки уведомления бадди {BuddyId} о приближающемся дедлайне",
-                buddyId);
-        }
-    }
-
-    /// <summary>
-    /// Уведомление администратора о просрочке
-    /// </summary>
-    private async Task NotifyAdminAboutOverdueAsync(
-        Lauf.Domain.Entities.Flows.FlowAssignment assignment,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Логика уведомления администраторов будет реализована позже
-            _logger.LogInformation(
-                "Требуется уведомить администратора о просрочке назначения {AssignmentId}",
-                assignment.Id);
-
-            await Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "Ошибка отправки уведомления администратору о просрочке назначения {AssignmentId}",
-                assignment.Id);
+            await _notificationService.CreateCustomNotificationAsync(
+                assignment.Buddy.Value,
+                Domain.Enums.NotificationType.SystemNotification,
+                "У подопечного приближается дедлайн",
+                $"У подопечного приближается дедлайн по назначению потока '{assignment.Flow.Name}' ({daysLeft} дн.)",
+                Domain.Enums.NotificationPriority.Medium,
+                cancellationToken: cancellationToken);
         }
     }
 }

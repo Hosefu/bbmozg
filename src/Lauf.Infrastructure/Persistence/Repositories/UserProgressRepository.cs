@@ -51,37 +51,46 @@ public class UserProgressRepository : IUserProgressRepository
                 break;
         }
 
-        // Устанавливаем значения через рефлексию или создаем новый объект
-        var userProgress = new UserProgress(assignment.UserId);
-        
-        // Поскольку в сущности нет публичных сеттеров, создаем простую реализацию
-        return new SimpleUserProgress
-        {
-            Id = Guid.NewGuid(),
-            AssignmentId = assignmentId,
-            UserId = assignment.UserId,
-            OverallProgress = new ProgressPercentage(progressValue),
-            CreatedAt = assignment.CreatedAt,
-            UpdatedAt = assignment.UpdatedAt
-        };
+        // Обновляем прогресс на основе статуса назначения
+        var allAssignments = await _context.FlowAssignments
+            .Where(a => a.UserId == assignment.UserId)
+            .ToListAsync(cancellationToken);
+
+        var assignedCount = allAssignments.Count;
+        var completedCount = allAssignments.Count(a => a.Status == Domain.Enums.AssignmentStatus.Completed);
+        var activeCount = allAssignments.Count(a => a.Status == Domain.Enums.AssignmentStatus.InProgress);
+        var overdueCount = allAssignments.Count(a => a.Deadline < DateTime.UtcNow && a.Status != Domain.Enums.AssignmentStatus.Completed);
+
+        progress.RecalculateProgress(assignedCount, completedCount, activeCount, overdueCount);
+
+        return progress;
     }
 
     public async Task<IEnumerable<UserProgress>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        // Получаем все назначения пользователя
+        // Получаем все назначения пользователя для вычисления общего прогресса
         var assignments = await _context.FlowAssignments
             .Where(a => a.UserId == userId)
             .ToListAsync(cancellationToken);
 
-        var progressList = new List<UserProgress>();
+        if (!assignments.Any())
+            return Enumerable.Empty<UserProgress>();
 
+        var progressList = new List<UserProgress>();
+        
+        // Создаем прогресс для каждого назначения
         foreach (var assignment in assignments)
         {
-            var progress = await GetByAssignmentIdAsync(assignment.Id, cancellationToken);
-            if (progress != null)
-            {
-                progressList.Add(progress);
-            }
+            var progress = new UserProgress(userId);
+            
+            var allUserAssignments = assignments;
+            var assignedCount = allUserAssignments.Count;
+            var completedCount = allUserAssignments.Count(a => a.Status == Domain.Enums.AssignmentStatus.Completed);
+            var activeCount = allUserAssignments.Count(a => a.Status == Domain.Enums.AssignmentStatus.InProgress);
+            var overdueCount = allUserAssignments.Count(a => a.Deadline < DateTime.UtcNow && a.Status != Domain.Enums.AssignmentStatus.Completed);
+
+            progress.RecalculateProgress(assignedCount, completedCount, activeCount, overdueCount);
+            progressList.Add(progress);
         }
 
         return progressList;
@@ -89,139 +98,77 @@ public class UserProgressRepository : IUserProgressRepository
 
     public async Task<IEnumerable<UserProgress>> GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        // Получаем активные назначения пользователя
-        var assignments = await _context.FlowAssignments
-            .Where(a => a.UserId == userId && 
-                       (a.Status == Domain.Enums.AssignmentStatus.Assigned || 
-                        a.Status == Domain.Enums.AssignmentStatus.InProgress))
+        // Получаем только активные назначения пользователя
+        var activeAssignments = await _context.FlowAssignments
+            .Where(a => a.UserId == userId && a.Status == Domain.Enums.AssignmentStatus.InProgress)
             .ToListAsync(cancellationToken);
 
-        var progressList = new List<UserProgress>();
+        if (!activeAssignments.Any())
+            return Enumerable.Empty<UserProgress>();
 
-        foreach (var assignment in assignments)
+        var progressList = new List<UserProgress>();
+        
+        foreach (var assignment in activeAssignments)
         {
-            var progress = await GetByAssignmentIdAsync(assignment.Id, cancellationToken);
-            if (progress != null)
-            {
-                progressList.Add(progress);
-            }
+            var progress = new UserProgress(userId);
+            progress.RecalculateProgress(1, 0, 1, 0); // Активное назначение
+            progressList.Add(progress);
         }
 
         return progressList;
     }
 
-    // Методы для работы с FlowProgress
-    public async Task<FlowProgress?> GetFlowProgressByAssignmentIdAsync(Guid assignmentId, CancellationToken cancellationToken = default)
-    {
-        var assignment = await _context.FlowAssignments
-            .Include(a => a.Flow)
-            .FirstOrDefaultAsync(a => a.Id == assignmentId, cancellationToken);
-
-        if (assignment == null)
-            return null;
-
-        var flowProgress = new FlowProgress(
-            assignmentId,
-            assignment.FlowId,
-            assignment.UserId,
-            0, // completedStepsCount
-            assignment.TotalSteps); // totalStepsCount
-
-        return flowProgress;
-    }
-
-    public async Task AddFlowProgressAsync(FlowProgress flowProgress, CancellationToken cancellationToken = default)
-    {
-        // В текущей реализации FlowProgress не сохраняется отдельно
-        // Прогресс вычисляется на основе FlowAssignment
-        await Task.CompletedTask;
-    }
-
-    public async Task UpdateFlowProgressAsync(FlowProgress flowProgress, CancellationToken cancellationToken = default)
-    {
-        // В текущей реализации FlowProgress не сохраняется отдельно
-        // Прогресс вычисляется на основе FlowAssignment
-        await Task.CompletedTask;
-    }
-
-    // Методы для работы с ComponentProgress
-    public async Task<ComponentProgress?> GetComponentProgressAsync(Guid assignmentId, Guid componentId, CancellationToken cancellationToken = default)
-    {
-        // Базовая реализация - возвращаем новый прогресс компонента
-        var componentProgress = new ComponentProgress(
-            assignmentId,
-            componentId,
-            0, // order
-            false); // isRequired
-
-        return componentProgress;
-    }
-
-    public async Task UpdateComponentProgressAsync(ComponentProgress componentProgress, CancellationToken cancellationToken = default)
-    {
-        // В текущей реализации ComponentProgress не сохраняется отдельно
-        await Task.CompletedTask;
-    }
-
-    public async Task UpdateStepProgressAsync(StepProgress stepProgress, CancellationToken cancellationToken = default)
-    {
-        // В текущей реализации StepProgress не сохраняется отдельно
-        await Task.CompletedTask;
-    }
-
-    // Методы для работы с UserProgress
-    public async Task<UserProgress?> GetUserProgressAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        var assignments = await _context.FlowAssignments
-            .Where(a => a.UserId == userId)
-            .ToListAsync(cancellationToken);
-
-        if (!assignments.Any())
-            return null;
-
-        // Создаем агрегированный прогресс пользователя
-        var totalProgress = assignments.Average(a => a.ProgressPercent);
-        
-        return new SimpleUserProgress
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            OverallProgress = new ProgressPercentage((decimal)totalProgress),
-            CreatedAt = assignments.Min(a => a.CreatedAt),
-            UpdatedAt = assignments.Max(a => a.UpdatedAt)
-        };
-    }
-
     public async Task AddUserProgressAsync(UserProgress userProgress, CancellationToken cancellationToken = default)
     {
-        // В текущей реализации UserProgress не сохраняется отдельно
+        // UserProgress не сохраняется физически в БД, а вычисляется на лету
         await Task.CompletedTask;
     }
 
     public async Task UpdateUserProgressAsync(UserProgress userProgress, CancellationToken cancellationToken = default)
     {
-        // В текущей реализации UserProgress не сохраняется отдельно
+        // UserProgress не сохраняется физически в БД, а вычисляется на лету
         await Task.CompletedTask;
     }
-}
 
-/// <summary>
-/// Простая реализация UserProgress для совместимости
-/// </summary>
-public class SimpleUserProgress : UserProgress
-{
-    public new Guid Id { get; set; }
-    public Guid AssignmentId { get; set; }
-    public new Guid UserId { get; set; }
-    public new ProgressPercentage OverallProgress { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public new DateTime UpdatedAt { get; set; }
-
-    public SimpleUserProgress() : base(Guid.Empty)
+    public async Task<UserProgress> AddAsync(UserProgress userProgress, CancellationToken cancellationToken = default)
     {
-        Id = Guid.NewGuid();
-        OverallProgress = new ProgressPercentage(0);
-        CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
+        // UserProgress не сохраняется физически в БД, а вычисляется на лету
+        await Task.CompletedTask;
+        return userProgress;
+    }
+
+    public async Task<UserProgress> UpdateAsync(UserProgress userProgress, CancellationToken cancellationToken = default)
+    {
+        // UserProgress не сохраняется физически в БД, а вычисляется на лету
+        await Task.CompletedTask;
+        return userProgress;
+    }
+
+    public async Task DeleteAsync(UserProgress userProgress, CancellationToken cancellationToken = default)
+    {
+        // UserProgress не сохраняется физически в БД
+        await Task.CompletedTask;
+    }
+
+    public async Task<List<UserProgress>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        // Получаем всех пользователей с назначениями
+        var userIds = await _context.FlowAssignments
+            .Select(a => a.UserId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        var progressList = new List<UserProgress>();
+
+        foreach (var userId in userIds)
+        {
+            var userProgress = await GetByUserIdAsync(userId, cancellationToken);
+            if (userProgress != null && userProgress.Any())
+            {
+                progressList.AddRange(userProgress);
+            }
+        }
+
+        return progressList;
     }
 }

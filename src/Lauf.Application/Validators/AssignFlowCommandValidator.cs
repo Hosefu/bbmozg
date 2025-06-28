@@ -27,9 +27,7 @@ public class AssignFlowCommandValidator : AbstractValidator<AssignFlowCommand>
             .When(x => x.Deadline.HasValue)
             .WithMessage("Дедлайн должен быть в будущем");
 
-        RuleFor(x => x.Priority)
-            .InclusiveBetween(1, 10)
-            .WithMessage("Приоритет должен быть от 1 до 10");
+        // Priority убран в новой архитектуре
 
         RuleFor(x => x.Notes)
             .MaximumLength(1000)

@@ -4,7 +4,7 @@ using Lauf.Application.DTOs.Users;
 namespace Lauf.Application.DTOs.Flows;
 
 /// <summary>
-/// DTO для назначения потока пользователю
+/// DTO для назначения потока пользователю (новая архитектура)
 /// </summary>
 public class FlowAssignmentDto
 {
@@ -23,26 +23,15 @@ public class FlowAssignmentDto
     /// </summary>
     public Guid FlowId { get; set; }
 
+    /// <summary>
+    /// Статус назначения (новая архитектура)
+    /// </summary>
+    public ProgressStatus Status { get; set; }
 
     /// <summary>
-    /// Статус назначения
+    /// Дата назначения (AssignedAt в новой архитектуре)
     /// </summary>
-    public AssignmentStatus Status { get; set; }
-
-    /// <summary>
-    /// Дата создания назначения
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Дата последнего обновления
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
-
-    /// <summary>
-    /// Дата начала прохождения
-    /// </summary>
-    public DateTime? StartedAt { get; set; }
+    public DateTime AssignedAt { get; set; }
 
     /// <summary>
     /// Дата завершения прохождения
@@ -50,24 +39,24 @@ public class FlowAssignmentDto
     public DateTime? CompletedAt { get; set; }
 
     /// <summary>
-    /// Крайний срок выполнения
+    /// Крайний срок выполнения (Deadline в новой архитектуре)
     /// </summary>
-    public DateTime? DueDate { get; set; }
+    public DateTime Deadline { get; set; }
 
     /// <summary>
-    /// Процент прогресса выполнения
+    /// Идентификатор назначившего пользователя (AssignedBy в новой архитектуре)
     /// </summary>
-    public int ProgressPercentage { get; set; }
+    public Guid AssignedBy { get; set; }
+
+    /// <summary>
+    /// Идентификатор buddy (наставника), может быть null
+    /// </summary>
+    public Guid? Buddy { get; set; }
 
     /// <summary>
     /// Заметки о назначении
     /// </summary>
     public string? Notes { get; set; }
-
-    /// <summary>
-    /// Приоритет выполнения
-    /// </summary>
-    public int Priority { get; set; }
 
     /// <summary>
     /// Пользователь (может быть null, если не загружен)
@@ -78,25 +67,4 @@ public class FlowAssignmentDto
     /// Поток обучения (может быть null, если не загружен)
     /// </summary>
     public FlowDto? Flow { get; set; }
-
-
-    /// <summary>
-    /// ID назначившего пользователя
-    /// </summary>
-    public Guid? AssignedById { get; set; }
-
-    /// <summary>
-    /// Назначивший пользователь (может быть null, если не загружен)
-    /// </summary>
-    public UserDto? AssignedBy { get; set; }
-
-    /// <summary>
-    /// ID куратора (бадди)
-    /// </summary>
-    public Guid? BuddyId { get; set; }
-
-    /// <summary>
-    /// Куратор (может быть null, если не загружен)
-    /// </summary>
-    public UserDto? Buddy { get; set; }
 }

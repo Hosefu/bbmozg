@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Application.DTOs.Flows;
 using AutoMapper;
+using Lauf.Domain.Enums;
 
 namespace Lauf.Application.Queries.FlowAssignments;
 
@@ -23,6 +24,23 @@ public class GetFlowAssignmentsQueryHandler : IRequestHandler<GetFlowAssignments
         _flowAssignmentRepository = flowAssignmentRepository;
         _mapper = mapper;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Конвертирует AssignmentStatus в ProgressStatus
+    /// </summary>
+    private static ProgressStatus ConvertAssignmentStatusToProgressStatus(AssignmentStatus status)
+    {
+        return status switch
+        {
+            AssignmentStatus.Assigned => ProgressStatus.NotStarted,
+            AssignmentStatus.InProgress => ProgressStatus.InProgress,
+            AssignmentStatus.Completed => ProgressStatus.Completed,
+            AssignmentStatus.Cancelled => ProgressStatus.Cancelled,
+            AssignmentStatus.Paused => ProgressStatus.InProgress,
+            AssignmentStatus.Overdue => ProgressStatus.InProgress,
+            _ => ProgressStatus.NotStarted
+        };
     }
 
     public async Task<GetFlowAssignmentsQueryResult> Handle(GetFlowAssignmentsQuery request, CancellationToken cancellationToken)
@@ -65,13 +83,13 @@ public class GetFlowAssignmentsQueryHandler : IRequestHandler<GetFlowAssignments
                 Id = assignment.Id,
                 UserId = assignment.UserId,
                 FlowId = assignment.FlowId,
-                Status = assignment.Status,
-                AssignedById = assignment.AssignedById,
-                BuddyId = assignment.BuddyId,
-                DueDate = assignment.DueDate,
-                CompletedAt = assignment.CompletedAt,
-                CreatedAt = assignment.CreatedAt,
-                UpdatedAt = assignment.UpdatedAt
+                Status = ConvertAssignmentStatusToProgressStatus(assignment.Status),
+                AssignedBy = assignment.AssignedBy,
+                Buddy = assignment.Buddies?.FirstOrDefault()?.Id,
+                Deadline = assignment.Progress?.StartedAt?.AddDays(30) ?? assignment.AssignedAt.AddDays(30),
+                CompletedAt = assignment.Progress?.CompletedAt,
+                AssignedAt = assignment.AssignedAt,
+                Notes = null
             }).ToList();
 
             _logger.LogInformation("Найдено {TotalCount} назначений, возвращено {Count}", 

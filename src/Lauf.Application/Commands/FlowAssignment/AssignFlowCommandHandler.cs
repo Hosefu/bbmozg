@@ -93,17 +93,22 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
                 throw new InvalidOperationException($"У пользователя уже есть активное назначение для этого потока");
             }
 
-            // Рассчитываем дедлайн если не указан (упрощено в новой архитектуре)
-            var deadline = request.Deadline ?? CalculateDefaultDeadline(flow, activeContent);
-
-            // Создаем назначение (новая архитектура - без FlowVersionId)
+            // Создаем назначение (новая архитектура - упрощенный конструктор)
             var assignment = new Domain.Entities.Flows.FlowAssignment(
                 request.UserId,
                 request.FlowId,
-                deadline,
-                request.BuddyId,
-                request.CreatedById,
-                request.Notes);
+                activeContent.Id,
+                request.CreatedById);
+
+            // Добавляем бадди если указан
+            if (request.BuddyId.HasValue)
+            {
+                var buddy = await _userRepository.GetByIdAsync(request.BuddyId.Value, cancellationToken);
+                if (buddy != null)
+                {
+                    assignment.AddBuddy(buddy);
+                }
+            }
 
             // Создаем начальный прогресс
             var progress = new Domain.Entities.Flows.FlowAssignmentProgress(
@@ -127,7 +132,7 @@ public class AssignFlowCommandHandler : IRequestHandler<AssignFlowCommand, Assig
                 FlowContentId = activeContent.Id,
                 IsSuccess = true,
                 Message = $"Поток \"{flow.Name}\" (версия {activeContent.Version}) успешно назначен",
-                EstimatedCompletionDate = deadline
+                EstimatedCompletionDate = assignment.Deadline
             };
         }
         catch (Exception ex)

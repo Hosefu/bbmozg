@@ -4,13 +4,13 @@ using FluentValidation;
 namespace Lauf.Application.Validators;
 
 /// <summary>
-/// Валидатор для команды создания потока
+/// Валидатор для команды создания потока (новая архитектура)
 /// </summary>
 public class CreateFlowCommandValidator : AbstractValidator<CreateFlowCommand>
 {
     public CreateFlowCommandValidator()
     {
-        RuleFor(x => x.Title)
+        RuleFor(x => x.Name)
             .NotEmpty()
             .WithMessage("Название потока обязательно")
             .MaximumLength(200)
@@ -30,10 +30,6 @@ public class CreateFlowCommandValidator : AbstractValidator<CreateFlowCommand>
             .MaximumLength(100)
             .WithMessage("Категория не должна превышать 100 символов");
 
-        RuleFor(x => x.CreatedById)
-            .NotEmpty()
-            .WithMessage("Идентификатор создателя обязателен");
-
         RuleFor(x => x.Priority)
             .InclusiveBetween(0, 10)
             .WithMessage("Приоритет должен быть от 0 до 10");
@@ -42,21 +38,12 @@ public class CreateFlowCommandValidator : AbstractValidator<CreateFlowCommand>
             .Must(BeValidJson)
             .WithMessage("Теги должны быть в формате JSON массива");
 
+        // Упрощенная валидация настроек в новой архитектуре
         When(x => x.Settings != null, () =>
         {
-            RuleFor(x => x.Settings!.MaxAttempts)
+            RuleFor(x => x.Settings!.DaysPerStep)
                 .GreaterThan(0)
-                .When(x => x.Settings!.MaxAttempts.HasValue)
-                .WithMessage("Максимальное количество попыток должно быть больше 0");
-
-            RuleFor(x => x.Settings!.TimeToCompleteWorkingDays)
-                .GreaterThan(0)
-                .When(x => x.Settings!.TimeToCompleteWorkingDays.HasValue)
-                .WithMessage("Время на выполнение должно быть больше 0 дней");
-
-            RuleFor(x => x.Settings!.AdditionalSettings)
-                .Must(BeValidJson)
-                .WithMessage("Дополнительные настройки должны быть в формате JSON");
+                .WithMessage("Дней на шаг должно быть больше 0");
         });
     }
 
@@ -67,7 +54,7 @@ public class CreateFlowCommandValidator : AbstractValidator<CreateFlowCommand>
 
         try
         {
-            System.Text.Json.JsonDocument.Parse(jsonString);
+            System.Text.Json.JsonSerializer.Deserialize<string[]>(jsonString);
             return true;
         }
         catch

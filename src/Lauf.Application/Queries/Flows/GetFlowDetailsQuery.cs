@@ -311,7 +311,7 @@ public class GetFlowDetailsQueryHandler : IRequestHandler<GetFlowDetailsQuery, F
 
         var progress = await _progressRepository.GetByAssignmentIdAsync(assignment.Id, cancellationToken);
         
-        var totalSteps = assignment.Flow?.Steps.Count ?? 0;
+        var totalSteps = assignment.Flow?.ActiveContent?.Steps.Count ?? 0;
         var overallProgress = progress?.OverallProgress?.Value ?? 0;
         var completedSteps = totalSteps > 0 ? (int)(overallProgress * totalSteps / 100) : 0;
         var currentStep = completedSteps < totalSteps ? completedSteps + 1 : totalSteps;
@@ -322,7 +322,7 @@ public class GetFlowDetailsQueryHandler : IRequestHandler<GetFlowDetailsQuery, F
             CurrentStep = currentStep,
             CompletedSteps = completedSteps,
             TotalSteps = totalSteps,
-            StartedAt = assignment.CreatedAt,
+            StartedAt = assignment.AssignedAt,
             LastActivityAt = progress?.UpdatedAt,
             Status = assignment.Status
         };
@@ -338,7 +338,7 @@ public class GetFlowDetailsQueryHandler : IRequestHandler<GetFlowDetailsQuery, F
         var userProgress = assignment != null ? 
             await _progressRepository.GetByAssignmentIdAsync(assignment.Id, cancellationToken) : null;
 
-        var isSequential = flowDetails.Settings?.RequireSequentialCompletion ?? true;
+        var isSequential = flowDetails.Settings?.RequireSequentialCompletionComponents ?? true;
         var completedSteps = new HashSet<int>();
 
         // Определяем какие шаги завершены (простая логика)

@@ -100,11 +100,11 @@ public class TelegramNotificationService
         }
 
         // Добавляем метаданные если есть
-        if (!string.IsNullOrEmpty(notification.Metadata))
+        if (!string.IsNullOrEmpty("{}"))
         {
             try
             {
-                var metadata = JsonSerializer.Deserialize<Dictionary<string, object>>(notification.Metadata);
+                var metadata = JsonSerializer.Deserialize<Dictionary<string, object>>("{}");
                 if (metadata?.ContainsKey("deadline") == true)
                 {
                     message.AppendLine();

@@ -22,6 +22,23 @@ public class CompleteFlowCommandHandler : IRequestHandler<CompleteFlowCommand, C
         _logger = logger;
     }
 
+    /// <summary>
+    /// Конвертирует AssignmentStatus в ProgressStatus для DTO
+    /// </summary>
+    private static ProgressStatus ConvertToProgressStatus(AssignmentStatus status)
+    {
+        return status switch
+        {
+            AssignmentStatus.Assigned => ProgressStatus.NotStarted,
+            AssignmentStatus.InProgress => ProgressStatus.InProgress,
+            AssignmentStatus.Completed => ProgressStatus.Completed,
+            AssignmentStatus.Cancelled => ProgressStatus.Cancelled,
+            AssignmentStatus.Paused => ProgressStatus.InProgress,
+            AssignmentStatus.Overdue => ProgressStatus.InProgress,
+            _ => ProgressStatus.NotStarted
+        };
+    }
+
     public async Task<CompleteFlowCommandResult> Handle(
         CompleteFlowCommand request, 
         CancellationToken cancellationToken)
@@ -59,10 +76,12 @@ public class CompleteFlowCommandHandler : IRequestHandler<CompleteFlowCommand, C
             // Завершаем прохождение
             assignment.Complete();
             
-            // Добавляем заметки о завершении, если есть
+            // В новой архитектуре пропускаем заметки о завершении
+            // AddUserFeedback метода больше нет
             if (!string.IsNullOrEmpty(request.CompletionNotes))
             {
-                assignment.AddUserFeedback(request.CompletionNotes);
+                _logger.LogInformation("Получены заметки о завершении для назначения {AssignmentId}: {Notes}", 
+                    request.AssignmentId, request.CompletionNotes);
             }
             
             // Сохраняем изменения
@@ -71,18 +90,18 @@ public class CompleteFlowCommandHandler : IRequestHandler<CompleteFlowCommand, C
             _logger.LogInformation("Прохождение потока для назначения {AssignmentId} успешно завершено", 
                 request.AssignmentId);
 
-            // Создаем DTO для ответа
+            // Создаем DTO для ответа (новая архитектура)
             var assignmentDto = new FlowAssignmentDto
             {
                 Id = assignment.Id,
                 UserId = assignment.UserId,
                 FlowId = assignment.FlowId,
-                Status = assignment.Status,
-                CreatedAt = assignment.CreatedAt,
-                DueDate = assignment.DueDate,
-                StartedAt = assignment.StartedAt,
+                Status = ConvertToProgressStatus(assignment.Status),
+                AssignedAt = assignment.AssignedAt,
+                Deadline = assignment.Deadline,
                 CompletedAt = assignment.CompletedAt,
-                ProgressPercentage = assignment.ProgressPercent
+                AssignedBy = assignment.AssignedBy,
+                Buddy = assignment.Buddy
             };
 
             return new CompleteFlowCommandResult

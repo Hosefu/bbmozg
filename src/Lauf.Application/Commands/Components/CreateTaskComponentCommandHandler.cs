@@ -62,7 +62,7 @@ public class CreateTaskComponentCommandHandler : IRequestHandler<CreateTaskCompo
                 description: request.Description,
                 content: request.Instruction ?? "", // instruction теперь в content
                 codeWord: request.CodeWord,
-                hint: request.Hint,
+                score: 10, // дефолтный score для задания
                 order: order,
                 isRequired: request.IsRequired);
 

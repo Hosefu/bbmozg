@@ -1,4 +1,3 @@
-using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Notifications;
@@ -7,93 +6,48 @@ using Lauf.Domain.Enums;
 namespace Lauf.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Конфигурация Entity Framework для сущности Notification
+/// Конфигурация для уведомлений - обновлена под новую архитектуру
 /// </summary>
 public class NotificationConfiguration : IEntityTypeConfiguration<Notification>
 {
     public void Configure(EntityTypeBuilder<Notification> builder)
     {
-        // Таблица
         builder.ToTable("Notifications");
+        
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
-        // Первичный ключ
-        builder.HasKey(n => n.Id);
-
-        // Свойства
-        builder.Property(n => n.Id)
-            .ValueGeneratedNever();
-
-        builder.Property(n => n.UserId)
-            .IsRequired();
-
-        builder.Property(n => n.Type)
-            .IsRequired()
-            .HasConversion<int>();
-
-        builder.Property(n => n.Channel)
-            .IsRequired()
-            .HasConversion<int>();
-
-        builder.Property(n => n.Priority)
-            .IsRequired()
-            .HasConversion<int>();
-
-        builder.Property(n => n.Status)
-            .IsRequired()
-            .HasConversion<int>();
-
-        builder.Property(n => n.Title)
+        // Основные свойства
+        builder.Property(x => x.UserId).IsRequired();
+        
+        builder.Property(x => x.Title)
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(n => n.Content)
+        builder.Property(x => x.Content)
             .IsRequired()
-            .HasMaxLength(2000);
-
-        builder.Property(n => n.Metadata)
-            .HasMaxLength(4000);
-
-        builder.Property(n => n.ErrorMessage)
             .HasMaxLength(1000);
 
-        builder.Property(n => n.RelatedEntityType)
-            .HasMaxLength(100);
+        builder.Property(x => x.Type)
+            .IsRequired()
+            .HasConversion<string>();
 
-        builder.Property(n => n.CreatedAt)
-            .IsRequired();
+        builder.Property(x => x.Status)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasDefaultValue(NotificationStatus.Pending);
 
-        builder.Property(n => n.ScheduledAt)
-            .IsRequired();
+        builder.Property(x => x.CreatedAt)
+            .IsRequired()
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-        builder.Property(n => n.AttemptCount)
-            .HasDefaultValue(0);
+        builder.Property(x => x.SentAt)
+            .IsRequired(false);
 
-        builder.Property(n => n.MaxAttempts)
-            .HasDefaultValue(3);
-
-        // Индексы
-        builder.HasIndex(n => n.UserId)
-            .HasDatabaseName("IX_Notifications_UserId");
-
-        builder.HasIndex(n => new { n.Status, n.ScheduledAt })
-            .HasDatabaseName("IX_Notifications_Status_ScheduledAt");
-
-        builder.HasIndex(n => n.Type)
-            .HasDatabaseName("IX_Notifications_Type");
-
-        builder.HasIndex(n => n.Priority)
-            .HasDatabaseName("IX_Notifications_Priority");
-
-        builder.HasIndex(n => n.CreatedAt)
-            .HasDatabaseName("IX_Notifications_CreatedAt");
-
-        builder.HasIndex(n => new { n.RelatedEntityType, n.RelatedEntityId })
-            .HasDatabaseName("IX_Notifications_RelatedEntity");
-
-        // Связи
-        builder.HasOne(n => n.User)
+        // Связь с пользователем
+        builder.HasOne<Domain.Entities.Users.User>()
             .WithMany()
-            .HasForeignKey(n => n.UserId)
+            .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

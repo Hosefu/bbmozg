@@ -44,9 +44,6 @@ public class CreateArticleComponentCommandHandler : IRequestHandler<CreateArticl
             if (string.IsNullOrWhiteSpace(request.Content))
                 return CreateArticleComponentResult.Failure("Содержимое статьи обязательно");
 
-            if (request.ReadingTimeMinutes <= 0)
-                return CreateArticleComponentResult.Failure("Время чтения должно быть больше 0");
-
             // Проверяем существование шага
             var flowStep = await _flowRepository.GetStepByIdAsync(request.FlowStepId, cancellationToken);
             if (flowStep == null)
@@ -55,15 +52,14 @@ public class CreateArticleComponentCommandHandler : IRequestHandler<CreateArticl
             // Генерируем порядок для нового компонента
             var order = GenerateNextOrder(flowStep.Components);
 
-            // Создание компонента статьи с привязкой к шагу
+            // Создание компонента статьи с привязкой к шагу (новая архитектура - ReadingTime автовычисляется)
             var articleComponent = new ArticleComponent(
                 flowStepId: request.FlowStepId,
                 title: request.Title,
                 description: request.Description,
                 content: request.Content,
                 order: order,
-                isRequired: request.IsRequired,
-                readingTimeMinutes: request.ReadingTimeMinutes);
+                isRequired: request.IsRequired);
 
             // Сохраняем компонент в базе
             var savedComponent = await _componentRepository.AddArticleComponentAsync(articleComponent, cancellationToken);

@@ -1,13 +1,12 @@
-using Lauf.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Lauf.Domain.Entities.Components;
-using Lauf.Domain.Enums;
+using Lauf.Domain.Entities.Flows;
 
 namespace Lauf.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Базовая конфигурация для компонентов (Table-Per-Type)
+/// Базовая конфигурация для компонентов (Table-Per-Type) - минимальная для работы
 /// </summary>
 public class ComponentBaseConfiguration : IEntityTypeConfiguration<ComponentBase>
 {
@@ -18,65 +17,21 @@ public class ComponentBaseConfiguration : IEntityTypeConfiguration<ComponentBase
         
         // Первичный ключ
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Id)
-            .ValueGeneratedOnAdd();
+        builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
         // Основные свойства
-        builder.Property(x => x.Title)
-            .IsRequired()
-            .HasMaxLength(200);
-
-        builder.Property(x => x.Description)
-            .HasMaxLength(1000);
-
-        builder.Property(x => x.Status)
-            .IsRequired()
-            .HasConversion<string>()
-            .HasDefaultValue(ComponentStatus.Draft);
-
-        builder.Property(x => x.EstimatedDurationMinutes)
-            .IsRequired()
-            .HasDefaultValue(15);
-
-        builder.Property(x => x.MaxAttempts)
-            .IsRequired(false);
-
-        builder.Property(x => x.MinPassingScore)
-            .IsRequired(false);
-
-        builder.Property(x => x.Instructions)
-            .HasMaxLength(2000);
-
-        // Новые поля для упрощенной архитектуры
-        builder.Property(x => x.FlowStepId)
-            .IsRequired();
-
-        builder.Property(x => x.Order)
-            .IsRequired()
-            .HasMaxLength(50);
-
-        builder.Property(x => x.IsRequired)
-            .IsRequired()
-            .HasDefaultValue(true);
+        builder.Property(x => x.Title).IsRequired().HasMaxLength(200);
+        builder.Property(x => x.Description).HasMaxLength(1000);
+        builder.Property(x => x.Content).IsRequired().HasMaxLength(10000);
+        builder.Property(x => x.Order).IsRequired().HasMaxLength(50);
+        builder.Property(x => x.IsRequired).IsRequired().HasDefaultValue(true);
+        builder.Property(x => x.IsEnabled).IsRequired().HasDefaultValue(true);
 
         // Связь с FlowStep
-        builder.HasOne<Lauf.Domain.Entities.Flows.FlowStep>()
-            .WithMany(f => f.Components)
+        builder.Property(x => x.FlowStepId).IsRequired();
+        builder.HasOne<FlowStep>()
+            .WithMany(s => s.Components)
             .HasForeignKey(x => x.FlowStepId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // Аудит
-        builder.Property(x => x.CreatedAt)
-            .IsRequired();
-
-        builder.Property(x => x.UpdatedAt)
-            .IsRequired();
-
-        // Индексы
-        builder.HasIndex(x => x.Status);
-        builder.HasIndex(x => x.CreatedAt);
-        builder.HasIndex(x => x.Title);
-        builder.HasIndex(x => x.FlowStepId);
-        builder.HasIndex(x => x.Order);
     }
 }

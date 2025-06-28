@@ -26,7 +26,7 @@ public class ComponentRepository : IComponentRepository
     public async Task<QuizComponent?> GetQuizComponentByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.QuizComponents
-            .Include(x => x.Options)
+            .Include(x => x.Questions)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -60,7 +60,6 @@ public class ComponentRepository : IComponentRepository
 
     public async Task<ArticleComponent> UpdateArticleComponentAsync(ArticleComponent component, CancellationToken cancellationToken = default)
     {
-        component.UpdateTimestamp();
         _context.ArticleComponents.Update(component);
         await _context.SaveChangesAsync(cancellationToken);
         return component;
@@ -68,7 +67,6 @@ public class ComponentRepository : IComponentRepository
 
     public async Task<QuizComponent> UpdateQuizComponentAsync(QuizComponent component, CancellationToken cancellationToken = default)
     {
-        component.UpdateTimestamp();
         _context.QuizComponents.Update(component);
         await _context.SaveChangesAsync(cancellationToken);
         return component;
@@ -76,7 +74,6 @@ public class ComponentRepository : IComponentRepository
 
     public async Task<TaskComponent> UpdateTaskComponentAsync(TaskComponent component, CancellationToken cancellationToken = default)
     {
-        component.UpdateTimestamp();
         _context.TaskComponents.Update(component);
         await _context.SaveChangesAsync(cancellationToken);
         return component;

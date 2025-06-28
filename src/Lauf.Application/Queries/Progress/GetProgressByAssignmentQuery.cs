@@ -286,9 +286,9 @@ public class GetProgressByAssignmentQueryHandler : IRequestHandler<GetProgressBy
             User = MapUserInfo(user),
             OverallProgress = progress?.OverallProgress?.Value ?? 0,
             Status = assignment.Status,
-            StartedAt = assignment.CreatedAt,
-            DueDate = assignment.DueDate,
-            IsOverdue = assignment.DueDate.HasValue && assignment.DueDate.Value < DateTime.UtcNow && assignment.Status != AssignmentStatus.Completed,
+            StartedAt = assignment.AssignedAt,
+            DueDate = assignment.Deadline,
+            IsOverdue = assignment.Deadline < DateTime.UtcNow && assignment.Status != AssignmentStatus.Completed,
             LastActivityAt = progress?.UpdatedAt,
             TimeStats = CalculateTimeStats(assignment, progress)
         };
@@ -317,9 +317,9 @@ public class GetProgressByAssignmentQueryHandler : IRequestHandler<GetProgressBy
         return new FlowInfoDto
         {
             Id = flow.Id,
-            Title = flow.Title,
+            Title = flow.Name,
             Description = flow.Description,
-            TotalSteps = flow.Steps?.Count ?? 0,
+            TotalSteps = flow.ActiveContent?.Steps?.Count ?? 0,
             EstimatedHours = null // Расчетное время удалено из модели
         };
     }
@@ -350,7 +350,7 @@ public class GetProgressByAssignmentQueryHandler : IRequestHandler<GetProgressBy
         Lauf.Domain.Entities.Flows.FlowAssignment assignment,
         Lauf.Domain.Entities.Progress.UserProgress? progress)
     {
-        var daysSinceStart = (int)(DateTime.UtcNow - assignment.CreatedAt).TotalDays;
+        var daysSinceStart = (int)(DateTime.UtcNow - assignment.AssignedAt).TotalDays;
         daysSinceStart = Math.Max(1, daysSinceStart); // Минимум 1 день
 
         return new TimeStatsDto

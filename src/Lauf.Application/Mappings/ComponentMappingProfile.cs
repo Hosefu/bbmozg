@@ -12,20 +12,22 @@ public class ComponentMappingProfile : Profile
 {
     public ComponentMappingProfile()
     {
-        // Маппинг Domain Entities -> DTOs
-        CreateMap<ArticleComponent, ArticleComponentDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+        // Маппинг Domain Entities -> DTOs (новая архитектура - Status убран)
+        CreateMap<ArticleComponent, ArticleComponentDto>();
 
-        CreateMap<QuizComponent, QuizComponentDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+        CreateMap<QuizComponent, QuizComponentDto>();
 
-        CreateMap<TaskComponent, TaskComponentDto>()
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+        CreateMap<TaskComponent, TaskComponentDto>();
 
         CreateMap<QuestionOption, QuestionOptionDto>();
 
-        // Маппинг Command DTOs -> Domain Objects
+        // Маппинг Command DTOs -> Domain Objects (новая архитектура - полный конструктор)
         CreateMap<CreateQuestionOptionDto, QuestionOption>()
-            .ConstructUsing(src => new QuestionOption(src.Text, src.IsCorrect, src.Message, src.Points));
+            .ConstructUsing(src => new QuestionOption(
+                Guid.Empty, // QuizQuestionId - будет задан при создании
+                src.Text, 
+                src.IsCorrect, 
+                src.Points, 
+                "a0")); // Порядок по умолчанию - будет перезаписан
     }
 }

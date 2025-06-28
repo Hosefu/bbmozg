@@ -43,8 +43,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             TelegramUserId = telegramUserId,
             FirstName = request.FirstName,
             LastName = request.LastName,
-            Position = request.Position,
-            Language = request.Language,
+            // Position и Language убраны в новой архитектуре
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -77,8 +76,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserD
             TelegramUserId = user.TelegramUserId.Value,
             FirstName = user.FirstName,
             LastName = user.LastName,
-            Position = user.Position,
-            Language = user.Language,
+            // Position и Language убраны в новой архитектуре
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt,
             LastActivityAt = user.LastActiveAt,

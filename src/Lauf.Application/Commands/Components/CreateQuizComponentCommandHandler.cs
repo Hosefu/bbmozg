@@ -52,35 +52,40 @@ public class CreateQuizComponentCommandHandler : IRequestHandler<CreateQuizCompo
             if (flowStep == null)
                 return CreateQuizComponentResult.Failure("Шаг потока не найден");
 
+            // Генерируем порядок для нового компонента
+            var order = GenerateNextOrder(flowStep.Components);
+
+            // Создание компонента квиза с привязкой к шагу (новая архитектура)
+            var quizComponent = new QuizComponent(
+                flowStepId: request.FlowStepId,
+                title: request.Title,
+                description: request.Description,
+                content: request.QuestionText,
+                order: order,
+                isRequired: request.IsRequired);
+
+            // Создаем вопрос квиза
+            var quizQuestion = new QuizQuestion(
+                quizComponent.Id,
+                request.QuestionText,
+                LexoRankHelper.Middle());
+
             // Создание вариантов ответов с LexoRank
             var options = new List<QuestionOption>();
             for (int i = 0; i < request.Options.Count; i++)
             {
                 var optionInput = request.Options[i];
                 var option = new QuestionOption(
+                    quizQuestionId: quizQuestion.Id,
                     text: optionInput.Text,
                     isCorrect: optionInput.IsCorrect,
-                    message: optionInput.Message,
-                    points: optionInput.Points)
-                {
-                    Order = i == 0 ? LexoRankHelper.Middle() : LexoRankHelper.Next(options[i-1].Order)
-                };
+                    score: optionInput.Points,
+                    order: i == 0 ? LexoRankHelper.Middle() : LexoRankHelper.Next(options[i-1].Order));
                 options.Add(option);
             }
 
-            // Генерируем порядок для нового компонента
-            var order = GenerateNextOrder(flowStep.Components);
-
-            // Создание компонента квиза с привязкой к шагу
-            var quizComponent = new QuizComponent(
-                flowStepId: request.FlowStepId,
-                title: request.Title,
-                description: request.Description,
-                questionText: request.QuestionText,
-                options: options,
-                order: order,
-                isRequired: request.IsRequired,
-                estimatedDurationMinutes: request.EstimatedDurationMinutes);
+            quizQuestion.Options = options;
+            quizComponent.Questions.Add(quizQuestion);
 
             // Сохраняем компонент в базе
             var savedComponent = await _componentRepository.AddQuizComponentAsync(quizComponent, cancellationToken);
