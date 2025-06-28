@@ -77,8 +77,11 @@ public class ApplicationDbContext : DbContext
         // Игнорируем value objects как отдельные entities - они используются как owned entities
         modelBuilder.Ignore<ProgressPercentage>();
 
-        // Применяем все конфигурации из текущей сборки
+        // Применяем все конфигурации из текущей сборки, кроме дублирующихся
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        
+        // Исключаем FlowContentConfiguration из автоматического применения
+        // так как связи настроены в SimpleFlowConfiguration
     }
 
     /// <summary>

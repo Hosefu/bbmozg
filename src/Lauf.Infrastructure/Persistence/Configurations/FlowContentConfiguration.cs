@@ -5,9 +5,10 @@ using Lauf.Domain.Entities.Flows;
 namespace Lauf.Infrastructure.Persistence.Configurations;
 
 /// <summary>
-/// Конфигурация EF для FlowContent
+/// ОТКЛЮЧЕНА: Конфигурация EF для FlowContent
+/// Отношения настроены в SimpleFlowConfiguration для избежания конфликтов
 /// </summary>
-public class FlowContentConfiguration : IEntityTypeConfiguration<FlowContent>
+public class FlowContentConfigurationDisabled // : IEntityTypeConfiguration<FlowContent>
 {
     public void Configure(EntityTypeBuilder<FlowContent> builder)
     {
