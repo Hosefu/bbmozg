@@ -46,7 +46,7 @@ public class Flow
     /// <summary>
     /// Идентификатор активной версии контента
     /// </summary>
-    public Guid ActiveContentId { get; set; }
+    public Guid? ActiveContentId { get; set; }
 
     /// <summary>
     /// Создатель потока
@@ -138,7 +138,7 @@ public class Flow
     /// Устанавливает активную версию контента
     /// </summary>
     /// <param name="contentId">Идентификатор версии контента</param>
-    public void SetActiveContent(Guid contentId)
+    public void SetActiveContent(Guid? contentId)
     {
         ActiveContentId = contentId;
         UpdatedAt = DateTime.UtcNow;

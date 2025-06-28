@@ -17,17 +17,7 @@ public class ArticleComponentConfiguration : IEntityTypeConfiguration<ArticleCom
         // Наследование от ComponentBase
         builder.HasBaseType<ComponentBase>();
 
-        // Основные свойства
-        builder.Property(a => a.Content)
-            .IsRequired()
-            .HasColumnType("text");
-
-        builder.Property(a => a.ReadingTimeMinutes)
-            .IsRequired()
-            .HasDefaultValue(15);
-
-        // Индексы для производительности
-        builder.HasIndex(a => a.ReadingTimeMinutes)
-            .HasDatabaseName("IX_ArticleComponents_ReadingTimeMinutes");
+        // ReadingTimeMinutes теперь вычисляемое свойство, не хранится в БД
+        builder.Ignore(a => a.ReadingTimeMinutes);
     }
 }

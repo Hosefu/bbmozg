@@ -35,7 +35,13 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
         builder.Property(x => x.FlowContentId)
             .IsRequired();
 
-        builder.Property(x => x.CompletedAt);
+        builder.Property(x => x.AssignedBy)
+            .IsRequired();
+
+        // CompletedAt и Buddy теперь вычисляемые свойства, не хранятся в БД
+        builder.Ignore(x => x.CompletedAt);
+        builder.Ignore(x => x.Buddy);
+        builder.Ignore(x => x.Deadline);
 
         // Аудит
         builder.Property(x => x.AssignedAt)
@@ -56,6 +62,12 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
         builder.HasOne(x => x.FlowContent)
             .WithMany()
             .HasForeignKey(x => x.FlowContentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Связь с назначившим пользователем
+        builder.HasOne(x => x.AssignedByUser)
+            .WithMany()
+            .HasForeignKey(x => x.AssignedBy)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Связь с наставниками (многие ко многим через промежуточную таблицу)

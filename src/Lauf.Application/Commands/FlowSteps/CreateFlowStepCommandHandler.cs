@@ -61,7 +61,7 @@ public class CreateFlowStepCommandHandler : IRequestHandler<CreateFlowStepComman
             var order = request.Order?.ToString() ?? GenerateNextStepOrder(flow.ActiveContent.Steps);
             
             var flowStep = new FlowStep(
-                flow.ActiveContentId,
+                flow.ActiveContentId ?? throw new InvalidOperationException("Активный контент не установлен"),
                 request.Title,
                 request.Description,
                 order);

@@ -19,10 +19,11 @@ public class FlowAssignmentTests
 
         // Act
         var assignment = new FlowAssignment(userId, flow.Id, flow.ActiveContent.Id, Guid.NewGuid());
+        assignment.Progress = new FlowAssignmentProgress(assignment.Id, flow.TotalSteps);
 
         // Assert
         assignment.UserId.Should().Be(userId);
-        assignment.FlowId.Should().Be(flowId);
+        assignment.FlowId.Should().Be(flow.Id); // Используем flow.Id вместо переданного flowId
         assignment.Status.Should().Be(AssignmentStatus.Assigned);
         assignment.AssignedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
@@ -36,6 +37,7 @@ public class FlowAssignmentTests
 
         // Act
         var assignment = new FlowAssignment(userId, flow.Id, flow.ActiveContent.Id, Guid.NewGuid());
+        assignment.Progress = new FlowAssignmentProgress(assignment.Id, flow.TotalSteps);
 
         // Assert
         assignment.Status.Should().Be(AssignmentStatus.Assigned);
@@ -48,6 +50,7 @@ public class FlowAssignmentTests
         var userId = Guid.NewGuid();
         var flow = CreateTestFlow(Guid.NewGuid());
         var assignment = new FlowAssignment(userId, flow.Id, flow.ActiveContent.Id, Guid.NewGuid());
+        assignment.Progress = new FlowAssignmentProgress(assignment.Id, flow.TotalSteps);
 
         // Act
         assignment.Start();
@@ -63,9 +66,11 @@ public class FlowAssignmentTests
         var userId = Guid.NewGuid();
         var flow = CreateTestFlow(Guid.NewGuid());
         var assignment = new FlowAssignment(userId, flow.Id, flow.ActiveContent.Id, Guid.NewGuid());
+        assignment.Progress = new FlowAssignmentProgress(assignment.Id, flow.TotalSteps);
 
         // Act
-        assignment.Complete();
+        assignment.Start(); // Сначала запускаем
+        assignment.Complete(); // Потом завершаем
 
         // Assert
         assignment.Status.Should().Be(AssignmentStatus.Completed);
@@ -80,6 +85,7 @@ public class FlowAssignmentTests
         var userId = Guid.NewGuid();
         var flow = CreateTestFlow(Guid.NewGuid());
         var assignment = new FlowAssignment(userId, flow.Id, flow.ActiveContent.Id, Guid.NewGuid());
+        assignment.Progress = new FlowAssignmentProgress(assignment.Id, flow.TotalSteps);
         var buddy = CreateTestUser();
 
         // Act
@@ -97,6 +103,7 @@ public class FlowAssignmentTests
         var userId = Guid.NewGuid();
         var flow = CreateTestFlow(Guid.NewGuid());
         var assignment = new FlowAssignment(userId, flow.Id, flow.ActiveContent.Id, Guid.NewGuid());
+        assignment.Progress = new FlowAssignmentProgress(assignment.Id, flow.TotalSteps);
         var buddy = CreateTestUser();
         assignment.AddBuddy(buddy);
 
@@ -117,6 +124,7 @@ public class FlowAssignmentTests
 
         // Act
         var assignment = new FlowAssignment(userId, flow.Id, flow.ActiveContent.Id, Guid.NewGuid());
+        assignment.Progress = new FlowAssignmentProgress(assignment.Id, flow.TotalSteps);
 
         // Assert
         assignment.Status.Should().Be(AssignmentStatus.Assigned);
@@ -130,7 +138,15 @@ public class FlowAssignmentTests
         var flow = new Flow("Test Flow", "Test Description", createdBy);
         
         // Создаем настройки
-        var settings = new FlowSettings();
+        var settings = new FlowSettings
+        {
+            Id = Guid.NewGuid(),
+            FlowId = flow.Id,
+            DaysPerStep = daysPerStep,
+            RequireSequentialCompletionComponents = false,
+            AllowSelfRestart = false,
+            AllowSelfPause = true
+        };
         
         // Создаем контент
         var content = new FlowContent(flow.Id, 1, createdBy);
@@ -146,8 +162,11 @@ public class FlowAssignmentTests
             content.Steps.Add(step);
         }
 
-        // В новой архитектуре нет публичных методов SetSettings/SetActiveContent
-        // Используем рефлексию или создаем flow правильно
+        // Устанавливаем активный контент
+        flow.ActiveContentId = content.Id;
+        flow.ActiveContent = content;
+        flow.Settings = settings;
+        flow.Contents.Add(content);
         
         return flow;
     }
