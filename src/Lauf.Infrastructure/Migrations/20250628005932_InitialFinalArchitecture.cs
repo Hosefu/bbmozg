@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lauf.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialNewArchitecture : Migration
+    public partial class InitialFinalArchitecture : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -83,8 +83,7 @@ namespace Lauf.Infrastructure.Migrations
                     AttemptCount = table.Column<int>(type: "INTEGER", nullable: false),
                     MaxAttempts = table.Column<int>(type: "INTEGER", nullable: false),
                     RelatedEntityId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    RelatedEntityType = table.Column<string>(type: "TEXT", nullable: true),
-                    UserId1 = table.Column<Guid>(type: "TEXT", nullable: false)
+                    RelatedEntityType = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -92,12 +91,6 @@ namespace Lauf.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Notifications_Users_UserId",
                         column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Users_UserId1",
-                        column: x => x.UserId1,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -326,8 +319,7 @@ namespace Lauf.Infrastructure.Migrations
                     PausedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     PauseReason = table.Column<string>(type: "TEXT", nullable: true),
                     UserRating = table.Column<int>(type: "INTEGER", nullable: true),
-                    UserFeedback = table.Column<string>(type: "TEXT", maxLength: 2000, nullable: true),
-                    FlowAssignmentId1 = table.Column<Guid>(type: "TEXT", nullable: false)
+                    UserFeedback = table.Column<string>(type: "TEXT", maxLength: 2000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -344,8 +336,7 @@ namespace Lauf.Infrastructure.Migrations
                     FlowContentId = table.Column<Guid>(type: "TEXT", nullable: false),
                     AssignedBy = table.Column<Guid>(type: "TEXT", nullable: false),
                     Status = table.Column<string>(type: "TEXT", nullable: false, defaultValue: "Assigned"),
-                    AssignedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    FlowContentId1 = table.Column<Guid>(type: "TEXT", nullable: true)
+                    AssignedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -373,7 +364,6 @@ namespace Lauf.Infrastructure.Migrations
                     Version = table.Column<int>(type: "INTEGER", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FlowId1 = table.Column<Guid>(type: "TEXT", nullable: false),
                     CreatedByUserId = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
@@ -505,11 +495,6 @@ namespace Lauf.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_FlowAssignmentProgress_FlowAssignmentId1",
-                table: "FlowAssignmentProgress",
-                column: "FlowAssignmentId1");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_FlowAssignments_AssignedAt",
                 table: "FlowAssignments",
                 column: "AssignedAt");
@@ -523,11 +508,6 @@ namespace Lauf.Infrastructure.Migrations
                 name: "IX_FlowAssignments_FlowContentId",
                 table: "FlowAssignments",
                 column: "FlowContentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FlowAssignments_FlowContentId1",
-                table: "FlowAssignments",
-                column: "FlowContentId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_FlowAssignments_FlowId",
@@ -553,17 +533,6 @@ namespace Lauf.Infrastructure.Migrations
                 name: "IX_FlowContents_FlowId",
                 table: "FlowContents",
                 column: "FlowId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FlowContents_FlowId_Version",
-                table: "FlowContents",
-                columns: new[] { "FlowId", "Version" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_FlowContents_FlowId1",
-                table: "FlowContents",
-                column: "FlowId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Flows_ActiveContentId",
@@ -611,11 +580,6 @@ namespace Lauf.Infrastructure.Migrations
                 name: "IX_Notifications_UserId",
                 table: "Notifications",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId1",
-                table: "Notifications",
-                column: "UserId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_QuestionOptions_QuizQuestionId",
@@ -712,27 +676,12 @@ namespace Lauf.Infrastructure.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_FlowAssignmentProgress_FlowAssignments_FlowAssignmentId1",
-                table: "FlowAssignmentProgress",
-                column: "FlowAssignmentId1",
-                principalTable: "FlowAssignments",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
                 name: "FK_FlowAssignments_FlowContents_FlowContentId",
                 table: "FlowAssignments",
                 column: "FlowContentId",
                 principalTable: "FlowContents",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_FlowAssignments_FlowContents_FlowContentId1",
-                table: "FlowAssignments",
-                column: "FlowContentId1",
-                principalTable: "FlowContents",
-                principalColumn: "Id");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_FlowAssignments_Flows_FlowId",
@@ -746,14 +695,6 @@ namespace Lauf.Infrastructure.Migrations
                 name: "FK_FlowContents_Flows_FlowId",
                 table: "FlowContents",
                 column: "FlowId",
-                principalTable: "Flows",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_FlowContents_Flows_FlowId1",
-                table: "FlowContents",
-                column: "FlowId1",
                 principalTable: "Flows",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);

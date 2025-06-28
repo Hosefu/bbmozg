@@ -59,7 +59,7 @@ public class SimpleFlowAssignmentConfiguration : IEntityTypeConfiguration<FlowAs
 
         // Связь с контентом потока
         builder.HasOne(x => x.FlowContent)
-            .WithMany()
+            .WithMany(fc => fc.Assignments)
             .HasForeignKey(x => x.FlowContentId)
             .OnDelete(DeleteBehavior.Restrict);
 

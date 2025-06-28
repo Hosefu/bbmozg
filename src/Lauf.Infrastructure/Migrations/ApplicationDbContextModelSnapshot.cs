@@ -218,9 +218,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<Guid>("FlowContentId")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("FlowContentId1")
-                        .HasColumnType("TEXT");
-
                     b.Property<Guid>("FlowId")
                         .HasColumnType("TEXT");
 
@@ -240,8 +237,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasIndex("AssignedBy");
 
                     b.HasIndex("FlowContentId");
-
-                    b.HasIndex("FlowContentId1");
 
                     b.HasIndex("FlowId");
 
@@ -812,14 +807,10 @@ namespace Lauf.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Lauf.Domain.Entities.Flows.FlowContent", "FlowContent")
-                        .WithMany()
+                        .WithMany("Assignments")
                         .HasForeignKey("FlowContentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("Lauf.Domain.Entities.Flows.FlowContent", null)
-                        .WithMany("Assignments")
-                        .HasForeignKey("FlowContentId1");
 
                     b.HasOne("Lauf.Domain.Entities.Flows.Flow", "Flow")
                         .WithMany("Assignments")
