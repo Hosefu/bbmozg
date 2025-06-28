@@ -44,20 +44,11 @@ public class ArticleComponentType : ObjectType<ArticleComponent>
         descriptor.Field(x => x.Content)
             .Description("Содержимое статьи в формате Markdown");
 
-        descriptor.Field(x => x.ReadingTimeMinutes)
-            .Description("Время чтения в минутах");
+        descriptor.Field(x => x.Order)
+            .Description("Порядковый номер компонента");
 
-        descriptor.Field(x => x.Status)
-            .Description("Статус компонента");
-
-        descriptor.Field(x => x.EstimatedDurationMinutes)
-            .Description("Приблизительное время выполнения в минутах");
-
-        descriptor.Field(x => x.CreatedAt)
-            .Description("Дата создания");
-
-        descriptor.Field(x => x.UpdatedAt)
-            .Description("Дата последнего обновления");
+        descriptor.Field(x => x.IsRequired)
+            .Description("Обязательный ли компонент");
     }
 }
 
@@ -83,23 +74,20 @@ public class QuizComponentType : ObjectType<QuizComponent>
         descriptor.Field(x => x.Description)
             .Description("Описание квиза");
 
-        descriptor.Field(x => x.QuestionText)
-            .Description("Текст вопроса");
+        descriptor.Field(x => x.Questions)
+            .Description("Вопросы квиза");
 
-        descriptor.Field(x => x.Options)
-            .Description("Варианты ответов");
+        descriptor.Field(x => x.AllowMultipleAttempts)
+            .Description("Разрешить множественные попытки");
 
-        descriptor.Field(x => x.Status)
-            .Description("Статус компонента");
+        descriptor.Field(x => x.ShuffleQuestions)
+            .Description("Перемешивать вопросы");
 
-        descriptor.Field(x => x.EstimatedDurationMinutes)
-            .Description("Приблизительное время выполнения в минутах");
+        descriptor.Field(x => x.Order)
+            .Description("Порядковый номер компонента");
 
-        descriptor.Field(x => x.CreatedAt)
-            .Description("Дата создания");
-
-        descriptor.Field(x => x.UpdatedAt)
-            .Description("Дата последнего обновления");
+        descriptor.Field(x => x.IsRequired)
+            .Description("Обязательный ли компонент");
     }
 }
 
@@ -125,26 +113,20 @@ public class TaskComponentType : ObjectType<TaskComponent>
         descriptor.Field(x => x.Description)
             .Description("Описание задания");
 
-        descriptor.Field(x => x.Instruction)
-            .Description("Инструкция для выполнения задания");
-
         descriptor.Field(x => x.CodeWord)
             .Description("Кодовое слово для проверки");
 
-        descriptor.Field(x => x.Hint)
-            .Description("Подсказка для задания");
+        descriptor.Field(x => x.Score)
+            .Description("Очки за правильный ответ");
 
-        descriptor.Field(x => x.Status)
-            .Description("Статус компонента");
+        descriptor.Field(x => x.IsCaseSensitive)
+            .Description("Учитывать ли регистр");
 
-        descriptor.Field(x => x.EstimatedDurationMinutes)
-            .Description("Приблизительное время выполнения в минутах");
+        descriptor.Field(x => x.Order)
+            .Description("Порядковый номер компонента");
 
-        descriptor.Field(x => x.CreatedAt)
-            .Description("Дата создания");
-
-        descriptor.Field(x => x.UpdatedAt)
-            .Description("Дата последнего обновления");
+        descriptor.Field(x => x.IsRequired)
+            .Description("Обязательный ли компонент");
     }
 }
 
@@ -167,10 +149,10 @@ public class QuestionOptionType : ObjectType<QuestionOption>
         descriptor.Field(x => x.IsCorrect)
             .Description("Является ли вариант правильным");
 
-        descriptor.Field(x => x.Message)
-            .Description("Сообщение при выборе варианта");
+        descriptor.Field(x => x.Text)
+            .Description("Текст варианта ответа");
 
-        descriptor.Field(x => x.Points)
+        descriptor.Field(x => x.Score)
             .Description("Количество баллов за вариант");
 
         descriptor.Field(x => x.Order)

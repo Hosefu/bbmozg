@@ -12,28 +12,16 @@ public class FlowSettingsType : ObjectType<FlowSettingsDto>
         descriptor.Name("FlowSettings");
         descriptor.Description("Настройки потока обучения");
 
-        descriptor.Field(f => f.AllowSkipping)
-            .Description("Разрешить пропуск шагов");
+        descriptor.Field(f => f.DaysPerStep)
+            .Description("Дней на шаг");
 
-        descriptor.Field(f => f.RequireSequentialCompletion)
-            .Description("Требовать последовательное прохождение");
+        descriptor.Field(f => f.RequireSequentialCompletionComponents)
+            .Description("Требовать последовательное прохождение компонентов");
 
-        descriptor.Field(f => f.MaxAttempts)
-            .Description("Максимальное количество попыток");
+        descriptor.Field(f => f.AllowSelfRestart)
+            .Description("Разрешить самостоятельный перезапуск");
 
-        descriptor.Field(f => f.TimeToCompleteWorkingDays)
-            .Description("Время на выполнение в рабочих днях");
-
-        descriptor.Field(f => f.ShowProgress)
-            .Description("Показывать прогресс");
-
-        descriptor.Field(f => f.AllowRetry)
-            .Description("Разрешить повторное прохождение");
-
-        descriptor.Field(f => f.SendReminders)
-            .Description("Отправлять напоминания");
-
-        descriptor.Field(f => f.AdditionalSettings)
-            .Description("Дополнительные настройки");
+        descriptor.Field(f => f.AllowSelfPause)
+            .Description("Разрешить самостоятельную паузу");
     }
 }

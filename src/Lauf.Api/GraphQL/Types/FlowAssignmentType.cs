@@ -24,26 +24,20 @@ public class FlowAssignmentType : ObjectType<FlowAssignmentDto>
         descriptor.Field(f => f.Status)
             .Description("Статус прохождения");
 
-        descriptor.Field(f => f.CreatedAt)
-            .Description("Дата создания назначения");
-
-        descriptor.Field(f => f.StartedAt)
-            .Description("Дата начала прохождения");
+        descriptor.Field(f => f.AssignedAt)
+            .Description("Дата назначения");
 
         descriptor.Field(f => f.CompletedAt)
             .Description("Дата завершения прохождения");
 
-        descriptor.Field(f => f.DueDate)
+        descriptor.Field(f => f.Deadline)
             .Description("Крайний срок выполнения");
-
-        descriptor.Field(f => f.ProgressPercentage)
-            .Description("Процент прогресса выполнения");
 
         descriptor.Field(f => f.Notes)
             .Description("Заметки о назначении");
 
-        descriptor.Field(f => f.Priority)
-            .Description("Приоритет выполнения");
+        descriptor.Field(f => f.Buddy)
+            .Description("Идентификатор наставника");
 
         descriptor.Field(f => f.User)
             .Description("Пользователь")

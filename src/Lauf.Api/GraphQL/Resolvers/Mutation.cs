@@ -111,15 +111,14 @@ public class Mutation
             
             var command = new CreateFlowCommand
             {
-                Title = input.Title,
+                Name = input.Title,
                 Description = input.Description,
                 CreatedById = userId,
                 Settings = new CreateFlowSettingsCommand
                 {
-                    RequireSequentialCompletion = input.IsSequential,
-                    AllowRetry = input.AllowRetry,
-                    TimeToCompleteWorkingDays = input.TimeLimit,
-                    MaxAttempts = input.PassingScore
+                    RequireSequentialCompletionComponents = input.IsSequential,
+                    AllowSelfRestart = input.AllowRetry,
+                    DaysPerStep = input.TimeLimit ?? 7
                 }
             };
 

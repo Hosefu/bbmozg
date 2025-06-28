@@ -15,10 +15,10 @@ public class FlowStepType : ObjectType<FlowStepDto>
         descriptor.Field(f => f.Id)
             .Description("Уникальный идентификатор шага");
 
-        descriptor.Field(f => f.FlowId)
-            .Description("Идентификатор потока");
+        descriptor.Field(f => f.FlowContentId)
+            .Description("Идентификатор содержимого потока");
 
-        descriptor.Field(f => f.Title)
+        descriptor.Field(f => f.Name)
             .Description("Название шага");
 
         descriptor.Field(f => f.Description)
@@ -33,8 +33,8 @@ public class FlowStepType : ObjectType<FlowStepDto>
         descriptor.Field(f => f.EstimatedDurationMinutes)
             .Description("Ожидаемое время прохождения в минутах");
 
-        descriptor.Field(f => f.Status)
-            .Description("Статус шага");
+        descriptor.Field(f => f.IsEnabled)
+            .Description("Включен ли шаг");
 
         descriptor.Field(f => f.Instructions)
             .Description("Инструкции для прохождения шага");
