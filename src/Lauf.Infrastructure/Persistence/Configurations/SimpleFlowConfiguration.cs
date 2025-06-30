@@ -63,6 +63,12 @@ public class SimpleFlowConfiguration : IEntityTypeConfiguration<Flow>
             .HasForeignKey(fc => fc.FlowId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Связь с создателем (многие к одному)
+        builder.HasOne(x => x.CreatedByUser)
+            .WithMany()
+            .HasForeignKey(x => x.CreatedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Индексы
         builder.HasIndex(x => x.IsActive);
         builder.HasIndex(x => x.CreatedAt);

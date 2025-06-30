@@ -75,7 +75,7 @@ public class JsonHelperTests
     public void Deserialize_WithNullOrEmpty_ShouldReturnDefault()
     {
         // Act
-        var result1 = JsonHelper.Deserialize<TestObject>(null);
+        var result1 = JsonHelper.Deserialize<TestObject>(null!);
         var result2 = JsonHelper.Deserialize<TestObject>("");
         var result3 = JsonHelper.Deserialize<TestObject>("   ");
 
@@ -183,7 +183,7 @@ public class JsonHelperTests
 
         // Assert
         result.Should().NotBeSameAs(_testObject);
-        result.Id.Should().Be(_testObject.Id);
+        result!.Id.Should().Be(_testObject.Id);
     }
 
     [Fact]

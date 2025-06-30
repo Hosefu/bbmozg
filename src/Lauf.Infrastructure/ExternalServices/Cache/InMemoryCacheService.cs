@@ -87,7 +87,7 @@ public class InMemoryCacheService : ICacheService
             await SetAsync(key, value, expiration, cancellationToken);
         }
 
-        return value;
+        return value!;
     }
 
     /// <summary>
@@ -153,7 +153,7 @@ public class InMemoryCacheService : ICacheService
     /// <summary>
     /// Инкремент числового значения
     /// </summary>
-    public async Task<long> IncrementAsync(string key, long value = 1, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
+    public Task<long> IncrementAsync(string key, long value = 1, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -173,12 +173,12 @@ public class InMemoryCacheService : ICacheService
             _cache.Set(key, newValue, options);
             
             _logger.LogDebug("Инкремент ключа {Key} на {Value}, новое значение: {NewValue}", key, value, newValue);
-            return newValue;
+            return Task.FromResult(newValue);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при инкременте ключа {Key}", key);
-            return 0;
+            return Task.FromResult(0L);
         }
     }
 

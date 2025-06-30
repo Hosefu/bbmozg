@@ -40,11 +40,8 @@ public class IdempotencyBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
             return (TResponse)cachedResult!;
         }
 
-        // Помещаем в кэш временную запись о выполнении
-        var executionTask = ExecuteCommand(request, next, cancellationToken);
-        _cache.Set(cacheKey, executionTask, TimeSpan.FromMinutes(5));
-
-        var result = await executionTask;
+        // Выполняем команду
+        var result = await ExecuteCommand(request, next, cancellationToken);
         
         // Обновляем кэш с результатом
         _cache.Set(cacheKey, result, TimeSpan.FromMinutes(1));

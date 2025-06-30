@@ -99,10 +99,10 @@ public class FlowAssignmentRepository : IFlowAssignmentRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<FlowAssignment>> GetByBuddyAsync(Guid buddyId, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<FlowAssignment>> GetByBuddyAsync(Guid buddyId, int skip = 0, int take = 50, CancellationToken cancellationToken = default)
     {
         // Пока связь с бадди не реализована, возвращаем пустой список
-        return new List<FlowAssignment>();
+        return Task.FromResult<IReadOnlyList<FlowAssignment>>(new List<FlowAssignment>());
     }
 
     public async Task<int> CountByStatusAsync(AssignmentStatus status, CancellationToken cancellationToken = default)

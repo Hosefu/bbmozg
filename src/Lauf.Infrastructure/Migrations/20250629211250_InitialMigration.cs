@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lauf.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFinalArchitecture : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -388,8 +388,7 @@ namespace Lauf.Infrastructure.Migrations
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
-                    ActiveContentId = table.Column<Guid>(type: "TEXT", nullable: true),
-                    CreatedByUserId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    ActiveContentId = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -401,11 +400,11 @@ namespace Lauf.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
-                        name: "FK_Flows_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
+                        name: "FK_Flows_Users_CreatedBy",
+                        column: x => x.CreatedBy,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -549,11 +548,6 @@ namespace Lauf.Infrastructure.Migrations
                 name: "IX_Flows_CreatedBy",
                 table: "Flows",
                 column: "CreatedBy");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Flows_CreatedByUserId",
-                table: "Flows",
-                column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Flows_IsActive",
@@ -708,7 +702,7 @@ namespace Lauf.Infrastructure.Migrations
                 table: "FlowContents");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_Flows_Users_CreatedByUserId",
+                name: "FK_Flows_Users_CreatedBy",
                 table: "Flows");
 
             migrationBuilder.DropForeignKey(

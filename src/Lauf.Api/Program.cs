@@ -105,6 +105,9 @@ public class Program
             // Сидинг ролей
             await RoleSeed.SeedAsync(context);
             
+            // Сидинг всех данных через ApplicationDbContext
+            await context.SeedDataAsync();
+            
             Log.Information("Инициализация данных завершена успешно");
         }
         catch (Exception ex)

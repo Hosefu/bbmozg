@@ -94,7 +94,7 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
     /// <summary>
     /// Обновление прогресса пользователя
     /// </summary>
-    private async Task UpdateUserProgressAsync(ComponentCompleted @event, CancellationToken cancellationToken)
+    private Task UpdateUserProgressAsync(ComponentCompleted @event, CancellationToken cancellationToken)
     {
         try
         {
@@ -118,6 +118,8 @@ public class ComponentCompletedEventHandler : INotificationHandler<ComponentComp
                 @event.UserId, @event.ComponentSnapshotId);
             // Не пробрасываем исключение, чтобы не нарушить основной процесс
         }
+        
+        return Task.CompletedTask;
     }
 
     /// <summary>

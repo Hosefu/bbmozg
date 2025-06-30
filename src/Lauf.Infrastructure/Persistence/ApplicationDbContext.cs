@@ -140,6 +140,9 @@ public class ApplicationDbContext : DbContext
         {
             // Seeding достижений
             await AchievementSeeder.SeedAsync(this);
+            
+            // Seeding демонстрационного потока дизайн-студии
+            await DesignStudioFlowSeeder.SeedAsync(this);
         }
         catch (Exception)
         {

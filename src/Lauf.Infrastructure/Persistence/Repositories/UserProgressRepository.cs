@@ -32,24 +32,7 @@ public class UserProgressRepository : IUserProgressRepository
         // Создаем объект прогресса на основе назначения
         var progress = new UserProgress(assignment.UserId);
         
-        // Вычисляем базовый прогресс
-        decimal progressValue = 0;
-        
-        switch (assignment.Status)
-        {
-            case Domain.Enums.AssignmentStatus.Assigned:
-                progressValue = 0;
-                break;
-            case Domain.Enums.AssignmentStatus.InProgress:
-                progressValue = 50; // 50% за начало работы
-                break;
-            case Domain.Enums.AssignmentStatus.Completed:
-                progressValue = 100;
-                break;
-            default:
-                progressValue = 0;
-                break;
-        }
+        // В новой архитектуре прогресс рассчитывается через FlowAssignmentProgress
 
         // Обновляем прогресс на основе статуса назначения
         var allAssignments = await _context.FlowAssignments

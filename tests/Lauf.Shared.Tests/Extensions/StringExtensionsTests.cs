@@ -43,7 +43,7 @@ public class StringExtensionsTests
     public void Truncate_ShouldTruncateCorrectly(string? input, int maxLength, string expected)
     {
         // Act
-        var result = input.Truncate(maxLength);
+        var result = input!.Truncate(maxLength);
 
         // Assert
         result.Should().Be(expected);
@@ -58,7 +58,7 @@ public class StringExtensionsTests
     public void ToTitleCase_ShouldConvertCorrectly(string? input, string expected)
     {
         // Act
-        var result = input.ToTitleCase();
+        var result = input!.ToTitleCase();
 
         // Assert
         result.Should().Be(expected);
@@ -73,7 +73,7 @@ public class StringExtensionsTests
     public void StripHtml_ShouldRemoveHtmlTags(string? input, string expected)
     {
         // Act
-        var result = input.StripHtml();
+        var result = input!.StripHtml();
 
         // Assert
         result.Should().Be(expected);
@@ -89,7 +89,7 @@ public class StringExtensionsTests
     public void ToSlug_ShouldCreateSlug(string? input, string expected)
     {
         // Act
-        var result = input.ToSlug();
+        var result = input!.ToSlug();
 
         // Assert
         result.Should().Be(expected);
@@ -105,7 +105,7 @@ public class StringExtensionsTests
     public void WordCount_ShouldCountWordsCorrectly(string? input, int expected)
     {
         // Act
-        var result = input.WordCount();
+        var result = input!.WordCount();
 
         // Assert
         result.Should().Be(expected);
@@ -120,7 +120,7 @@ public class StringExtensionsTests
     public void Mask_ShouldMaskCorrectly(string? input, int visibleStart, int visibleEnd, string expected)
     {
         // Act
-        var result = input.Mask(visibleStart, visibleEnd);
+        var result = input!.Mask(visibleStart, visibleEnd);
 
         // Assert
         result.Should().Be(expected);
@@ -136,7 +136,7 @@ public class StringExtensionsTests
     public void IsValidEmail_ShouldValidateCorrectly(string? input, bool expected)
     {
         // Act
-        var result = input.IsValidEmail();
+        var result = input!.IsValidEmail();
 
         // Assert
         result.Should().Be(expected);
@@ -152,7 +152,7 @@ public class StringExtensionsTests
     public void ToIntSafe_ShouldConvertCorrectly(string? input, int expected)
     {
         // Act
-        var result = input.ToIntSafe();
+        var result = input!.ToIntSafe();
 
         // Assert
         result.Should().Be(expected);

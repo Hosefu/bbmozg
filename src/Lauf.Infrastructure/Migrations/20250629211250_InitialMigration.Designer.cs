@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lauf.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250628005932_InitialFinalArchitecture")]
-    partial class InitialFinalArchitecture
+    [Migration("20250629211250_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,9 +167,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("CreatedByUserId")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(1000)
@@ -196,8 +193,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.HasIndex("CreatedAt");
 
                     b.HasIndex("CreatedBy");
-
-                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("IsActive");
 
@@ -792,8 +787,8 @@ namespace Lauf.Infrastructure.Migrations
 
                     b.HasOne("Lauf.Domain.Entities.Users.User", "CreatedByUser")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ActiveContent");

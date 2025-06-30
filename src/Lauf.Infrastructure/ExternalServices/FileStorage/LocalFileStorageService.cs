@@ -281,11 +281,11 @@ public class LocalFileStorageService : IFileStorageService
         }
     }
 
-    private async Task<string?> FindFilePathAsync(string fileKey)
+    private Task<string?> FindFilePathAsync(string fileKey)
     {
         // Поиск файла по всем папкам
         var files = Directory.GetFiles(_basePath, $"{fileKey}.*", SearchOption.AllDirectories);
-        return files.FirstOrDefault();
+        return Task.FromResult(files.FirstOrDefault());
     }
 
     private string GetContentType(string filePath)

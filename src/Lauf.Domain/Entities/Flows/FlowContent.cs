@@ -33,6 +33,11 @@ public class FlowContent
     public Guid CreatedBy { get; set; }
 
     /// <summary>
+    /// Идентификатор создателя версии (для EF mapping)
+    /// </summary>
+    public Guid CreatedByUserId { get; set; }
+
+    /// <summary>
     /// Flow-координатор
     /// </summary>
     public virtual Flow Flow { get; set; } = null!;
@@ -64,6 +69,7 @@ public class FlowContent
         FlowId = flowId;
         Version = version;
         CreatedBy = createdBy;
+        CreatedByUserId = createdBy;
         CreatedAt = DateTime.UtcNow;
     }
 

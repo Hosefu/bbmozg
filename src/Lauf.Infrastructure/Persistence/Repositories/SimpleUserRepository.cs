@@ -74,14 +74,16 @@ public class SimpleUserRepository : IUserRepository
             .AnyAsync(x => x.TelegramUserId.Value == telegramUserId.Value, cancellationToken);
     }
 
-    public async Task AddAsync(User user, CancellationToken cancellationToken = default)
+    public Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Add(user);
+        return Task.CompletedTask;
     }
 
-    public async Task UpdateAsync(User user, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Users.Update(user);
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(User user, CancellationToken cancellationToken = default)

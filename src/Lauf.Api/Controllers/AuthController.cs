@@ -224,7 +224,6 @@ public class AuthController : ControllerBase
             new Claim("telegram_id", user.TelegramUserId.Value.ToString()),
             new Claim("first_name", user.FirstName),
             new Claim("last_name", user.LastName),
-            // position поле убрано из новой архитектуры
             new Claim("is_active", user.IsActive.ToString())
         };
 
