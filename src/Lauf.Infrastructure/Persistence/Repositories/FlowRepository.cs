@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Lauf.Domain.Entities.Flows;
+using Lauf.Domain.Entities.Components;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Domain.Enums;
 using Lauf.Infrastructure.Persistence;
@@ -20,12 +21,20 @@ public class FlowRepository : IFlowRepository
 
     public async Task<Flow?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Flows
+        var flow = await _context.Flows
             .Include(x => x.Settings)
             .Include(x => x.ActiveContent)
                 .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
                     .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        // Загружаем вопросы квизов отдельно
+        if (flow?.ActiveContent != null)
+        {
+            await LoadQuizQuestionsAsync(flow.ActiveContent.Steps, cancellationToken);
+        }
+
+        return flow;
     }
 
     public async Task<Flow?> GetWithDetailsAsync(Guid id, CancellationToken cancellationToken = default)
@@ -35,11 +44,19 @@ public class FlowRepository : IFlowRepository
 
     public async Task<Flow?> GetByIdWithStepsAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.Flows
+        var flow = await _context.Flows
             .Include(x => x.ActiveContent)
                 .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
                     .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        // Загружаем вопросы квизов отдельно
+        if (flow?.ActiveContent != null)
+        {
+            await LoadQuizQuestionsAsync(flow.ActiveContent.Steps, cancellationToken);
+        }
+
+        return flow;
     }
 
     public async Task<Flow?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
@@ -167,12 +184,20 @@ public class FlowRepository : IFlowRepository
 
     public async Task<IReadOnlyList<Flow>> GetAllWithStepsAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Flows
+        var flows = await _context.Flows
             .Include(f => f.Settings)
             .Include(f => f.ActiveContent)
                 .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
                     .ThenInclude(s => s.Components.OrderBy(c => c.Order))
             .ToListAsync(cancellationToken);
+
+        // Загружаем вопросы квизов отдельно для всех потоков
+        foreach (var flow in flows.Where(f => f.ActiveContent != null))
+        {
+            await LoadQuizQuestionsAsync(flow.ActiveContent!.Steps, cancellationToken);
+        }
+
+        return flows;
     }
 
     public async Task<Flow?> GetFlowByStepIdAsync(Guid stepId, CancellationToken cancellationToken = default)
@@ -228,15 +253,72 @@ public class FlowRepository : IFlowRepository
 
     public async Task<FlowStep?> GetStepByIdAsync(Guid stepId, CancellationToken cancellationToken = default)
     {
-        return await _context.FlowSteps
+        var step = await _context.FlowSteps
             .Include(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(s => s.Id == stepId, cancellationToken);
+
+        // Загружаем вопросы квизов отдельно
+        if (step != null)
+        {
+            await LoadQuizQuestionsAsync(new[] { step }, cancellationToken);
+        }
+
+        return step;
     }
 
     public async Task<FlowStep?> GetStepByComponentIdAsync(Guid componentId, CancellationToken cancellationToken = default)
     {
-        return await _context.FlowSteps
+        var step = await _context.FlowSteps
             .Include(s => s.Components.OrderBy(c => c.Order))
             .FirstOrDefaultAsync(s => s.Components.Any(c => c.Id == componentId), cancellationToken);
+
+        // Загружаем вопросы квизов отдельно
+        if (step != null)
+        {
+            await LoadQuizQuestionsAsync(new[] { step }, cancellationToken);
+        }
+
+        return step;
+    }
+
+    /// <summary>
+    /// Загружает вопросы и варианты ответов для всех квиз компонентов в шагах
+    /// </summary>
+    private async Task LoadQuizQuestionsAsync(IEnumerable<FlowStep> steps, CancellationToken cancellationToken)
+    {
+        var quizComponentIds = steps
+            .SelectMany(s => s.Components)
+            .OfType<QuizComponent>()
+            .Select(q => q.Id)
+            .ToList();
+
+        if (quizComponentIds.Any())
+        {
+            var questions = await _context.Set<QuizQuestion>()
+                .Include(q => q.Options.OrderBy(o => o.Order))
+                .Where(q => quizComponentIds.Contains(q.QuizComponentId))
+                .OrderBy(q => q.Order)
+                .ToListAsync(cancellationToken);
+
+            // Группируем вопросы по квиз компонентам
+            var questionsByQuiz = questions.GroupBy(q => q.QuizComponentId).ToDictionary(g => g.Key, g => g.ToList());
+
+            // Присваиваем вопросы соответствующим квиз компонентам
+            foreach (var step in steps)
+            {
+                foreach (var quizComponent in step.Components.OfType<QuizComponent>())
+                {
+                    if (questionsByQuiz.TryGetValue(quizComponent.Id, out var quizQuestions))
+                    {
+                        // Очищаем существующие вопросы и добавляем загруженные
+                        quizComponent.Questions.Clear();
+                        foreach (var question in quizQuestions)
+                        {
+                            quizComponent.Questions.Add(question);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

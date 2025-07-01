@@ -1,6 +1,7 @@
 using AutoMapper;
 using Lauf.Application.DTOs.Flows;
 using Lauf.Domain.Entities.Flows;
+using Lauf.Domain.Enums;
 using Lauf.Shared.Helpers;
 using Lauf.Application.DTOs.Components;
 using Lauf.Domain.Entities.Components;
@@ -52,10 +53,10 @@ public class FlowMappingProfile : Profile
             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
             .ForMember(dest => dest.IsEnabled, opt => opt.MapFrom(src => src.IsEnabled))
             .ForMember(dest => dest.Order, opt => opt.Ignore())
-            .ForMember(dest => dest.Settings, opt => opt.MapFrom(src => new Dictionary<string, object>()))
-            .ForMember(dest => dest.Component, opt => opt.MapFrom(src => src))
+            .ForMember(dest => dest.Component, opt => opt.MapFrom((src, dest, destMember, context) => MapComponentToDto(src, context)))
             .ForMember(dest => dest.ComponentId, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.ComponentType, opt => opt.MapFrom(src => src.Type));
+            .ForMember(dest => dest.ComponentType, opt => opt.MapFrom(src => src.Type))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ComponentStatus.Draft)); // Временно устанавливаем статус
 
         // Маппинг ComponentBase -> FlowStepComponentDetailsDto
         CreateMap<ComponentBase, FlowStepComponentDetailsDto>()
@@ -79,8 +80,7 @@ public class FlowMappingProfile : Profile
         CreateMap<QuizQuestion, QuizQuestionDto>()
             .ForMember(dest => dest.Options, opt => opt.MapFrom((src, dest, destMember, context) => 
                 MapOptionsWithOrder(src.Options.ToList(), context)));
-        CreateMap<QuestionOption, QuestionOptionDto>()
-            .ForMember(dest => dest.Order, opt => opt.Ignore());
+        CreateMap<QuestionOption, QuestionOptionDto>();
     }
 
     private static List<string> ParseTags(string tagsJson)
@@ -156,17 +156,16 @@ public class FlowMappingProfile : Profile
     }
 
     /// <summary>
-    /// Маппинг вариантов ответов с преобразованием LexoRank в числовые order
+    /// Маппинг вариантов ответов с сохранением LexoRank order
     /// </summary>
     private List<QuestionOptionDto> MapOptionsWithOrder(List<QuestionOption> options, ResolutionContext context)
     {
-        var orderedOptions = options.OrderBy(o => o.Order).ToArray();
         var result = new List<QuestionOptionDto>();
-
-        for (int i = 0; i < orderedOptions.Length; i++)
+        
+        foreach (var option in options.OrderBy(o => o.Order))
         {
-            var optionDto = context.Mapper.Map<QuestionOptionDto>(orderedOptions[i]);
-            optionDto.Order = i; // Порядковый номер начиная с 0
+            var optionDto = context.Mapper.Map<QuestionOptionDto>(option);
+            // Order остается как LexoRank - не преобразуем в числа
             result.Add(optionDto);
         }
 
@@ -220,6 +219,20 @@ public class FlowMappingProfile : Profile
             QuizComponent quiz => quiz.Content,
             TaskComponent task => task.Content,
             _ => component.Description
+        };
+    }
+
+    /// <summary>
+    /// Маппинг компонента в соответствующий DTO
+    /// </summary>
+    private static object? MapComponentToDto(ComponentBase component, ResolutionContext context)
+    {
+        return component switch
+        {
+            ArticleComponent article => context.Mapper.Map<ArticleComponentDto>(article),
+            QuizComponent quiz => context.Mapper.Map<QuizComponentDto>(quiz),
+            TaskComponent task => context.Mapper.Map<TaskComponentDto>(task),
+            _ => null
         };
     }
 }

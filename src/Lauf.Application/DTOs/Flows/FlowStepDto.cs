@@ -139,41 +139,6 @@ public class FlowStepComponentDto
     public ComponentStatus Status { get; set; }
 
     /// <summary>
-    /// Приблизительное время выполнения в минутах
-    /// </summary>
-    public int EstimatedDurationMinutes { get; set; }
-
-    /// <summary>
-    /// Максимальное количество попыток
-    /// </summary>
-    public int? MaxAttempts { get; set; }
-
-    /// <summary>
-    /// Минимальный проходной балл
-    /// </summary>
-    public int? MinPassingScore { get; set; }
-
-    /// <summary>
-    /// Настройки компонента
-    /// </summary>
-    public Dictionary<string, object> Settings { get; set; } = new();
-
-    /// <summary>
-    /// Инструкции для компонента
-    /// </summary>
-    public string Instructions { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Дата создания
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Дата последнего обновления
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
-
-    /// <summary>
     /// Данные компонента (статья, квиз или задание)
     /// </summary>
     public object? Component { get; set; }

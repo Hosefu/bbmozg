@@ -21,54 +21,19 @@ public class QuizComponentDto
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Текст вопроса
+    /// Содержимое квиза
     /// </summary>
-    public string QuestionText { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Тип компонента
+    /// </summary>
+    public string Type { get; set; } = "QUIZ";
 
     /// <summary>
     /// Вопросы квиза
     /// </summary>
     public List<QuizQuestionDto> Questions { get; set; } = new();
-
-    /// <summary>
-    /// Варианты ответов (ровно 5)
-    /// </summary>
-    public List<QuestionOptionDto> Options { get; set; } = new();
-
-    /// <summary>
-    /// Статус компонента
-    /// </summary>
-    public string Status { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Приблизительное время выполнения в минутах
-    /// </summary>
-    public int EstimatedDurationMinutes { get; set; }
-
-    /// <summary>
-    /// Максимальное количество попыток
-    /// </summary>
-    public int? MaxAttempts { get; set; }
-
-    /// <summary>
-    /// Минимальный проходной балл
-    /// </summary>
-    public int? MinPassingScore { get; set; }
-
-    /// <summary>
-    /// Дополнительные инструкции
-    /// </summary>
-    public string Instructions { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Дата создания
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Дата последнего обновления
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
 }
 
 /// <summary>
@@ -77,7 +42,7 @@ public class QuizComponentDto
 public class QuizQuestionDto
 {
     /// <summary>
-    /// Уникальный идентификатор вопроса
+    /// Идентификатор вопроса
     /// </summary>
     public Guid Id { get; set; }
 
@@ -87,18 +52,28 @@ public class QuizQuestionDto
     public string Text { get; set; } = string.Empty;
 
     /// <summary>
+    /// Является ли вопрос обязательным
+    /// </summary>
+    public bool IsRequired { get; set; } = true;
+
+    /// <summary>
+    /// Порядковый номер вопроса
+    /// </summary>
+    public string Order { get; set; } = string.Empty;
+
+    /// <summary>
     /// Варианты ответов
     /// </summary>
     public List<QuestionOptionDto> Options { get; set; } = new();
 }
 
 /// <summary>
-/// DTO для варианта ответа на вопрос
+/// DTO для варианта ответа
 /// </summary>
 public class QuestionOptionDto
 {
     /// <summary>
-    /// Уникальный идентификатор варианта
+    /// Идентификатор варианта ответа
     /// </summary>
     public Guid Id { get; set; }
 
@@ -108,22 +83,17 @@ public class QuestionOptionDto
     public string Text { get; set; } = string.Empty;
 
     /// <summary>
-    /// Является ли вариант правильным
+    /// Является ли этот вариант правильным ответом
     /// </summary>
     public bool IsCorrect { get; set; }
 
     /// <summary>
-    /// Порядковый номер варианта (для фронтенда, начиная с 0)
+    /// Порядковый номер варианта
     /// </summary>
-    public int Order { get; set; }
+    public string Order { get; set; } = string.Empty;
 
     /// <summary>
-    /// Сообщение, показываемое при выборе этого варианта
+    /// Очки за правильный ответ
     /// </summary>
-    public string Message { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Количество баллов за правильный ответ
-    /// </summary>
-    public int Points { get; set; } = 1;
+    public int Score { get; set; } = 1;
 }

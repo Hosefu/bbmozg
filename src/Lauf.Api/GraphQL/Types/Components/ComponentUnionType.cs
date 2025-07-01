@@ -1,12 +1,12 @@
 using HotChocolate.Types;
-using Lauf.Domain.Entities.Components;
+using Lauf.Application.DTOs.Components;
 
 namespace Lauf.Api.GraphQL.Types.Components;
 
 /// <summary>
 /// Union тип для всех типов компонентов
 /// </summary>
-public class ComponentUnionType : UnionType<ComponentBase>
+public class ComponentUnionType : UnionType
 {
     protected override void Configure(IUnionTypeDescriptor descriptor)
     {
@@ -22,18 +22,15 @@ public class ComponentUnionType : UnionType<ComponentBase>
 /// <summary>
 /// GraphQL тип для ArticleComponent
 /// </summary>
-public class ArticleComponentType : ObjectType<ArticleComponent>
+public class ArticleComponentType : ObjectType<ArticleComponentDto>
 {
-    protected override void Configure(IObjectTypeDescriptor<ArticleComponent> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<ArticleComponentDto> descriptor)
     {
         descriptor.Name("ArticleComponent");
         descriptor.Description("Компонент статьи");
 
         descriptor.Field(x => x.Id)
-            .Description("Уникальный идентификатор компонента");
-
-        descriptor.Field(x => x.Type)
-            .Description("Тип компонента");
+            .Description("Уникальный идентификатор");
 
         descriptor.Field(x => x.Title)
             .Description("Название статьи");
@@ -44,29 +41,26 @@ public class ArticleComponentType : ObjectType<ArticleComponent>
         descriptor.Field(x => x.Content)
             .Description("Содержимое статьи в формате Markdown");
 
-        descriptor.Field(x => x.Order)
-            .Description("Порядковый номер компонента");
+        descriptor.Field(x => x.Type)
+            .Description("Тип компонента");
 
-        descriptor.Field(x => x.IsRequired)
-            .Description("Обязательный ли компонент");
+        descriptor.Field(x => x.ReadingTimeMinutes)
+            .Description("Примерное время чтения в минутах");
     }
 }
 
 /// <summary>
 /// GraphQL тип для QuizComponent
 /// </summary>
-public class QuizComponentType : ObjectType<QuizComponent>
+public class QuizComponentType : ObjectType<QuizComponentDto>
 {
-    protected override void Configure(IObjectTypeDescriptor<QuizComponent> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<QuizComponentDto> descriptor)
     {
         descriptor.Name("QuizComponent");
         descriptor.Description("Компонент квиза");
 
         descriptor.Field(x => x.Id)
-            .Description("Уникальный идентификатор компонента");
-
-        descriptor.Field(x => x.Type)
-            .Description("Тип компонента");
+            .Description("Уникальный идентификатор");
 
         descriptor.Field(x => x.Title)
             .Description("Название квиза");
@@ -74,38 +68,30 @@ public class QuizComponentType : ObjectType<QuizComponent>
         descriptor.Field(x => x.Description)
             .Description("Описание квиза");
 
+        descriptor.Field(x => x.Content)
+            .Description("Содержимое квиза");
+
+        descriptor.Field(x => x.Type)
+            .Description("Тип компонента");
+
         descriptor.Field(x => x.Questions)
-            .Description("Вопросы квиза");
-
-        descriptor.Field(x => x.AllowMultipleAttempts)
-            .Description("Разрешить множественные попытки");
-
-        descriptor.Field(x => x.ShuffleQuestions)
-            .Description("Перемешивать вопросы");
-
-        descriptor.Field(x => x.Order)
-            .Description("Порядковый номер компонента");
-
-        descriptor.Field(x => x.IsRequired)
-            .Description("Обязательный ли компонент");
+            .Description("Вопросы квиза")
+            .Type<ListType<QuizQuestionType>>();
     }
 }
 
 /// <summary>
 /// GraphQL тип для TaskComponent
 /// </summary>
-public class TaskComponentType : ObjectType<TaskComponent>
+public class TaskComponentType : ObjectType<TaskComponentDto>
 {
-    protected override void Configure(IObjectTypeDescriptor<TaskComponent> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<TaskComponentDto> descriptor)
     {
         descriptor.Name("TaskComponent");
         descriptor.Description("Компонент задания");
 
         descriptor.Field(x => x.Id)
-            .Description("Уникальный идентификатор компонента");
-
-        descriptor.Field(x => x.Type)
-            .Description("Тип компонента");
+            .Description("Уникальный идентификатор");
 
         descriptor.Field(x => x.Title)
             .Description("Название задания");
@@ -113,32 +99,54 @@ public class TaskComponentType : ObjectType<TaskComponent>
         descriptor.Field(x => x.Description)
             .Description("Описание задания");
 
-        descriptor.Field(x => x.CodeWord)
-            .Description("Кодовое слово для проверки");
+        descriptor.Field(x => x.Content)
+            .Description("Содержимое задания");
+
+        descriptor.Field(x => x.Type)
+            .Description("Тип компонента");
 
         descriptor.Field(x => x.Score)
-            .Description("Очки за правильный ответ");
+            .Description("Количество очков за правильное выполнение");
+    }
+}
 
-        descriptor.Field(x => x.IsCaseSensitive)
-            .Description("Учитывать ли регистр");
+/// <summary>
+/// GraphQL тип для QuizQuestion
+/// </summary>
+public class QuizQuestionType : ObjectType<QuizQuestionDto>
+{
+    protected override void Configure(IObjectTypeDescriptor<QuizQuestionDto> descriptor)
+    {
+        descriptor.Name("QuizQuestion");
+        descriptor.Description("Вопрос квиза");
 
-        descriptor.Field(x => x.Order)
-            .Description("Порядковый номер компонента");
+        descriptor.Field(x => x.Id)
+            .Description("Уникальный идентификатор вопроса");
+
+        descriptor.Field(x => x.Text)
+            .Description("Текст вопроса");
 
         descriptor.Field(x => x.IsRequired)
-            .Description("Обязательный ли компонент");
+            .Description("Является ли вопрос обязательным");
+
+        descriptor.Field(x => x.Order)
+            .Description("Порядковый номер вопроса");
+
+        descriptor.Field(x => x.Options)
+            .Description("Варианты ответов")
+            .Type<ListType<QuestionOptionType>>();
     }
 }
 
 /// <summary>
 /// GraphQL тип для QuestionOption
 /// </summary>
-public class QuestionOptionType : ObjectType<QuestionOption>
+public class QuestionOptionType : ObjectType<QuestionOptionDto>
 {
-    protected override void Configure(IObjectTypeDescriptor<QuestionOption> descriptor)
+    protected override void Configure(IObjectTypeDescriptor<QuestionOptionDto> descriptor)
     {
         descriptor.Name("QuestionOption");
-        descriptor.Description("Вариант ответа для квиза");
+        descriptor.Description("Вариант ответа на вопрос");
 
         descriptor.Field(x => x.Id)
             .Description("Уникальный идентификатор варианта");
@@ -147,15 +155,12 @@ public class QuestionOptionType : ObjectType<QuestionOption>
             .Description("Текст варианта ответа");
 
         descriptor.Field(x => x.IsCorrect)
-            .Description("Является ли вариант правильным");
-
-        descriptor.Field(x => x.Text)
-            .Description("Текст варианта ответа");
-
-        descriptor.Field(x => x.Score)
-            .Description("Количество баллов за вариант");
+            .Description("Является ли этот вариант правильным ответом");
 
         descriptor.Field(x => x.Order)
             .Description("Порядковый номер варианта");
+
+        descriptor.Field(x => x.Score)
+            .Description("Очки за правильный ответ");
     }
 }

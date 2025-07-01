@@ -21,54 +21,24 @@ public class TaskComponentDto
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Инструкция - как найти кодовое слово
+    /// Содержимое задания
     /// </summary>
-    public string Instruction { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
 
     /// <summary>
-    /// Кодовое слово для проверки ответа
+    /// Тип компонента
     /// </summary>
-    public string CodeWord { get; set; } = string.Empty;
+    public string Type { get; set; } = "TASK";
 
     /// <summary>
-    /// Подсказка, доступная в любой момент
+    /// Очки за правильный ответ
     /// </summary>
-    public string Hint { get; set; } = string.Empty;
+    public int Score { get; set; } = 1;
 
     /// <summary>
-    /// Статус компонента
+    /// Учитывать ли регистр
     /// </summary>
-    public string Status { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Приблизительное время выполнения в минутах
-    /// </summary>
-    public int EstimatedDurationMinutes { get; set; }
-
-    /// <summary>
-    /// Максимальное количество попыток
-    /// </summary>
-    public int? MaxAttempts { get; set; }
-
-    /// <summary>
-    /// Минимальный проходной балл
-    /// </summary>
-    public int? MinPassingScore { get; set; }
-
-    /// <summary>
-    /// Дополнительные инструкции
-    /// </summary>
-    public string Instructions { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Дата создания
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Дата последнего обновления
-    /// </summary>
-    public DateTime UpdatedAt { get; set; }
+    public bool IsCaseSensitive { get; set; }
 }
 
 /// <summary>

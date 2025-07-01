@@ -19,21 +19,6 @@ public class QuizComponent : ComponentBase
     public override bool HasScore => true;
 
     /// <summary>
-    /// Разрешить множественные попытки
-    /// </summary>
-    public bool AllowMultipleAttempts { get; private set; } = false;
-
-    /// <summary>
-    /// Перемешивать вопросы
-    /// </summary>
-    public bool ShuffleQuestions { get; private set; } = false;
-
-    /// <summary>
-    /// Перемешивать варианты ответов
-    /// </summary>
-    public bool ShuffleOptions { get; private set; } = false;
-
-    /// <summary>
     /// Вопросы квиза
     /// </summary>
     public virtual ICollection<QuizQuestion> Questions { get; set; } = new List<QuizQuestion>();

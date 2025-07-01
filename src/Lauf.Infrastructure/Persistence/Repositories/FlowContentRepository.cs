@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Lauf.Domain.Entities.Flows;
+using Lauf.Domain.Entities.Components;
 using Lauf.Domain.Interfaces.Repositories;
 using Lauf.Infrastructure.Persistence;
 
@@ -22,6 +23,8 @@ public class FlowContentRepository : IFlowContentRepository
         return await _context.FlowContents
             .Include(fc => fc.Steps.OrderBy(s => s.Order))
                 .ThenInclude(s => s.Components.OrderBy(c => c.Order))
+                    .ThenInclude(c => ((QuizComponent)c).Questions)
+                        .ThenInclude(q => q.Options.OrderBy(o => o.Order))
             .FirstOrDefaultAsync(fc => fc.Id == id, cancellationToken);
     }
 
@@ -36,6 +39,8 @@ public class FlowContentRepository : IFlowContentRepository
             .Include(f => f.ActiveContent)
                 .ThenInclude(ac => ac.Steps.OrderBy(s => s.Order))
                     .ThenInclude(s => s.Components.OrderBy(c => c.Order))
+                        .ThenInclude(c => ((QuizComponent)c).Questions)
+                            .ThenInclude(q => q.Options.OrderBy(o => o.Order))
             .FirstOrDefaultAsync(f => f.Id == flowId, cancellationToken);
 
         return flow?.ActiveContent;
@@ -54,6 +59,8 @@ public class FlowContentRepository : IFlowContentRepository
         return await _context.FlowContents
             .Include(fc => fc.Steps.OrderBy(s => s.Order))
                 .ThenInclude(s => s.Components.OrderBy(c => c.Order))
+                    .ThenInclude(c => ((QuizComponent)c).Questions)
+                        .ThenInclude(q => q.Options.OrderBy(o => o.Order))
             .FirstOrDefaultAsync(fc => fc.FlowId == flowId && fc.Version == version, cancellationToken);
     }
 
@@ -62,6 +69,8 @@ public class FlowContentRepository : IFlowContentRepository
         return await _context.FlowContents
             .Include(fc => fc.Steps.OrderBy(s => s.Order))
                 .ThenInclude(s => s.Components.OrderBy(c => c.Order))
+                    .ThenInclude(c => ((QuizComponent)c).Questions)
+                        .ThenInclude(q => q.Options.OrderBy(o => o.Order))
             .Where(fc => fc.FlowId == flowId)
             .OrderByDescending(fc => fc.Version)
             .FirstOrDefaultAsync(cancellationToken);

@@ -40,26 +40,8 @@ public class FlowStepComponentType : ObjectType<FlowStepComponentDto>
         descriptor.Field(f => f.Status)
             .Description("Статус компонента");
 
-        descriptor.Field(f => f.EstimatedDurationMinutes)
-            .Description("Приблизительное время выполнения в минутах");
-
-        descriptor.Field(f => f.MaxAttempts)
-            .Description("Максимальное количество попыток");
-
-        descriptor.Field(f => f.MinPassingScore)
-            .Description("Минимальный проходной балл");
-
-        descriptor.Field(f => f.Settings)
-            .Description("Настройки компонента");
-
-        descriptor.Field(f => f.Instructions)
-            .Description("Инструкции для компонента");
-
-        descriptor.Field(f => f.CreatedAt)
-            .Description("Дата создания");
-
-        descriptor.Field(f => f.UpdatedAt)
-            .Description("Дата последнего обновления");
+        descriptor.Field(f => f.IsEnabled)
+            .Description("Включен ли компонент");
 
         // Поле компонента с данными
         descriptor.Field(f => f.Component)
