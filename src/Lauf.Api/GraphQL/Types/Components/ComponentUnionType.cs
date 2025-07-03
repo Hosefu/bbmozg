@@ -105,8 +105,8 @@ public class TaskComponentType : ObjectType<TaskComponentDto>
         descriptor.Field(x => x.Type)
             .Description("Тип компонента");
 
-        descriptor.Field(x => x.Score)
-            .Description("Количество очков за правильное выполнение");
+        descriptor.Field(x => x.IsCaseSensitive)
+            .Description("Учитывать ли регистр при проверке ответа");
     }
 }
 
@@ -159,8 +159,5 @@ public class QuestionOptionType : ObjectType<QuestionOptionDto>
 
         descriptor.Field(x => x.Order)
             .Description("Порядковый номер варианта");
-
-        descriptor.Field(x => x.Score)
-            .Description("Очки за правильный ответ");
     }
 }

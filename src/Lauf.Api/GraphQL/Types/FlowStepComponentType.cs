@@ -37,9 +37,6 @@ public class FlowStepComponentType : ObjectType<FlowStepComponentDto>
         descriptor.Field(f => f.IsRequired)
             .Description("Обязательный ли компонент");
 
-        descriptor.Field(f => f.Status)
-            .Description("Статус компонента");
-
         descriptor.Field(f => f.IsEnabled)
             .Description("Включен ли компонент");
 

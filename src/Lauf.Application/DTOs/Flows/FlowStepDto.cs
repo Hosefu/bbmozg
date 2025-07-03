@@ -134,11 +134,6 @@ public class FlowStepComponentDto
     public bool IsEnabled { get; set; } = true;
 
     /// <summary>
-    /// Статус компонента
-    /// </summary>
-    public ComponentStatus Status { get; set; }
-
-    /// <summary>
     /// Данные компонента (статья, квиз или задание)
     /// </summary>
     public object? Component { get; set; }

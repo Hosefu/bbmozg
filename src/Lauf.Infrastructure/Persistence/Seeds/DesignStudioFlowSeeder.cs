@@ -158,9 +158,8 @@ public static class DesignStudioFlowSeeder
             step.Id,
             "Рефлексия по ценностям",
             "Подумайте, какая из наших ценностей вам ближе всего и почему. Найдите кодовое слово в статье о ценностях.",
-            "После прочтения статьи о ценностях, найдите ключевое слово, которое объединяет все наши принципы работы.",
+            "Подумайте, какая из наших ценностей вам ближе всего и почему. Найдите кодовое слово в статье о ценностях.",
             "КОМАНДА",
-            5,
             "3000"
         );
 
@@ -253,7 +252,6 @@ public static class DesignStudioFlowSeeder
             "Создайте простой макет визитки в любой доступной программе и найдите кодовое слово",
             "Используя любую из изученных программ, создайте макет визитки размером 90x50мм. Кодовое слово скрыто в разделе о сетевой инфраструктуре.",
             "NAS",
-            10,
             "4000"
         );
 
@@ -357,7 +355,6 @@ public static class DesignStudioFlowSeeder
             "Продемонстрируйте знание принципов организации файлов",
             "Создайте на своем компьютере папку с правильной структурой для нового проекта. Кодовое слово найдите в статье о резервном копировании.",
             "АРХИВ",
-            15,
             "4000"
         );
 
@@ -382,19 +379,19 @@ public static class DesignStudioFlowSeeder
         // Варианты для первого вопроса
         var q1Options = new[]
         {
-            new QuestionOption(question1.Id, "Скорость выполнения", false, 0, "1"),
-            new QuestionOption(question1.Id, "Командная работа", true, 5, "2"),
-            new QuestionOption(question1.Id, "Индивидуальные достижения", false, 0, "3"),
-            new QuestionOption(question1.Id, "Конкуренция", false, 0, "4")
+            new QuestionOption(question1.Id, "Скорость выполнения", false, "1"),
+            new QuestionOption(question1.Id, "Командная работа", true, "2"),
+            new QuestionOption(question1.Id, "Индивидуальные достижения", false, "3"),
+            new QuestionOption(question1.Id, "Конкуренция", false, "4")
         };
 
         // Варианты для второго вопроса
         var q2Options = new[]
         {
-            new QuestionOption(question2.Id, "Прибыль", false, 0, "1"),
-            new QuestionOption(question2.Id, "Скорость", false, 0, "2"),
-            new QuestionOption(question2.Id, "Качество", true, 5, "3"),
-            new QuestionOption(question2.Id, "Количество проектов", false, 0, "4")
+            new QuestionOption(question2.Id, "Прибыль", false, "1"),
+            new QuestionOption(question2.Id, "Скорость", false, "2"),
+            new QuestionOption(question2.Id, "Качество", true, "3"),
+            new QuestionOption(question2.Id, "Количество проектов", false, "4")
         };
 
         await context.QuestionOptions.AddRangeAsync(q1Options.Concat(q2Options));
@@ -414,23 +411,23 @@ public static class DesignStudioFlowSeeder
 
         var q1Options = new[]
         {
-            new QuestionOption(question1.Id, "Photoshop", false, 0, "1"),
-            new QuestionOption(question1.Id, "Illustrator", true, 3, "2"),
-            new QuestionOption(question1.Id, "InDesign", false, 0, "3")
+            new QuestionOption(question1.Id, "Photoshop", false, "1"),
+            new QuestionOption(question1.Id, "Illustrator", true, "2"),
+            new QuestionOption(question1.Id, "InDesign", false, "3")
         };
 
         var q2Options = new[]
         {
-            new QuestionOption(question2.Id, "Photoshop", false, 0, "1"),
-            new QuestionOption(question2.Id, "Figma", true, 3, "2"),
-            new QuestionOption(question2.Id, "After Effects", false, 0, "3")
+            new QuestionOption(question2.Id, "Photoshop", false, "1"),
+            new QuestionOption(question2.Id, "Figma", true, "2"),
+            new QuestionOption(question2.Id, "After Effects", false, "3")
         };
 
         var q3Options = new[]
         {
-            new QuestionOption(question3.Id, "Обычные мониторы", false, 0, "1"),
-            new QuestionOption(question3.Id, "Мониторы с калибровкой цвета", true, 4, "2"),
-            new QuestionOption(question3.Id, "Телевизор", false, 0, "3")
+            new QuestionOption(question3.Id, "Обычные мониторы", false, "1"),
+            new QuestionOption(question3.Id, "Мониторы с калибровкой цвета", true, "2"),
+            new QuestionOption(question3.Id, "Телевизор", false, "3")
         };
 
         await context.QuestionOptions.AddRangeAsync(q1Options.Concat(q2Options).Concat(q3Options));
@@ -450,23 +447,23 @@ public static class DesignStudioFlowSeeder
 
         var q1Options = new[]
         {
-            new QuestionOption(question1.Id, "2 копии", false, 0, "1"),
-            new QuestionOption(question1.Id, "3 копии", true, 3, "2"),
-            new QuestionOption(question1.Id, "5 копий", false, 0, "3")
+            new QuestionOption(question1.Id, "2 копии", false, "1"),
+            new QuestionOption(question1.Id, "3 копии", true, "2"),
+            new QuestionOption(question1.Id, "5 копий", false, "3")
         };
 
         var q2Options = new[]
         {
-            new QuestionOption(question2.Id, "ДД.ММ.ГГ", false, 0, "1"),
-            new QuestionOption(question2.Id, "ГГММДД", true, 3, "2"),
-            new QuestionOption(question2.Id, "ММ/ДД/ГГГГ", false, 0, "3")
+            new QuestionOption(question2.Id, "ДД.ММ.ГГ", false, "1"),
+            new QuestionOption(question2.Id, "ГГММДД", true, "2"),
+            new QuestionOption(question2.Id, "ММ/ДД/ГГГГ", false, "3")
         };
 
         var q3Options = new[]
         {
-            new QuestionOption(question3.Id, "Ежедневно", false, 0, "1"),
-            new QuestionOption(question3.Id, "Еженедельно", true, 4, "2"),
-            new QuestionOption(question3.Id, "Ежемесячно", false, 0, "3")
+            new QuestionOption(question3.Id, "Ежедневно", false, "1"),
+            new QuestionOption(question3.Id, "Еженедельно", true, "2"),
+            new QuestionOption(question3.Id, "Ежемесячно", false, "3")
         };
 
         await context.QuestionOptions.AddRangeAsync(q1Options.Concat(q2Options).Concat(q3Options));

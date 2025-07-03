@@ -1,4 +1,5 @@
 using Lauf.Application.DTOs.Flows;
+using Lauf.Api.GraphQL.Types.Components;
 
 namespace Lauf.Api.GraphQL.Types;
 
@@ -54,8 +55,32 @@ public class FlowStepType : ObjectType<FlowStepDto>
         descriptor.Field(f => f.RequiredComponents)
             .Description("Количество обязательных компонентов");
 
-        descriptor.Field(f => f.Components)
-            .Description("Компоненты шага")
-            .Type<ListType<FlowStepComponentType>>();
+        // Использование нового ComponentWithMetadata типа
+        descriptor.Field("components")
+            .Description("Компоненты шага с метаданными")
+            .Type<ListType<ComponentWithMetadataType>>()
+            .Resolve(context =>
+            {
+                var step = context.Parent<FlowStepDto>();
+                if (step.Components == null || !step.Components.Any())
+                    return new List<ComponentWithMetadata>();
+                
+                // Преобразуем FlowStepComponentDto в ComponentWithMetadata
+                return step.Components
+                    .Where(c => c.Component != null)
+                    .OrderBy(c => c.Order)
+                    .Select(c => new ComponentWithMetadata
+                    {
+                        Id = c.ComponentId,
+                        ComponentType = c.ComponentType,
+                        Title = c.Title,
+                        Description = c.Description,
+                        Order = c.Order,
+                        IsRequired = c.IsRequired,
+                        IsEnabled = c.IsEnabled,
+                        Component = c.Component!
+                    })
+                    .ToList();
+            });
     }
 }

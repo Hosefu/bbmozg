@@ -20,10 +20,6 @@ public class TaskComponentConfiguration : IEntityTypeConfiguration<TaskComponent
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.Property(x => x.Score)
-            .IsRequired()
-            .HasDefaultValue(1);
-
         builder.Property(x => x.IsCaseSensitive)
             .IsRequired()
             .HasDefaultValue(false);

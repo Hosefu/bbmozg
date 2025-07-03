@@ -99,11 +99,6 @@ namespace Lauf.Infrastructure.Migrations
                     b.Property<Guid>("QuizQuestionId")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Score")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(1);
-
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -711,11 +706,6 @@ namespace Lauf.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
-
-                    b.Property<int>("Score")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(1);
 
                     b.ToTable("TaskComponents", (string)null);
                 });

@@ -38,8 +38,6 @@ public class CreateQuizComponentCommandValidator : AbstractValidator<CreateQuizC
             .LessThanOrEqualTo(60)
             .WithMessage("Время выполнения не должно превышать 60 минут");
 
-
-
         RuleFor(x => x.Options)
             .NotEmpty()
             .WithMessage("Квиз должен содержать варианты ответов")
@@ -78,11 +76,5 @@ public class CreateQuestionOptionValidator : AbstractValidator<CreateQuestionOpt
             .WithMessage("Сообщение при выборе варианта обязательно")
             .MaximumLength(1000)
             .WithMessage("Сообщение не должно превышать 1000 символов");
-
-        RuleFor(x => x.Points)
-            .GreaterThanOrEqualTo(0)
-            .WithMessage("Количество баллов должно быть больше или равно 0")
-            .LessThanOrEqualTo(100)
-            .WithMessage("Количество баллов не должно превышать 100");
     }
 }

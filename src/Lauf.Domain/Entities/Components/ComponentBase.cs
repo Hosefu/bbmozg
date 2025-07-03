@@ -79,16 +79,6 @@ public abstract class ComponentBase
     protected ComponentBase() { }
 
     /// <summary>
-    /// Общий балл за компонент (переопределяется в наследниках)
-    /// </summary>
-    public virtual int GetTotalScore() => 0;
-
-    /// <summary>
-    /// Дает ли компонент очки
-    /// </summary>
-    public virtual bool HasScore => false;
-
-    /// <summary>
     /// Включает компонент
     /// </summary>
     public void Enable()

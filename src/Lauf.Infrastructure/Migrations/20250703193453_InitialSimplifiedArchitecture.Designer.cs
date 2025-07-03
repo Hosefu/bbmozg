@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lauf.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250630125111_RemoveQuizComponentFields")]
-    partial class RemoveQuizComponentFields
+    [Migration("20250703193453_InitialSimplifiedArchitecture")]
+    partial class InitialSimplifiedArchitecture
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -101,11 +101,6 @@ namespace Lauf.Infrastructure.Migrations
 
                     b.Property<Guid>("QuizQuestionId")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("Score")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(1);
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -714,11 +709,6 @@ namespace Lauf.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
-
-                    b.Property<int>("Score")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(1);
 
                     b.ToTable("TaskComponents", (string)null);
                 });

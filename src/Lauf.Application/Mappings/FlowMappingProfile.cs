@@ -10,28 +10,31 @@ using Lauf.Application.Queries.Flows;
 namespace Lauf.Application.Mappings;
 
 /// <summary>
-/// Профиль маппинга для потоков
+/// Профиль маппинга для сущностей потоков обучения
 /// </summary>
 public class FlowMappingProfile : Profile
 {
     public FlowMappingProfile()
     {
-        // Маппинг Flow -> FlowDto (обновленная архитектура)
+        // Маппинг Flow -> FlowDto
         CreateMap<Flow, FlowDto>()
-            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.TotalSteps, opt => opt.MapFrom(src => src.ActiveContent != null ? src.ActiveContent.Steps.Count : 0))
-            .ForMember(dest => dest.Steps, opt => opt.MapFrom((src, dest, destMember, context) => 
-                src.ActiveContent != null ? MapStepsWithOrder(src.ActiveContent.Steps, context) : new List<FlowStepDto>()));
+            .ForMember(dest => dest.TotalSteps, opt => opt.MapFrom(src => src.TotalSteps))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.IsActive ? FlowStatus.Published : FlowStatus.Draft))
+            .ForMember(dest => dest.Priority, opt => opt.MapFrom(src => 1))
+            .ForMember(dest => dest.IsRequired, opt => opt.MapFrom(src => false))
+            .ForMember(dest => dest.Tags, opt => opt.MapFrom(src => new List<string>()))
+            .ForMember(dest => dest.PublishedAt, opt => opt.MapFrom(src => src.IsActive ? src.CreatedAt : (DateTime?)null))
+            .ForMember(dest => dest.Settings, opt => opt.MapFrom(src => src.Settings))
+            .ForMember(dest => dest.Steps, opt => opt.MapFrom(src => src.ActiveContent != null ? src.ActiveContent.Steps : new List<FlowStep>()));
 
-        // Маппинг FlowContent -> FlowContentDto
-        CreateMap<FlowContent, FlowContentDto>()
-            .ForMember(dest => dest.Steps, opt => opt.MapFrom((src, dest, destMember, context) => 
-                MapStepsWithOrder(src.Steps, context)));
+        // Маппинг FlowSettings -> FlowSettingsDto
+        CreateMap<FlowSettings, FlowSettingsDto>()
+            .ForMember(dest => dest.DaysPerStep, opt => opt.MapFrom(src => src.DaysPerStep))
+            .ForMember(dest => dest.RequireSequentialCompletionComponents, opt => opt.MapFrom(src => src.RequireSequentialCompletionComponents))
+            .ForMember(dest => dest.AllowSelfRestart, opt => opt.MapFrom(src => src.AllowSelfRestart))
+            .ForMember(dest => dest.AllowSelfPause, opt => opt.MapFrom(src => src.AllowSelfPause));
 
-        // Маппинг FlowSettings -> FlowSettingsDto (упрощенный)
-        CreateMap<FlowSettings, FlowSettingsDto>();
-
-        // Маппинг FlowStep -> FlowStepDto (обновленная архитектура)
+        // Маппинг FlowStep -> FlowStepDto (упрощенный без промежуточного маппинга)
         CreateMap<FlowStep, FlowStepDto>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
             .ForMember(dest => dest.FlowContentId, opt => opt.MapFrom(src => src.FlowContentId))
@@ -40,192 +43,100 @@ public class FlowMappingProfile : Profile
             .ForMember(dest => dest.TotalComponents, opt => opt.MapFrom(src => src.Components.Count))
             .ForMember(dest => dest.RequiredComponents, opt => opt.MapFrom(src => src.Components.Count(c => c.IsRequired)))
             .ForMember(dest => dest.Components, opt => opt.MapFrom((src, dest, destMember, context) => 
-                MapComponentsWithOrder(src.Components, context)));
+                MapComponentsDirectly(src.Components, context)));
 
         // Маппинг FlowStep -> FlowStepDetailsDto
         CreateMap<FlowStep, FlowStepDetailsDto>()
             .IncludeBase<FlowStep, FlowStepDto>()
             .ForMember(dest => dest.Components, opt => opt.MapFrom((src, dest, destMember, context) => 
-                MapComponentsWithOrderDetailed(src.Components, context)));
+                MapComponentsDetailed(src.Components, context)));
 
-        // Маппинг ComponentBase -> FlowStepComponentDto (обновленная архитектура)
-        CreateMap<ComponentBase, FlowStepComponentDto>()
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-            .ForMember(dest => dest.IsEnabled, opt => opt.MapFrom(src => src.IsEnabled))
-            .ForMember(dest => dest.Order, opt => opt.Ignore())
-            .ForMember(dest => dest.Component, opt => opt.MapFrom((src, dest, destMember, context) => MapComponentToDto(src, context)))
-            .ForMember(dest => dest.ComponentId, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.ComponentType, opt => opt.MapFrom(src => src.Type))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => ComponentStatus.Draft)); // Временно устанавливаем статус
+        // Маппинг FlowAssignment -> FlowAssignmentDto (новая архитектура)
+        CreateMap<FlowAssignment, FlowAssignmentDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => MapAssignmentStatusToProgressStatus(src.Status)))
+            .ForMember(dest => dest.AssignedAt, opt => opt.MapFrom(src => src.AssignedAt))
+            .ForMember(dest => dest.CompletedAt, opt => opt.MapFrom(src => src.CompletedAt))
+            .ForMember(dest => dest.Deadline, opt => opt.MapFrom(src => src.Deadline))
+            .ForMember(dest => dest.AssignedBy, opt => opt.MapFrom(src => src.AssignedBy))
+            .ForMember(dest => dest.Buddy, opt => opt.MapFrom(src => src.Buddy))
+            .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => default(string))); // Заметки пока не добавлены
 
-        // Маппинг ComponentBase -> FlowStepComponentDetailsDto
-        CreateMap<ComponentBase, FlowStepComponentDetailsDto>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-            .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-            .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-            .ForMember(dest => dest.ComponentType, opt => opt.MapFrom(src => src.Type))
-            .ForMember(dest => dest.Content, opt => opt.MapFrom(src => MapComponentContent(src)))
-            .ForMember(dest => dest.Settings, opt => opt.MapFrom(src => new Dictionary<string, object>()))
-            .ForMember(dest => dest.IsRequired, opt => opt.MapFrom(src => src.IsRequired))
-            .ForMember(dest => dest.Order, opt => opt.Ignore())
-            .ForMember(dest => dest.Progress, opt => opt.Ignore());
+        // Маппинг компонентов
+        CreateMap<ArticleComponent, ArticleComponentDto>()
+            .ForMember(dest => dest.ReadingTimeMinutes, opt => opt.MapFrom(src => src.ReadingTimeMinutes));
 
-        // Маппинг компонентов (обновленная архитектура)
-        CreateMap<ArticleComponent, ArticleComponentDto>();
-        CreateMap<QuizComponent, QuizComponentDto>()
-            .ForMember(dest => dest.Questions, opt => opt.MapFrom(src => src.Questions));
+        CreateMap<QuizComponent, QuizComponentDto>();
+
         CreateMap<TaskComponent, TaskComponentDto>();
 
-        // Маппинг вопросов и вариантов ответов
-        CreateMap<QuizQuestion, QuizQuestionDto>()
-            .ForMember(dest => dest.Options, opt => opt.MapFrom((src, dest, destMember, context) => 
-                MapOptionsWithOrder(src.Options.ToList(), context)));
+        CreateMap<QuizQuestion, QuizQuestionDto>();
+
         CreateMap<QuestionOption, QuestionOptionDto>();
     }
 
-    private static List<string> ParseTags(string tagsJson)
+    /// <summary>
+    /// Прямой маппинг компонентов в FlowStepComponentDto для обратной совместимости
+    /// </summary>
+    private List<FlowStepComponentDto> MapComponentsDirectly(ICollection<ComponentBase> components, ResolutionContext context)
     {
-        try
-        {
-            return JsonHelper.Deserialize<List<string>>(tagsJson) ?? new List<string>();
-        }
-        catch
-        {
-            return new List<string>();
-        }
-    }
+        if (components == null || !components.Any())
+            return new List<FlowStepComponentDto>();
 
-    private static Dictionary<string, object> ParseAdditionalSettings(string settingsJson)
-    {
-        try
-        {
-            return JsonHelper.Deserialize<Dictionary<string, object>>(settingsJson) ?? new Dictionary<string, object>();
-        }
-        catch
-        {
-            return new Dictionary<string, object>();
-        }
-    }
-
-    private static Dictionary<string, object> ParseSettings(string settingsJson)
-    {
-        try
-        {
-            return JsonHelper.Deserialize<Dictionary<string, object>>(settingsJson) ?? new Dictionary<string, object>();
-        }
-        catch
-        {
-            return new Dictionary<string, object>();
-        }
+        return components
+            .OrderBy(c => c.Order)
+            .Select((component, index) =>
+            {
+                var dto = new FlowStepComponentDto
+                {
+                    Id = component.Id,
+                    FlowStepId = component.FlowStepId,
+                    ComponentId = component.Id,
+                    ComponentType = component.Type,
+                    Title = component.Title,
+                    Description = component.Description,
+                    Order = index,
+                    IsRequired = component.IsRequired,
+                    IsEnabled = component.IsEnabled,
+                    Component = MapComponentToDto(component, context)
+                };
+                return dto;
+            })
+            .ToList();
     }
 
     /// <summary>
-    /// Маппинг шагов с преобразованием LexoRank в числовые order
+    /// Маппинг компонентов для детального просмотра
     /// </summary>
-    private ICollection<FlowStepDto> MapStepsWithOrder(ICollection<FlowStep> steps, ResolutionContext context)
+    private List<FlowStepComponentDetailsDto> MapComponentsDetailed(ICollection<ComponentBase> components, ResolutionContext context)
     {
-        var orderedSteps = steps.OrderBy(s => s.Order).ToArray();
-        var result = new List<FlowStepDto>();
+        if (components == null || !components.Any())
+            return new List<FlowStepComponentDetailsDto>();
 
-        for (int i = 0; i < orderedSteps.Length; i++)
-        {
-            var stepDto = context.Mapper.Map<FlowStepDto>(orderedSteps[i]);
-            stepDto.Order = i; // Порядковый номер начиная с 0
-            result.Add(stepDto);
-        }
-
-        return result;
+        return components
+            .OrderBy(c => c.Order)
+            .Select((component, index) =>
+            {
+                var dto = new FlowStepComponentDetailsDto
+                {
+                    Id = component.Id,
+                    Title = component.Title,
+                    Description = component.Description,
+                    ComponentType = component.Type,
+                    Content = component.Content,
+                    Settings = null, // Настройки пока не определены
+                    IsRequired = component.IsRequired,
+                    Order = index,
+                    Progress = null // Прогресс будет добавлен позже
+                };
+                return dto;
+            })
+            .ToList();
     }
 
     /// <summary>
-    /// Маппинг компонентов с преобразованием LexoRank в числовые order
+    /// Маппинг компонента в DTO в зависимости от типа
     /// </summary>
-    private ICollection<FlowStepComponentDto> MapComponentsWithOrder(ICollection<ComponentBase> components, ResolutionContext context)
-    {
-        var orderedComponents = components.OrderBy(c => c.Order).ToArray();
-        var result = new List<FlowStepComponentDto>();
-
-        for (int i = 0; i < orderedComponents.Length; i++)
-        {
-            var componentDto = context.Mapper.Map<FlowStepComponentDto>(orderedComponents[i]);
-            componentDto.Order = i; // Порядковый номер начиная с 0
-            result.Add(componentDto);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Маппинг вариантов ответов с сохранением LexoRank order
-    /// </summary>
-    private List<QuestionOptionDto> MapOptionsWithOrder(List<QuestionOption> options, ResolutionContext context)
-    {
-        var result = new List<QuestionOptionDto>();
-        
-        foreach (var option in options.OrderBy(o => o.Order))
-        {
-            var optionDto = context.Mapper.Map<QuestionOptionDto>(option);
-            // Order остается как LexoRank - не преобразуем в числа
-            result.Add(optionDto);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Маппинг шагов для детального просмотра с преобразованием LexoRank в числовые order
-    /// </summary>
-    private ICollection<FlowStepDetailsDto> MapStepsWithOrderDetailed(ICollection<FlowStep> steps, ResolutionContext context)
-    {
-        var orderedSteps = steps.OrderBy(s => s.Order).ToArray();
-        var result = new List<FlowStepDetailsDto>();
-
-        for (int i = 0; i < orderedSteps.Length; i++)
-        {
-            var stepDto = context.Mapper.Map<FlowStepDetailsDto>(orderedSteps[i]);
-            stepDto.Order = i; // Порядковый номер начиная с 0
-            result.Add(stepDto);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Маппинг компонентов для детального просмотра с преобразованием LexoRank в числовые order
-    /// </summary>
-    private ICollection<FlowStepComponentDetailsDto> MapComponentsWithOrderDetailed(ICollection<ComponentBase> components, ResolutionContext context)
-    {
-        var orderedComponents = components.OrderBy(c => c.Order).ToArray();
-        var result = new List<FlowStepComponentDetailsDto>();
-
-        for (int i = 0; i < orderedComponents.Length; i++)
-        {
-            var componentDto = context.Mapper.Map<FlowStepComponentDetailsDto>(orderedComponents[i]);
-            componentDto.Order = i; // Порядковый номер начиная с 0
-            result.Add(componentDto);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Извлекает содержимое компонента в зависимости от его типа (обновленная архитектура)
-    /// </summary>
-    private static string MapComponentContent(ComponentBase component)
-    {
-        return component switch
-        {
-            ArticleComponent article => article.Content,
-            QuizComponent quiz => quiz.Content,
-            TaskComponent task => task.Content,
-            _ => component.Description
-        };
-    }
-
-    /// <summary>
-    /// Маппинг компонента в соответствующий DTO
-    /// </summary>
-    private static object? MapComponentToDto(ComponentBase component, ResolutionContext context)
+    private object? MapComponentToDto(ComponentBase component, ResolutionContext context)
     {
         return component switch
         {
@@ -233,6 +144,23 @@ public class FlowMappingProfile : Profile
             QuizComponent quiz => context.Mapper.Map<QuizComponentDto>(quiz),
             TaskComponent task => context.Mapper.Map<TaskComponentDto>(task),
             _ => null
+        };
+    }
+
+    /// <summary>
+    /// Преобразование AssignmentStatus в ProgressStatus
+    /// </summary>
+    private ProgressStatus MapAssignmentStatusToProgressStatus(AssignmentStatus assignmentStatus)
+    {
+        return assignmentStatus switch
+        {
+            AssignmentStatus.Assigned => ProgressStatus.NotStarted,
+            AssignmentStatus.InProgress => ProgressStatus.InProgress,
+            AssignmentStatus.Completed => ProgressStatus.Completed,
+            AssignmentStatus.Cancelled => ProgressStatus.Cancelled,
+            AssignmentStatus.Paused => ProgressStatus.InProgress,
+            AssignmentStatus.Overdue => ProgressStatus.Failed,
+            _ => ProgressStatus.NotStarted
         };
     }
 }

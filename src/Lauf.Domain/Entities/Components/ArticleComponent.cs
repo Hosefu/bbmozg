@@ -13,11 +13,6 @@ public class ArticleComponent : ComponentBase
     public override ComponentType Type => ComponentType.Article;
 
     /// <summary>
-    /// Статьи не дают очков
-    /// </summary>
-    public override bool HasScore => false;
-
-    /// <summary>
     /// Конструктор для создания новой статьи
     /// </summary>
     /// <param name="flowStepId">Идентификатор шага потока</param>

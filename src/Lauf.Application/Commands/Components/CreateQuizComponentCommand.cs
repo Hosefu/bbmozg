@@ -150,11 +150,6 @@ public class CreateQuestionOptionDto
     /// Сообщение, показываемое при выборе этого варианта
     /// </summary>
     public string Message { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Количество баллов за правильный ответ
-    /// </summary>
-    public int Points { get; set; } = 1;
 }
 
 /// <summary>

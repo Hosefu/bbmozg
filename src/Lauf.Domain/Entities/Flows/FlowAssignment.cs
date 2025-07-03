@@ -64,7 +64,7 @@ public class FlowAssignment
     public virtual User AssignedByUser { get; set; } = null!;
 
     /// <summary>
-    /// Бадди (может быть несколько) - новая архитектура
+    /// Бадди (может быть несколько)
     /// </summary>
     public virtual ICollection<User> Buddies { get; set; } = new List<User>();
 

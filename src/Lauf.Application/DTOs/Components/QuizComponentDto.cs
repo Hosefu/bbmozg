@@ -91,9 +91,4 @@ public class QuestionOptionDto
     /// Порядковый номер варианта
     /// </summary>
     public string Order { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Очки за правильный ответ
-    /// </summary>
-    public int Score { get; set; } = 1;
 }

@@ -149,7 +149,6 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
                 quizQuestionId: quizQuestion.Id,
                 text: option.Text,
                 isCorrect: option.IsCorrect,
-                score: option.IsCorrect ? 1 : 0,
                 order: LexoRankHelper.Middle());
             
             quizQuestion.Options.Add(questionOption);
@@ -172,7 +171,6 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
             description: request.Description,
             content: contentData.Instruction, // instruction теперь content
             codeWord: contentData.CodeWord,
-            score: 10, // дефолтный score
             order: order,
             isRequired: request.IsRequired);
 

@@ -14,11 +14,6 @@ public class QuizComponent : ComponentBase
     public override ComponentType Type => ComponentType.Quiz;
 
     /// <summary>
-    /// Тесты дают очки
-    /// </summary>
-    public override bool HasScore => true;
-
-    /// <summary>
     /// Вопросы квиза
     /// </summary>
     public virtual ICollection<QuizQuestion> Questions { get; set; } = new List<QuizQuestion>();
@@ -41,15 +36,6 @@ public class QuizComponent : ComponentBase
     /// Конструктор для EF Core
     /// </summary>
     protected QuizComponent() { }
-
-    /// <summary>
-    /// Подсчитывает общий балл
-    /// </summary>
-    /// <returns>Общее количество баллов</returns>
-    public override int GetTotalScore()
-    {
-        return Questions?.Sum(q => q.GetMaxScore()) ?? 0;
-    }
 }
 
 /// <summary>
@@ -111,14 +97,6 @@ public class QuizQuestion
     /// Конструктор для EF Core
     /// </summary>
     protected QuizQuestion() { }
-
-    /// <summary>
-    /// Максимальный балл за вопрос
-    /// </summary>
-    public int GetMaxScore()
-    {
-        return Options?.Where(o => o.IsCorrect).Sum(o => o.Score) ?? 0;
-    }
 }
 
 /// <summary>
@@ -147,11 +125,6 @@ public class QuestionOption
     public bool IsCorrect { get; set; }
 
     /// <summary>
-    /// Количество баллов (переименовано с Points)
-    /// </summary>
-    public int Score { get; set; } = 1;
-
-    /// <summary>
     /// Порядок варианта
     /// </summary>
     public string Order { get; set; } = string.Empty;
@@ -167,15 +140,13 @@ public class QuestionOption
     /// <param name="quizQuestionId">Идентификатор вопроса</param>
     /// <param name="text">Текст варианта</param>
     /// <param name="isCorrect">Правильный ли вариант</param>
-    /// <param name="score">Количество баллов</param>
     /// <param name="order">Порядок</param>
-    public QuestionOption(Guid quizQuestionId, string text, bool isCorrect, int score, string order)
+    public QuestionOption(Guid quizQuestionId, string text, bool isCorrect, string order)
     {
         Id = Guid.NewGuid();
         QuizQuestionId = quizQuestionId;
         Text = text ?? throw new ArgumentNullException(nameof(text));
         IsCorrect = isCorrect;
-        Score = score > 0 ? score : 1;
         Order = order ?? throw new ArgumentNullException(nameof(order));
     }
 

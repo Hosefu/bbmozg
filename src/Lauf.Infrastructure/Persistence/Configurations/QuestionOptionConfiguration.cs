@@ -20,7 +20,6 @@ public class QuestionOptionConfiguration : IEntityTypeConfiguration<QuestionOpti
         builder.Property(x => x.Text).IsRequired().HasMaxLength(500);
         builder.Property(x => x.IsCorrect).IsRequired().HasDefaultValue(false);
         builder.Property(x => x.Order).IsRequired().HasMaxLength(50);
-        builder.Property(x => x.Score).IsRequired().HasDefaultValue(1);
 
         // Связь с вопросом
         builder.Property(x => x.QuizQuestionId).IsRequired();

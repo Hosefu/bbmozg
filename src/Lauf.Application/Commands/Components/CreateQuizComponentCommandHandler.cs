@@ -79,7 +79,6 @@ public class CreateQuizComponentCommandHandler : IRequestHandler<CreateQuizCompo
                     quizQuestionId: quizQuestion.Id,
                     text: optionInput.Text,
                     isCorrect: optionInput.IsCorrect,
-                    score: optionInput.Points,
                     order: i == 0 ? LexoRankHelper.Middle() : LexoRankHelper.Next(options[i-1].Order));
                 options.Add(option);
             }

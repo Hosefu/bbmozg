@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lauf.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialSimplifiedArchitecture : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -205,10 +205,7 @@ namespace Lauf.Infrastructure.Migrations
                 name: "QuizComponents",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AllowMultipleAttempts = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ShuffleQuestions = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ShuffleOptions = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -227,7 +224,6 @@ namespace Lauf.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "TEXT", nullable: false),
                     CodeWord = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    Score = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 1),
                     IsCaseSensitive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -270,7 +266,6 @@ namespace Lauf.Infrastructure.Migrations
                     QuizQuestionId = table.Column<Guid>(type: "TEXT", nullable: false),
                     Text = table.Column<string>(type: "TEXT", maxLength: 500, nullable: false),
                     IsCorrect = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false),
-                    Score = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 1),
                     Order = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
                 },
                 constraints: table =>

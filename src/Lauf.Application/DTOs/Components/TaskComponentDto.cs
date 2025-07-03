@@ -31,11 +31,6 @@ public class TaskComponentDto
     public string Type { get; set; } = "TASK";
 
     /// <summary>
-    /// Очки за правильный ответ
-    /// </summary>
-    public int Score { get; set; } = 1;
-
-    /// <summary>
     /// Учитывать ли регистр
     /// </summary>
     public bool IsCaseSensitive { get; set; }
