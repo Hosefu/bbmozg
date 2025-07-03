@@ -249,7 +249,6 @@ public class Mutation
                 FlowId = input.FlowId,
                 Title = input.Title,
                 Description = input.Description,
-                Order = input.Order,
                 IsRequired = input.IsRequired,
                 Instructions = input.Instructions,
                 Notes = input.Notes
@@ -264,8 +263,6 @@ public class Mutation
             throw new GraphQLException("Не удалось создать шаг потока");
         }
     }
-
-
 
     /// <summary>
     /// Создать типизированный компонент (новый метод)
@@ -442,7 +439,6 @@ public record CreateFlowStepInput(
     Guid FlowId,
     string Title,
     string Description,
-    int? Order = null,
     bool IsRequired = true,
     string Instructions = "",
     string Notes = "");

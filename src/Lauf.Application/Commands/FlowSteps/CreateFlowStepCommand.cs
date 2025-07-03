@@ -24,11 +24,6 @@ public class CreateFlowStepCommand : IRequest<CreateFlowStepCommandResult>
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Порядковый номер шага (если не указан, добавится в конец)
-    /// </summary>
-    public int? Order { get; set; }
-
-    /// <summary>
     /// Обязательный ли шаг
     /// </summary>
     public bool IsRequired { get; set; } = true;

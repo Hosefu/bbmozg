@@ -61,8 +61,8 @@ public class CreateFlowComponentCommandHandler : IRequestHandler<CreateFlowCompo
                 return CreateFlowComponentCommandResult.Failure("Нельзя добавлять компоненты к шагам неактивного потока");
             }
 
-            // Определяем LexoRank порядок
-            var order = request.Order ?? GenerateNextComponentOrder(flowStep.Components);
+            // Определяем LexoRank порядок - всегда добавляем в конец
+            var order = GenerateNextComponentOrder(flowStep.Components);
 
             // Создаем компонент в зависимости от типа
             ComponentBase component = await CreateComponentByTypeAsync(request, order, cancellationToken);

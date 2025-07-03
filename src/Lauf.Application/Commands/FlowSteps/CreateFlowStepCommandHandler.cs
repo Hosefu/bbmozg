@@ -48,17 +48,8 @@ public class CreateFlowStepCommandHandler : IRequestHandler<CreateFlowStepComman
                 return CreateFlowStepCommandResult.Failure("Нельзя добавлять шаги к неактивному потоку");
             }
 
-            // Проверяем корректность порядкового номера если указан
-            if (request.Order.HasValue)
-            {
-                if (request.Order.Value < 1 || request.Order.Value > flow.ActiveContent.Steps.Count + 1)
-                {
-                    return CreateFlowStepCommandResult.Failure("Некорректный порядковый номер шага");
-                }
-            }
-
-            // Создаем новый шаг (новая архитектура - привязка к FlowContentId)
-            var order = request.Order?.ToString() ?? GenerateNextStepOrder(flow.ActiveContent.Steps);
+            // Создаем новый шаг в конце списка (новая архитектура - привязка к FlowContentId)
+            var order = GenerateNextStepOrder(flow.ActiveContent.Steps);
             
             var flowStep = new FlowStep(
                 flow.ActiveContentId ?? throw new InvalidOperationException("Активный контент не установлен"),

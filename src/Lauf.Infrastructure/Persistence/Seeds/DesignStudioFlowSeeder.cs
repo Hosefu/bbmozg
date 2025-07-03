@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Lauf.Domain.Entities.Flows;
 using Lauf.Domain.Entities.Components;
 using Lauf.Domain.Entities.Users;
+using Lauf.Shared.Helpers;
 
 namespace Lauf.Infrastructure.Persistence.Seeds;
 
@@ -110,15 +111,21 @@ public static class DesignStudioFlowSeeder
     /// </summary>
     private static async Task CreateStep1_Values(ApplicationDbContext context, Guid contentId)
     {
+        // Генерируем LexoRank для шагов (1-й из 3)
+        var stepRanks = LexoRankHelper.GenerateDefaultRanks(3);
+        
         var step = new FlowStep(
             contentId,
             "1. Ценности и философия дизайн-студии",
             "Изучение корпоративных ценностей, принципов работы и культуры команды",
-            "1000"
+            stepRanks[0]
         );
 
         await context.FlowSteps.AddAsync(step);
         await context.SaveChangesAsync();
+
+        // Генерируем LexoRank для компонентов (3 компонента)
+        var componentRanks = LexoRankHelper.GenerateDefaultRanks(3);
 
         // Статья о ценностях
         var valuesArticle = new ArticleComponent(
@@ -141,7 +148,7 @@ public static class DesignStudioFlowSeeder
 
 ## Постоянное развитие
 Мир дизайна быстро меняется, и мы должны идти в ногу со временем, постоянно учиться и совершенствоваться.",
-            "1000"
+            componentRanks[0]
         );
 
         // Тест на понимание ценностей
@@ -150,7 +157,7 @@ public static class DesignStudioFlowSeeder
             "Проверка знаний о ценностях",
             "Тест на понимание корпоративных ценностей студии",
             "Ответьте на вопросы о ценностях нашей студии",
-            "2000"
+            componentRanks[1]
         );
 
         // Задание на рефлексию
@@ -160,7 +167,7 @@ public static class DesignStudioFlowSeeder
             "Подумайте, какая из наших ценностей вам ближе всего и почему. Найдите кодовое слово в статье о ценностях.",
             "Подумайте, какая из наших ценностей вам ближе всего и почему. Найдите кодовое слово в статье о ценностях.",
             "КОМАНДА",
-            "3000"
+            componentRanks[2]
         );
 
         await context.Components.AddRangeAsync(valuesArticle, valuesQuiz, reflectionTask);
@@ -175,15 +182,21 @@ public static class DesignStudioFlowSeeder
     /// </summary>
     private static async Task CreateStep2_TechnicalEquipment(ApplicationDbContext context, Guid contentId)
     {
+        // Генерируем LexoRank для шагов (2-й из 3)
+        var stepRanks = LexoRankHelper.GenerateDefaultRanks(3);
+        
         var step = new FlowStep(
             contentId,
             "2. Техническое оснащение студии",
             "Изучение программного обеспечения, оборудования и технических стандартов",
-            "2000"
+            stepRanks[1]
         );
 
         await context.FlowSteps.AddAsync(step);
         await context.SaveChangesAsync();
+
+        // Генерируем LexoRank для компонентов (4 компонента)
+        var componentRanks = LexoRankHelper.GenerateDefaultRanks(4);
 
         // Статья о ПО
         var softwareArticle = new ArticleComponent(
@@ -199,60 +212,59 @@ public static class DesignStudioFlowSeeder
 - **InDesign** - верстка и макетирование
 - **After Effects** - анимация и видеомонтаж
 
-## Дополнительные инструменты
-- **Figma** - UI/UX дизайн и прототипирование
-- **Sketch** - дизайн интерфейсов (macOS)
-- **Canva** - быстрое создание простых макетов
-- **Adobe XD** - дизайн пользовательского опыта
+## UI/UX инструменты
+- **Figma** - совместный дизайн интерфейсов
+- **Sketch** - дизайн для macOS
+- **Adobe XD** - прототипирование
 
-## Организация работы
-- **Trello/Asana** - управление проектами
+## Коммуникационные инструменты
 - **Slack** - корпоративная коммуникация
 - **Zoom** - видеоконференции с клиентами",
-            "1000"
+            componentRanks[0]
         );
 
         // Статья об оборудовании
         var hardwareArticle = new ArticleComponent(
             step.Id,
-            "Оборудование студии",
-            "Технические требования и доступное оборудование",
-            @"# Техническое оборудование
+            "Техническое оборудование",
+            "Обзор оборудования и технической инфраструктуры",
+            @"# Техническое оснащение
 
 ## Рабочие станции
-- **iMac 27''** - основные рабочие места дизайнеров
-- **MacBook Pro 16''** - мобильные рабочие станции
-- **Графические планшеты Wacom** - для цифрового рисования
+- iMac Pro / Mac Studio для дизайнеров
+- Мониторы с калибровкой цвета (Dell UltraSharp)
+- Графические планшеты Wacom
 
 ## Периферия
-- **Мониторы с калибровкой цвета** - точная цветопередача
-- **Принтеры большого формата** - печать макетов и проб
-- **Сканеры высокого разрешения** - оцифровка материалов
+- Механические клавиатуры
+- Эргономичные мыши
+- Профессиональные наушники
 
 ## Сетевая инфраструктура
-- Высокскоростной интернет (1 Гбит/с)
+**Секретное слово: NAS**
+- Высокоскоростной интернет (1 Гбит/с)
 - Сетевое хранилище (NAS) для совместной работы
 - Резервное копирование данных",
-            "2000"
+            componentRanks[1]
         );
 
-        // Тест по техническому оснащению
+        // Тест на знание техники
         var techQuiz = new QuizComponent(
             step.Id,
-            "Знание технического оснащения",
+            "Тест по техническому оснащению",
             "Проверка знаний о программах и оборудовании студии",
             "Ответьте на вопросы о техническом оснащении",
-            "3000"
+            componentRanks[2]
         );
 
         // Практическое задание
         var practicalTask = new TaskComponent(
             step.Id,
             "Практическое задание",
-            "Создайте простой макет визитки в любой доступной программе и найдите кодовое слово",
+            "Создание макета визитки",
             "Используя любую из изученных программ, создайте макет визитки размером 90x50мм. Кодовое слово скрыто в разделе о сетевой инфраструктуре.",
             "NAS",
-            "4000"
+            componentRanks[3]
         );
 
         await context.Components.AddRangeAsync(softwareArticle, hardwareArticle, techQuiz, practicalTask);
@@ -267,15 +279,21 @@ public static class DesignStudioFlowSeeder
     /// </summary>
     private static async Task CreateStep3_FileManagement(ApplicationDbContext context, Guid contentId)
     {
+        // Генерируем LexoRank для шагов (3-й из 3)
+        var stepRanks = LexoRankHelper.GenerateDefaultRanks(3);
+        
         var step = new FlowStep(
             contentId,
             "3. Организация и хранение файлов",
             "Изучение принципов организации файлов, системы именования и резервного копирования",
-            "3000"
+            stepRanks[2]
         );
 
         await context.FlowSteps.AddAsync(step);
         await context.SaveChangesAsync();
+
+        // Генерируем LexoRank для компонентов (4 компонента)
+        var componentRanks = LexoRankHelper.GenerateDefaultRanks(4);
 
         // Статья о структуре файлов
         var fileStructureArticle = new ArticleComponent(
@@ -310,7 +328,7 @@ public static class DesignStudioFlowSeeder
 - Указывайте версию файла (v01, v02, etc.)
 - Не используйте пробелы и спецсимволы
 - Пример: `Logo_Компания_220315_v03.ai`",
-            "1000"
+            componentRanks[0]
         );
 
         // Статья о резервном копировании
@@ -336,7 +354,7 @@ public static class DesignStudioFlowSeeder
 - **Ежемесячно** - архивирование завершенных проектов
 
 **Секретное слово для задания: АРХИВ**",
-            "2000"
+            componentRanks[1]
         );
 
         // Итоговый тест
@@ -345,7 +363,7 @@ public static class DesignStudioFlowSeeder
             "Итоговый тест по управлению файлами",
             "Комплексная проверка знаний об организации файлов",
             "Проверьте свои знания о правилах работы с файлами",
-            "3000"
+            componentRanks[2]
         );
 
         // Финальное задание
@@ -355,7 +373,7 @@ public static class DesignStudioFlowSeeder
             "Продемонстрируйте знание принципов организации файлов",
             "Создайте на своем компьютере папку с правильной структурой для нового проекта. Кодовое слово найдите в статье о резервном копировании.",
             "АРХИВ",
-            "4000"
+            componentRanks[3]
         );
 
         await context.Components.AddRangeAsync(fileStructureArticle, backupArticle, finalQuiz, finalTask);
@@ -370,28 +388,33 @@ public static class DesignStudioFlowSeeder
     /// </summary>
     private static async Task AddValuesQuizQuestions(ApplicationDbContext context, Guid quizId)
     {
-        var question1 = new QuizQuestion(quizId, "Какая ценность является основополагающей для работы в команде?", "1000");
-        var question2 = new QuizQuestion(quizId, "Что мы ставим превыше всего в наших проектах?", "2000");
+        // Генерируем LexoRank для вопросов (2 вопроса)
+        var questionRanks = LexoRankHelper.GenerateDefaultRanks(2);
+        
+        var question1 = new QuizQuestion(quizId, "Какая ценность является основополагающей для работы в команде?", questionRanks[0]);
+        var question2 = new QuizQuestion(quizId, "Что мы ставим превыше всего в наших проектах?", questionRanks[1]);
 
         await context.QuizQuestions.AddRangeAsync(question1, question2);
         await context.SaveChangesAsync();
 
-        // Варианты для первого вопроса
+        // Варианты для первого вопроса (4 варианта)
+        var q1OptionRanks = LexoRankHelper.GenerateDefaultRanks(4);
         var q1Options = new[]
         {
-            new QuestionOption(question1.Id, "Скорость выполнения", false, "1"),
-            new QuestionOption(question1.Id, "Командная работа", true, "2"),
-            new QuestionOption(question1.Id, "Индивидуальные достижения", false, "3"),
-            new QuestionOption(question1.Id, "Конкуренция", false, "4")
+            new QuestionOption(question1.Id, "Скорость выполнения", false, q1OptionRanks[0]),
+            new QuestionOption(question1.Id, "Командная работа", true, q1OptionRanks[1]),
+            new QuestionOption(question1.Id, "Индивидуальные достижения", false, q1OptionRanks[2]),
+            new QuestionOption(question1.Id, "Конкуренция", false, q1OptionRanks[3])
         };
 
-        // Варианты для второго вопроса
+        // Варианты для второго вопроса (4 варианта)
+        var q2OptionRanks = LexoRankHelper.GenerateDefaultRanks(4);
         var q2Options = new[]
         {
-            new QuestionOption(question2.Id, "Прибыль", false, "1"),
-            new QuestionOption(question2.Id, "Скорость", false, "2"),
-            new QuestionOption(question2.Id, "Качество", true, "3"),
-            new QuestionOption(question2.Id, "Количество проектов", false, "4")
+            new QuestionOption(question2.Id, "Прибыль", false, q2OptionRanks[0]),
+            new QuestionOption(question2.Id, "Скорость", false, q2OptionRanks[1]),
+            new QuestionOption(question2.Id, "Качество", true, q2OptionRanks[2]),
+            new QuestionOption(question2.Id, "Количество проектов", false, q2OptionRanks[3])
         };
 
         await context.QuestionOptions.AddRangeAsync(q1Options.Concat(q2Options));
@@ -402,32 +425,39 @@ public static class DesignStudioFlowSeeder
     /// </summary>
     private static async Task AddTechQuizQuestions(ApplicationDbContext context, Guid quizId)
     {
-        var question1 = new QuizQuestion(quizId, "Какая программа используется для векторной графики?", "1000");
-        var question2 = new QuizQuestion(quizId, "Что используется для UI/UX дизайна?", "2000");
-        var question3 = new QuizQuestion(quizId, "Какое оборудование нужно для точной цветопередачи?", "3000");
+        // Генерируем LexoRank для вопросов (3 вопроса)
+        var questionRanks = LexoRankHelper.GenerateDefaultRanks(3);
+        
+        var question1 = new QuizQuestion(quizId, "Какая программа используется для векторной графики?", questionRanks[0]);
+        var question2 = new QuizQuestion(quizId, "Что используется для UI/UX дизайна?", questionRanks[1]);
+        var question3 = new QuizQuestion(quizId, "Какое оборудование нужно для точной цветопередачи?", questionRanks[2]);
 
         await context.QuizQuestions.AddRangeAsync(question1, question2, question3);
         await context.SaveChangesAsync();
 
+        // Варианты для всех вопросов (по 3 варианта каждый)
+        var q1OptionRanks = LexoRankHelper.GenerateDefaultRanks(3);
         var q1Options = new[]
         {
-            new QuestionOption(question1.Id, "Photoshop", false, "1"),
-            new QuestionOption(question1.Id, "Illustrator", true, "2"),
-            new QuestionOption(question1.Id, "InDesign", false, "3")
+            new QuestionOption(question1.Id, "Photoshop", false, q1OptionRanks[0]),
+            new QuestionOption(question1.Id, "Illustrator", true, q1OptionRanks[1]),
+            new QuestionOption(question1.Id, "InDesign", false, q1OptionRanks[2])
         };
 
+        var q2OptionRanks = LexoRankHelper.GenerateDefaultRanks(3);
         var q2Options = new[]
         {
-            new QuestionOption(question2.Id, "Photoshop", false, "1"),
-            new QuestionOption(question2.Id, "Figma", true, "2"),
-            new QuestionOption(question2.Id, "After Effects", false, "3")
+            new QuestionOption(question2.Id, "Photoshop", false, q2OptionRanks[0]),
+            new QuestionOption(question2.Id, "Figma", true, q2OptionRanks[1]),
+            new QuestionOption(question2.Id, "After Effects", false, q2OptionRanks[2])
         };
 
+        var q3OptionRanks = LexoRankHelper.GenerateDefaultRanks(3);
         var q3Options = new[]
         {
-            new QuestionOption(question3.Id, "Обычные мониторы", false, "1"),
-            new QuestionOption(question3.Id, "Мониторы с калибровкой цвета", true, "2"),
-            new QuestionOption(question3.Id, "Телевизор", false, "3")
+            new QuestionOption(question3.Id, "Обычные мониторы", false, q3OptionRanks[0]),
+            new QuestionOption(question3.Id, "Мониторы с калибровкой цвета", true, q3OptionRanks[1]),
+            new QuestionOption(question3.Id, "Телевизор", false, q3OptionRanks[2])
         };
 
         await context.QuestionOptions.AddRangeAsync(q1Options.Concat(q2Options).Concat(q3Options));
@@ -438,32 +468,39 @@ public static class DesignStudioFlowSeeder
     /// </summary>
     private static async Task AddFileManagementQuizQuestions(ApplicationDbContext context, Guid quizId)
     {
-        var question1 = new QuizQuestion(quizId, "Сколько копий файлов рекомендует правило 3-2-1?", "1000");
-        var question2 = new QuizQuestion(quizId, "В каком формате указывается дата в имени файла?", "2000");
-        var question3 = new QuizQuestion(quizId, "Как часто нужно делать полное резервное копирование?", "3000");
+        // Генерируем LexoRank для вопросов (3 вопроса)
+        var questionRanks = LexoRankHelper.GenerateDefaultRanks(3);
+        
+        var question1 = new QuizQuestion(quizId, "Сколько копий файлов рекомендует правило 3-2-1?", questionRanks[0]);
+        var question2 = new QuizQuestion(quizId, "В каком формате указывается дата в имени файла?", questionRanks[1]);
+        var question3 = new QuizQuestion(quizId, "Как часто нужно делать полное резервное копирование?", questionRanks[2]);
 
         await context.QuizQuestions.AddRangeAsync(question1, question2, question3);
         await context.SaveChangesAsync();
 
+        // Варианты для всех вопросов (по 3 варианта каждый)
+        var q1OptionRanks = LexoRankHelper.GenerateDefaultRanks(3);
         var q1Options = new[]
         {
-            new QuestionOption(question1.Id, "2 копии", false, "1"),
-            new QuestionOption(question1.Id, "3 копии", true, "2"),
-            new QuestionOption(question1.Id, "5 копий", false, "3")
+            new QuestionOption(question1.Id, "2 копии", false, q1OptionRanks[0]),
+            new QuestionOption(question1.Id, "3 копии", true, q1OptionRanks[1]),
+            new QuestionOption(question1.Id, "5 копий", false, q1OptionRanks[2])
         };
 
+        var q2OptionRanks = LexoRankHelper.GenerateDefaultRanks(3);
         var q2Options = new[]
         {
-            new QuestionOption(question2.Id, "ДД.ММ.ГГ", false, "1"),
-            new QuestionOption(question2.Id, "ГГММДД", true, "2"),
-            new QuestionOption(question2.Id, "ММ/ДД/ГГГГ", false, "3")
+            new QuestionOption(question2.Id, "ДД.ММ.ГГ", false, q2OptionRanks[0]),
+            new QuestionOption(question2.Id, "ГГММДД", true, q2OptionRanks[1]),
+            new QuestionOption(question2.Id, "ММ/ДД/ГГГГ", false, q2OptionRanks[2])
         };
 
+        var q3OptionRanks = LexoRankHelper.GenerateDefaultRanks(3);
         var q3Options = new[]
         {
-            new QuestionOption(question3.Id, "Ежедневно", false, "1"),
-            new QuestionOption(question3.Id, "Еженедельно", true, "2"),
-            new QuestionOption(question3.Id, "Ежемесячно", false, "3")
+            new QuestionOption(question3.Id, "Ежедневно", false, q3OptionRanks[0]),
+            new QuestionOption(question3.Id, "Еженедельно", true, q3OptionRanks[1]),
+            new QuestionOption(question3.Id, "Ежемесячно", false, q3OptionRanks[2])
         };
 
         await context.QuestionOptions.AddRangeAsync(q1Options.Concat(q2Options).Concat(q3Options));
