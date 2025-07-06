@@ -1,0 +1,79 @@
+@import '../../../styles/variables.scss';
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  
+  &__track {
+    flex: 1;
+    background-color: #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  &__bar {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.3s ease;
+    position: relative;
+    
+    &--primary {
+      background-color: #3b82f6;
+    }
+    
+    &--success {
+      background-color: #22c55e;
+    }
+    
+    &--warning {
+      background-color: #f59e0b;
+    }
+    
+    &--error {
+      background-color: #ef4444;
+    }
+  }
+  
+  &__label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    white-space: nowrap;
+    min-width: 30px;
+    text-align: right;
+  }
+  
+  // Size variants
+  &--sm {
+    .progress__track {
+      height: 4px;
+    }
+    
+    .progress__label {
+      font-size: 11px;
+    }
+  }
+  
+  &--md {
+    .progress__track {
+      height: 6px;
+    }
+    
+    .progress__label {
+      font-size: 12px;
+    }
+  }
+  
+  &--lg {
+    .progress__track {
+      height: 8px;
+    }
+    
+    .progress__label {
+      font-size: 14px;
+    }
+  }
+} 

@@ -1,0 +1,77 @@
+@import '../../../styles/variables.scss';
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  // Size variants
+  &--xs {
+    width: 12px;
+    height: 12px;
+  }
+  
+  &--sm {
+    width: 16px;
+    height: 16px;
+  }
+  
+  &--md {
+    width: 20px;
+    height: 20px;
+  }
+  
+  &--lg {
+    width: 24px;
+    height: 24px;
+  }
+  
+  &--xl {
+    width: 28px;
+    height: 28px;
+  }
+  
+  // Color variants
+  &--primary {
+    color: var(--color-primary-500);
+  }
+  
+  &--secondary {
+    color: var(--color-secondary-500);
+  }
+  
+  &--success {
+    color: var(--color-success-500);
+  }
+  
+  &--warning {
+    color: var(--color-warning-500);
+  }
+  
+  &--error {
+    color: var(--color-error-500);
+  }
+  
+  &--white {
+    color: var(--color-white);
+  }
+  
+  &--gray {
+    color: var(--color-gray-500);
+  }
+  
+  // Clickable state
+  &--clickable {
+    cursor: pointer;
+    
+    &:hover {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+} 

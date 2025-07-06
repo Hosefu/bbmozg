@@ -1,0 +1,89 @@
+{
+  "name": "lauf-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 10",
+    "lint:fix": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 10 --fix",
+    "lint:scss": "stylelint 'src/**/*.scss'",
+    "lint:scss:fix": "stylelint 'src/**/*.scss' --fix",
+    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
+    "format:check": "prettier --check 'src/**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
+    "prepare": "husky",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "lint:all": "npm run type-check && npm run lint && npm run lint:scss",
+    "fix:all": "npm run lint:fix && npm run lint:scss:fix && npm run format",
+    "check:all": "npm run type-check && npm run lint && npm run lint:scss && npm run format:check"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.3.2",
+    "@reduxjs/toolkit": "^2.0.1",
+    "@rtk-query/graphql-request-base-query": "^2.2.0",
+    "clsx": "^2.0.0",
+    "date-fns": "^3.0.6",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
+    "lodash": "^4.17.21",
+    "lucide-react": "^0.294.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.48.2",
+    "react-hot-toast": "^2.4.1",
+    "react-redux": "^9.0.4",
+    "react-router-dom": "^6.20.1",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.202",
+    "@types/node": "^24.0.10",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@types/uuid": "^9.0.7",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
+    "sass": "^1.69.5",
+    "stylelint": "^16.21.1",
+    "stylelint-config-prettier-scss": "^1.0.0",
+    "stylelint-config-standard-scss": "^15.0.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{scss,css}": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

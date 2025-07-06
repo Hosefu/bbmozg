@@ -1,0 +1,234 @@
+// =============================================================================
+// DevAuth Component Styles
+// =============================================================================
+
+@use "sass:map";
+@use "../../styles/variables" as *;
+
+.dev-auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, color(primary, 50) 0%, color(secondary, 50) 100%);
+  padding: spacing(4);
+
+  &__container {
+    background: white;
+    border-radius: map.get($border-radius, xl);
+    box-shadow: map.get($shadows, 2xl);
+    padding: spacing(8);
+    max-width: 600px;
+    width: 100%;
+  }
+
+  &__header {
+    text-align: center;
+    margin-bottom: spacing(8);
+
+    h1 {
+      color: $text-primary;
+      margin-bottom: spacing(2);
+      font-size: font-size(3xl);
+      font-weight: map.get($font-weights, bold);
+    }
+
+    p {
+      color: $text-secondary;
+      font-size: font-size(lg);
+      margin-bottom: 0;
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: spacing(4);
+    margin-bottom: spacing(6);
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: spacing(2);
+
+    label {
+      font-weight: map.get($font-weights, medium);
+      color: $text-primary;
+      font-size: font-size(sm);
+    }
+
+    input {
+      padding: spacing(3) spacing(4);
+      border: 1px solid $border-primary;
+      border-radius: map.get($border-radius, md);
+      font-size: font-size(base);
+      transition: map.get($transitions, colors);
+      background: white;
+      color: $text-primary;
+
+      &:focus {
+        outline: none;
+        border-color: $border-focus;
+        box-shadow: 0 0 0 2px rgba(color(primary), 0.1);
+      }
+
+      &::placeholder {
+        color: $text-disabled;
+      }
+    }
+  }
+
+  &__divider {
+    position: relative;
+    text-align: center;
+    margin: spacing(6) 0;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: $border-primary;
+    }
+
+    span {
+      background: white;
+      color: $text-secondary;
+      padding: 0 spacing(4);
+      font-size: font-size(sm);
+    }
+  }
+
+  &__presets {
+    h3 {
+      margin-bottom: spacing(4);
+      color: $text-primary;
+      font-size: font-size(lg);
+      font-weight: map.get($font-weights, semibold);
+    }
+  }
+
+  &__presets-grid {
+    display: grid;
+    gap: spacing(4);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  &__preset {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: spacing(4);
+    border: 1px solid $border-primary;
+    border-radius: map.get($border-radius, lg);
+    transition: map.get($transitions, all);
+
+    &:hover {
+      border-color: $border-secondary;
+      box-shadow: map.get($shadows, sm);
+    }
+  }
+
+  &__preset-info {
+    flex: 1;
+
+    h4 {
+      margin-bottom: spacing(1);
+      color: $text-primary;
+      font-size: font-size(base);
+      font-weight: map.get($font-weights, semibold);
+    }
+
+    p {
+      margin-bottom: spacing(1);
+      color: $text-secondary;
+      font-size: font-size(sm);
+
+      &:last-of-type {
+        margin-bottom: spacing(2);
+      }
+    }
+  }
+
+  &__preset-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(1);
+  }
+
+  &__role-badge {
+    display: inline-block;
+    padding: spacing(1) spacing(2);
+    background: color(primary, 100);
+    color: color(primary, 800);
+    border-radius: map.get($border-radius, sm);
+    font-size: font-size(xs);
+    font-weight: map.get($font-weights, medium);
+  }
+
+  // Responsive
+  @include media(sm) {
+    &__container {
+      padding: spacing(6);
+    }
+
+    &__header {
+      margin-bottom: spacing(6);
+
+      h1 {
+        font-size: font-size(2xl);
+      }
+
+      p {
+        font-size: font-size(base);
+      }
+    }
+
+    &__presets-grid {
+      grid-template-columns: 1fr;
+    }
+
+    &__preset {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: spacing(3);
+    }
+  }
+}
+
+// Warning banner for dev mode
+.dev-auth::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    45deg,
+    color(warning, 400),
+    color(warning, 400) 10px,
+    color(warning, 600) 10px,
+    color(warning, 600) 20px
+  );
+  z-index: map.get($z-index, modal);
+}
+
+// Animation for smooth appearance
+@keyframes dev-auth-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dev-auth__container {
+  animation: dev-auth-appear 0.3s ease-out;
+} 

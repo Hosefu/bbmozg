@@ -1,0 +1,45 @@
+@import '../styles/variables.scss';
+
+.flow-cards-example {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  
+  &__section {
+    margin-bottom: 60px;
+    
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--color-gray-800);
+      margin-bottom: 24px;
+    }
+  }
+  
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(354px, 1fr));
+    gap: 24px;
+    justify-items: center;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .flow-cards-example {
+    padding: 20px;
+    
+    &__grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+} 

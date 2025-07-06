@@ -1,0 +1,49 @@
+@use '../../../styles/variables' as *;
+
+.flows-view {
+  padding: 16px 18px;
+  background-color: $bg-primary;
+  min-height: 100vh;
+
+  &__header {
+    margin-bottom: 16px;
+  }
+
+  &__title {
+    font-family: $font-family-sans;
+    font-size: 32px;
+    font-weight: 500;
+    color: $text-primary;
+    margin: 0;
+    line-height: 1;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 390px;
+  }
+}
+
+// Responsive adjustments
+@media (min-width: 768px) {
+  .flows-view {
+    padding: 32px;
+
+    &__grid {
+      grid-template-columns: repeat(auto-fit, minmax(354px, 1fr));
+      max-width: none;
+      gap: 24px;
+    }
+  }
+}
+
+@media (min-width: 1200px) {
+  .flows-view {
+    &__grid {
+      grid-template-columns: repeat(auto-fill, 354px);
+      justify-content: start;
+    }
+  }
+}

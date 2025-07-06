@@ -1,0 +1,99 @@
+@import '../../../styles/variables.scss';
+
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  transition: all 0.2s ease;
+  
+  &--default {
+    background: var(--color-white);
+    border-color: var(--color-gray-200);
+  }
+  
+  &--elevated {
+    background: var(--color-white);
+    border: none;
+  }
+  
+  &--outlined {
+    background: transparent;
+    border: 2px solid var(--color-gray-300);
+  }
+  
+  // Padding variants
+  &--padding-none {
+    padding: 0;
+  }
+  
+  &--padding-sm {
+    padding: 12px;
+  }
+  
+  &--padding-md {
+    padding: 16px;
+  }
+  
+  &--padding-lg {
+    padding: 24px;
+  }
+  
+  // Rounded variants
+  &--rounded-none {
+    border-radius: 0;
+  }
+  
+  &--rounded-sm {
+    border-radius: 4px;
+  }
+  
+  &--rounded-md {
+    border-radius: 8px;
+  }
+  
+  &--rounded-lg {
+    border-radius: 12px;
+  }
+  
+  // Shadow variants
+  &--shadow-none {
+    box-shadow: none;
+  }
+  
+  &--shadow-sm {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  
+  &--shadow-md {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+  
+  &--shadow-lg {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  // Clickable state
+  &--clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      
+      &.card--shadow-sm {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+      
+      &.card--shadow-md {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+      
+      &.card--shadow-lg {
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+      }
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+} 

@@ -1,0 +1,72 @@
+@use '../../../styles/variables' as *;
+
+.flow-card {
+  // Убираем основные стили карточки, они теперь в атоме Card
+  overflow: hidden;
+  width: 354px;
+  padding: 0 !important; // Переопределяем padding из Card для кастомного layout
+  background: white !important; // Белый фон
+
+  &__header {
+    // Основные стили теперь в молекуле CardHeader
+    border-radius: 12px 12px 0 0;
+    height: 120px; // Уменьшаем высоту хедера
+  }
+
+  &__content {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px; // Уменьшаем gap
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; // Уменьшаем gap
+  }
+
+  &__title {
+    // Заголовок теперь в контенте
+    font-size: 20px !important; // Делаем меньше
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    color: var(--color-gray-900) !important;
+    margin-bottom: 8px !important;
+  }
+
+  &__description {
+    // Основные стили теперь в атоме Typography
+    font-size: 16px !important; // Уменьшаем размер
+    line-height: 1.4 !important;
+  }
+
+  &__mentors {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__mentor-names {
+    // Основные стили теперь в атоме Typography
+    font-size: 14px !important; // Уменьшаем размер
+    line-height: 1.3 !important;
+    flex: 1;
+  }
+
+  &__draft-warning {
+    // Основные стили теперь в атоме Alert
+  }
+
+  &__actions {
+    // Основные стили теперь в молекуле CardActions
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .flow-card {
+    width: 100%;
+    max-width: 354px;
+  }
+}

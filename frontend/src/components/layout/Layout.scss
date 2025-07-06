@@ -1,0 +1,166 @@
+@use "sass:map";
+@use "../../styles/variables" as *;
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: $bg-primary;
+  
+  &__sidebar {
+    width: $sidebar-width;
+    background: white;
+    border-right: 1px solid $border-primary;
+    box-shadow: map.get($shadows, sm);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: map.get($z-index, fixed);
+    overflow-y: auto;
+    
+    &-header {
+      padding: spacing(6) spacing(4);
+      border-bottom: 1px solid $border-primary;
+      
+      &-title {
+        font-size: font-size(xl);
+        font-weight: map.get($font-weights, bold);
+        color: $primary;
+        margin: 0;
+      }
+    }
+    
+    &-nav {
+      padding: spacing(4) 0;
+      
+      &-item {
+        display: block;
+        padding: spacing(3) spacing(6);
+        color: $text-secondary;
+        text-decoration: none;
+        font-weight: map.get($font-weights, medium);
+        transition: map.get($transitions, colors);
+        border-left: 3px solid transparent;
+        
+        &:hover {
+          color: $primary;
+          background-color: $bg-secondary;
+          text-decoration: none;
+        }
+        
+        &--active {
+          color: $primary;
+          background-color: color(primary, 50);
+          border-left-color: $primary;
+        }
+      }
+    }
+    
+    &-footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: spacing(4) spacing(6);
+      border-top: 1px solid $border-primary;
+      background: white;
+      
+      &-user {
+        display: flex;
+        align-items: center;
+        gap: spacing(3);
+        margin-bottom: spacing(3);
+        
+        &-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: map.get($border-radius, full);
+          background: $primary;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: map.get($font-weights, semibold);
+          font-size: font-size(sm);
+        }
+        
+        &-info {
+          flex: 1;
+          
+          &-name {
+            font-size: font-size(sm);
+            font-weight: map.get($font-weights, medium);
+            color: $text-primary;
+            margin: 0;
+          }
+          
+          &-role {
+            font-size: font-size(xs);
+            color: $text-secondary;
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+  
+  &__main {
+    flex: 1;
+    margin-left: $sidebar-width;
+    min-height: 100vh;
+    padding: spacing(6);
+    
+    &-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  }
+  
+  // Mobile responsive
+  @media (max-width: 768px) {
+    &__sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      
+      &--open {
+        transform: translateX(0);
+      }
+    }
+    
+    &__main {
+      margin-left: 0;
+      padding: spacing(4);
+    }
+    
+    &__mobile-toggle {
+      position: fixed;
+      top: spacing(4);
+      left: spacing(4);
+      z-index: map.get($z-index, modal);
+      background: $primary;
+      color: white;
+      border: none;
+      padding: spacing(2);
+      border-radius: map.get($border-radius, md);
+      font-size: font-size(lg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      box-shadow: map.get($shadows, md);
+      
+      &:hover {
+        background: $primary-dark;
+      }
+    }
+  }
+  
+  // Desktop - hide mobile toggle
+  @media (min-width: 769px) {
+    &__mobile-toggle {
+      display: none;
+    }
+  }
+} 

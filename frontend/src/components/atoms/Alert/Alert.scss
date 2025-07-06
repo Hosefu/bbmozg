@@ -1,0 +1,90 @@
+@import '../../../styles/variables.scss';
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  
+  &--info {
+    background-color: var(--color-primary-50);
+    border-color: var(--color-primary-200);
+    color: var(--color-primary-800);
+  }
+  
+  &--success {
+    background-color: var(--color-success-50);
+    border-color: var(--color-success-200);
+    color: var(--color-success-800);
+  }
+  
+  &--warning {
+    background-color: var(--color-warning-50);
+    border-color: var(--color-warning-200);
+    color: var(--color-warning-800);
+  }
+  
+  &--error {
+    background-color: var(--color-error-50);
+    border-color: var(--color-error-200);
+    color: var(--color-error-800);
+  }
+  
+  // Size variants
+  &--sm {
+    padding: 8px 12px;
+    gap: 8px;
+    font-size: 0.875rem;
+  }
+  
+  &--md {
+    padding: 12px 16px;
+    gap: 12px;
+    font-size: 1rem;
+  }
+  
+  &--lg {
+    padding: 16px 20px;
+    gap: 16px;
+    font-size: 1.125rem;
+  }
+  
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  &__content {
+    flex: 1;
+    line-height: 1.5;
+  }
+  
+  &__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    flex-shrink: 0;
+    margin-top: 2px;
+    
+    &:hover {
+      opacity: 1;
+    }
+    
+    &:focus {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+} 

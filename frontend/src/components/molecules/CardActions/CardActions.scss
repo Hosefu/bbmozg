@@ -1,0 +1,42 @@
+@import '../../../styles/variables.scss';
+
+.card-actions {
+  display: flex;
+  
+  // Layout variants
+  &--horizontal {
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  &--vertical {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  // Size variants
+  &--sm {
+    gap: 8px;
+  }
+  
+  &--md {
+    gap: 12px;
+  }
+  
+  &--lg {
+    gap: 16px;
+  }
+  
+  // Full width
+  &--full-width {
+    width: 100%;
+  }
+  
+  // Button
+  &__button {
+    // In horizontal layout, buttons should take equal space
+    .card-actions--horizontal & {
+      flex: 1;
+    }
+  }
+} 

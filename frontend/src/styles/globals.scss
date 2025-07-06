@@ -1,0 +1,439 @@
+// =============================================================================
+// GLOBAL STYLES
+// =============================================================================
+
+@use "sass:map";
+@use "./variables" as *;
+
+// CSS Reset
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// HTML and Body
+html {
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: $font-family-sans;
+  font-size: font-size(base);
+  font-weight: map.get($font-weights, normal);
+  line-height: map.get($line-heights, normal);
+  color: $text-primary;
+  background-color: $bg-primary;
+  overflow-x: hidden;
+}
+
+// Typography
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: map.get($font-weights, semibold);
+  line-height: map.get($line-heights, tight);
+  color: $text-primary;
+  margin-bottom: spacing(4);
+}
+
+h1 {
+  font-size: font-size(3xl);
+  
+  @include media(md) {
+    font-size: font-size(4xl);
+  }
+}
+
+h2 {
+  font-size: font-size(2xl);
+  
+  @include media(md) {
+    font-size: font-size(3xl);
+  }
+}
+
+h3 {
+  font-size: font-size(xl);
+  
+  @include media(md) {
+    font-size: font-size(2xl);
+  }
+}
+
+h4 {
+  font-size: font-size(lg);
+  
+  @include media(md) {
+    font-size: font-size(xl);
+  }
+}
+
+h5 {
+  font-size: font-size(base);
+  
+  @include media(md) {
+    font-size: font-size(lg);
+  }
+}
+
+h6 {
+  font-size: font-size(sm);
+  
+  @include media(md) {
+    font-size: font-size(base);
+  }
+}
+
+p {
+  margin-bottom: spacing(4);
+  line-height: map.get($line-heights, relaxed);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Links
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: map.get($transitions, colors);
+  
+  &:hover {
+    color: $primary-dark;
+    text-decoration: underline;
+  }
+  
+  &:focus {
+    outline: 2px solid $border-focus;
+    outline-offset: 2px;
+  }
+}
+
+// Lists
+ul,
+ol {
+  margin-bottom: spacing(4);
+  padding-left: spacing(6);
+  
+  li {
+    margin-bottom: spacing(2);
+    line-height: map.get($line-heights, relaxed);
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// Forms
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+// Code
+code {
+  font-family: $font-family-mono;
+  font-size: 0.875em;
+  padding: spacing(1) spacing(2);
+  background-color: $bg-secondary;
+  border-radius: map.get($border-radius, base);
+  color: $text-primary;
+}
+
+pre {
+  font-family: $font-family-mono;
+  font-size: font-size(sm);
+  line-height: map.get($line-heights, relaxed);
+  padding: spacing(4);
+  background-color: $bg-secondary;
+  border-radius: map.get($border-radius, md);
+  overflow-x: auto;
+  margin-bottom: spacing(4);
+  
+  code {
+    padding: 0;
+    background: none;
+    border-radius: 0;
+  }
+}
+
+// Tables
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: spacing(4);
+  
+  th,
+  td {
+    padding: spacing(3) spacing(4);
+    text-align: left;
+    border-bottom: 1px solid $border-primary;
+  }
+  
+  th {
+    font-weight: map.get($font-weights, semibold);
+    background-color: $bg-secondary;
+    color: $text-primary;
+  }
+  
+  tr:hover {
+    background-color: $bg-secondary;
+  }
+}
+
+// Images
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+// Utility Classes
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 spacing(4);
+  
+  @include media(sm) {
+    padding: 0 spacing(6);
+  }
+  
+  @include media(md) {
+    padding: 0 spacing(8);
+  }
+  
+  @include media(lg) {
+    max-width: breakpoint(lg);
+    padding: 0 spacing(8);
+  }
+  
+  @include media(xl) {
+    max-width: breakpoint(xl);
+  }
+  
+  @include media(2xl) {
+    max-width: breakpoint(2xl);
+  }
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-2 {
+  gap: spacing(2);
+}
+
+.gap-4 {
+  gap: spacing(4);
+}
+
+.gap-6 {
+  gap: spacing(6);
+}
+
+.gap-8 {
+  gap: spacing(8);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.font-medium {
+  font-weight: map.get($font-weights, medium);
+}
+
+.font-semibold {
+  font-weight: map.get($font-weights, semibold);
+}
+
+.font-bold {
+  font-weight: map.get($font-weights, bold);
+}
+
+.text-sm {
+  font-size: font-size(sm);
+}
+
+.text-base {
+  font-size: font-size(base);
+}
+
+.text-lg {
+  font-size: font-size(lg);
+}
+
+.text-xl {
+  font-size: font-size(xl);
+}
+
+.text-primary {
+  color: $text-primary;
+}
+
+.text-secondary {
+  color: $text-secondary;
+}
+
+.text-success {
+  color: $success;
+}
+
+.text-warning {
+  color: $warning;
+}
+
+.text-error {
+  color: $error;
+}
+
+.bg-primary {
+  background-color: $bg-primary;
+}
+
+.bg-secondary {
+  background-color: $bg-secondary;
+}
+
+.rounded {
+  border-radius: map.get($border-radius, base);
+}
+
+.rounded-lg {
+  border-radius: map.get($border-radius, lg);
+}
+
+.shadow {
+  box-shadow: map.get($shadows, base);
+}
+
+.shadow-md {
+  box-shadow: map.get($shadows, md);
+}
+
+.shadow-lg {
+  box-shadow: map.get($shadows, lg);
+}
+
+.transition {
+  transition: map.get($transitions, all);
+}
+
+// Focus styles
+.focus-ring {
+  &:focus {
+    outline: 2px solid $border-focus;
+    outline-offset: 2px;
+  }
+}
+
+// Loading states
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+// Disabled states
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+// Scrollbar styles
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color(secondary, 300);
+  border-radius: map.get($border-radius, full);
+  
+  &:hover {
+    background: color(secondary, 400);
+  }
+}
+
+// Selection styles
+::selection {
+  background: color(primary, 100);
+  color: $text-primary;
+}
+
+// Print styles
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+} 

@@ -45,6 +45,36 @@ dotnet test --collect:"XPlat Code Coverage"
 # Run comprehensive tests with HTML reports
 ./scripts/run-tests-with-coverage.sh
 
+# Frontend commands
+cd frontend
+
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint          # ESLint
+npm run lint:scss     # Stylelint for SCSS
+npm run lint:all      # All linting tools + type check
+
+# Formatting
+npm run format        # Format code with Prettier
+npm run format:check  # Check formatting
+
+# Fix issues
+npm run fix:all       # Fix all linting and formatting issues
+
+# Complete check
+npm run check:all     # Run all checks (type, lint, format)
+
 # Run single test method
 dotnet test --filter "FullyQualifiedName~TestMethodName"
 ```

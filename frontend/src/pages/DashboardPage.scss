@@ -1,0 +1,101 @@
+@use "sass:map";
+@use "../styles/variables" as *;
+
+.dashboard-page {
+  padding: spacing(6);
+  
+  &__title {
+    margin-bottom: spacing(8);
+    color: $text-primary;
+  }
+  
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: spacing(6);
+    margin-bottom: spacing(8);
+  }
+  
+  &__stat-card {
+    background: white;
+    padding: spacing(6);
+    border-radius: map.get($border-radius, lg);
+    box-shadow: map.get($shadows, sm);
+    border: 1px solid $border-primary;
+    
+    &-title {
+      font-size: font-size(sm);
+      font-weight: map.get($font-weights, medium);
+      color: $text-secondary;
+      margin-bottom: spacing(2);
+    }
+    
+    &-value {
+      font-size: font-size(3xl);
+      font-weight: map.get($font-weights, bold);
+      color: $text-primary;
+      margin-bottom: spacing(1);
+    }
+    
+    &-change {
+      font-size: font-size(sm);
+      font-weight: map.get($font-weights, medium);
+      
+      &--positive {
+        color: $success;
+      }
+      
+      &--negative {
+        color: $error;
+      }
+      
+      &--neutral {
+        color: $text-secondary;
+      }
+    }
+  }
+  
+  &__sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: spacing(6);
+    
+    @include media(md) {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+  
+  &__section {
+    background: white;
+    padding: spacing(6);
+    border-radius: map.get($border-radius, lg);
+    box-shadow: map.get($shadows, sm);
+    border: 1px solid $border-primary;
+    
+    &-title {
+      font-size: font-size(lg);
+      font-weight: map.get($font-weights, semibold);
+      color: $text-primary;
+      margin-bottom: spacing(4);
+    }
+    
+    &-content {
+      color: $text-secondary;
+      line-height: map.get($line-heights, relaxed);
+    }
+  }
+  
+  &__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    color: $text-secondary;
+  }
+  
+  &__error {
+    text-align: center;
+    padding: spacing(8);
+    color: $error;
+  }
+} 
