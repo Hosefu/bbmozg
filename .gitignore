@@ -397,3 +397,5 @@ TestResults/
 
 # User secrets
 secrets.json
+*storybook.log
+storybook-static
